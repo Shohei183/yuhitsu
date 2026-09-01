@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>次第作成画面モックアップ（yuhitsu）</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; max-width: 420px; margin: 0 auto; padding: 16px; background: #f5f5f7; color: #111; }
+</style>
+</head>
+<body>
+
+<div style="background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:12px;">
+  <div style="font-size:12px;color:#888;">一般社団法人 小牧青年会議所</div>
+  <div style="font-size:15px;font-weight:600;margin:4px 0 8px;">2026年7月度定例理事会 次第</div>
+  <div style="font-size:12px;color:#555;line-height:1.6;">
+    日時：2026年7月7日（火）19:00〜22:16<br>
+    場所：楽田ふれあいセンター2階 講義室<br>
+    司会：専務理事 水落 太貴
+  </div>
+</div>
+
+<div id="agenda-list" style="display:flex;flex-direction:column;gap:4px;"></div>
+
+<script>
+// 実際の次第（2026年7月定例理事会）を元にした構成。
+// 協議事項・審議事項の各行には、対応する議案（yuhitsu上のID）へのリンクチップを表示する。
+var sections = [
+  {label:"開会", items:[
+    {t:"19:00", c:"開会の言葉", p:"丹羽 智子君"},
+    {t:"19:01", c:"JCIクリード唱和", p:"丸川 翼君"},
+    {t:"19:05", c:"理事長挨拶", p:"理事長 梅澤 侑未君"},
+    {t:"19:16", c:"議長の指名", p:"理事長"},
+    {t:"19:19", c:"前回議事録の承認", p:"議長"}
+  ]},
+  {label:"役員報告", items:[
+    {t:"19:20", c:"委員会報告", p:"議長"}
+  ]},
+  {label:"協議事項", items:[
+    {t:"19:22", c:"9月度例会について", p:"渉外委員会", link:"協議1", ok:true},
+    {t:"20:00", c:"10月度例会について", p:"まちづくり委員会", link:"協議2", ok:true},
+    {t:"20:40", c:"4月度例会後援依頼決算について", p:"青少年育成委員会", link:"協議3", ok:true},
+    {t:"21:00", c:"4月度例会決算について", p:"青少年育成委員会", link:"協議4", ok:true}
+  ]},
+  {label:"審議事項", items:[
+    {t:"21:31", c:"入会者承認の件", p:"会員拡大委員会", link:"審1", ok:true},
+    {t:"21:45", c:"3月度例会決算の件", p:"55周年特別委員会", link:"審2", ok:true},
+    {t:"21:50", c:"4月度例会決算の件", p:"青少年育成委員会", link:"審3", ok:false}
+  ]},
+  {label:"報告・閉会", items:[
+    {t:"21:56", c:"推進報告 拡大推進計画について", p:"会員拡大委員会"},
+    {t:"22:10", c:"監事所見", p:"監事 名和 俊君"},
+    {t:"22:16", c:"閉会の言葉", p:"加藤 一樹君"}
+  ]}
+];
+
+var root = document.getElementById('agenda-list');
+
+sections.forEach(function(sec){
+  var h = document.createElement('div');
+  h.style.cssText = "font-size:12px;font-weight:600;color:#2563eb;margin:10px 2px 4px;";
+  h.textContent = sec.label;
+  root.appendChild(h);
+
+  sec.items.forEach(function(it){
+    var row = document.createElement('div');
+    row.style.cssText = "display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:7px 10px;";
+
+    var timeDiv = document.createElement('div');
+    timeDiv.style.cssText = "width:44px;font-size:11px;color:#888;flex-shrink:0;";
+    timeDiv.textContent = it.t ? it.t : "";
+    row.appendChild(timeDiv);
+
+    var midDiv = document.createElement('div');
+    midDiv.style.cssText = "flex:1;min-width:0;";
+    var cDiv = document.createElement('div');
+    cDiv.style.cssText = "font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
+    cDiv.textContent = it.c;
+    var pDiv = document.createElement('div');
+    pDiv.style.cssText = "font-size:11px;color:#888;";
+    pDiv.textContent = it.p;
+    midDiv.appendChild(cDiv);
+    midDiv.appendChild(pDiv);
+    row.appendChild(midDiv);
+
+    if (it.link) {
+      var chip = document.createElement('span');
+      var bg = it.ok ? '#e8f0fe' : '#fde8e8';
+      var col = it.ok ? '#2563eb' : '#c0392b';
+      chip.style.cssText = "font-size:10px;padding:2px 7px;border-radius:999px;flex-shrink:0;background:" + bg + ";color:" + col + ";";
+      chip.textContent = it.link;
+      row.appendChild(chip);
+    }
+
+    root.appendChild(row);
+  });
+});
+</script>
+
+</body>
+</html>

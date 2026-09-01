@@ -1,0 +1,166 @@
+:root {
+  /* ── 面・境界 ── */
+  --bg: #e9edf3;
+  --card: #ffffff;
+  --panel: #f4f7fb;
+  --border: #d9e0ea;
+  --border-strong: #c3ccdb;
+
+  /* ── 文字 ── */
+  --text: #1b2430;
+  --muted: #64708a;
+  --muted-strong: #414c5e;
+
+  /* ── アクセント（濃紺ブルー）── */
+  --accent: #2f5fa8;
+  --accent-hover: #244c8a;
+  --accent-weak: #e8f0fb;
+  --accent-line: #b9cdea;
+
+  /* ── 状態色 ── */
+  --ok-bg: #e2f3e8;
+  --ok-fg: #1a7f37;
+  --ok-line: #b7e0c4;
+  --warn-bg: #fdeceb;
+  --warn-fg: #c0392b;
+  --warn-line: #f2c7c2;
+
+  /* ── バッジ ── */
+  --badge-edit-bg: #fbf0d5;
+  --badge-edit-fg: #8a5a00;
+  --badge-submitted-bg: #e2eefc;
+  --badge-submitted-fg: #1c4f9c;
+  --badge-locked-bg: #e7e9ef;
+  --badge-locked-fg: #555f70;
+
+  /* ── 影 ── */
+  --shadow-sm: 0 1px 2px rgba(20, 32, 54, 0.06), 0 1px 3px rgba(20, 32, 54, 0.05);
+  --shadow-md: 0 2px 6px rgba(20, 32, 54, 0.08), 0 6px 18px rgba(20, 32, 54, 0.06);
+  --ring: 0 0 0 3px rgba(47, 95, 168, 0.18);
+
+  /* ── 上部バー（TopBar）の高さ。position:fixed のレイアウトはこの分だけ下げる ── */
+  --topbar-h: 58px;
+
+  /* ── ロールバッジ ── */
+  --role-master-bg: #ede9fb;
+  --role-master-fg: #5b3fb0;
+  --role-officer-bg: #e2eefc; /* 理事長・専務・事務局長 */
+  --role-officer-fg: #1c4f9c;
+  --role-board-bg: #fbf0d5; /* 副理事長・監事・理事 */
+  --role-board-fg: #8a5a00;
+  --role-chair-bg: #e2f3e8; /* 委員長 */
+  --role-chair-fg: #1a7f37;
+  --role-member-bg: #eef1f6; /* 委員会メンバー */
+  --role-member-fg: #4a5568;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", Meiryo, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 7px 9px;
+  background: #fff;
+  width: 100%;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9aa5b6;
+}
+
+textarea {
+  resize: none;
+  overflow: hidden;
+  line-height: 1.6;
+  display: block;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+input[readonly],
+textarea[readonly],
+select:disabled {
+  background: var(--panel);
+  color: var(--muted-strong);
+  cursor: default;
+}
+
+button {
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 6px 11px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+button:hover {
+  background: var(--panel);
+  border-color: var(--border-strong);
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background: inherit;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+::selection {
+  background: rgba(47, 95, 168, 0.16);
+}

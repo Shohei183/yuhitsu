@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>議案構築画面モックアップ（yuhitsu）</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Sans", sans-serif; max-width: 420px; margin: 0 auto; padding: 16px; background: #f5f5f7; color: #111; }
+  button, input, textarea { font-family: inherit; font-size: 13px; }
+  input, textarea { border: 1px solid #ddd; border-radius: 6px; padding: 6px 8px; box-sizing: border-box; }
+  button { border: 1px solid #ddd; border-radius: 6px; padding: 6px 10px; background: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+  <div style="font-size:13px;color:#666;">青少年育成委員会 ／ 議案構築</div>
+  <span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:6px;background:#fdf3d8;color:#946200;">編集中</span>
+</div>
+
+<div style="background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;">
+  <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">提案議題</label>
+  <input type="text" style="width:100%;margin-bottom:10px;" value="4月度例会～新時代スポーツフェスティバル～" />
+  <div style="display:flex;gap:8px;">
+    <div style="flex:1;">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">文書作成者</label>
+      <input type="text" style="width:100%;" value="筒井 健太郎" />
+    </div>
+    <div style="flex:1;">
+      <label style="font-size:12px;color:#888;display:block;margin-bottom:4px;">作成日時</label>
+      <input type="text" style="width:100%;" value="2026/02/28" />
+    </div>
+  </div>
+</div>
+
+<div style="font-size:14px;font-weight:500;margin:14px 0 8px 2px;">事業要綱</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+  <div style="background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:8px 10px;">
+    <div style="font-size:11px;color:#888;margin-bottom:4px;">1. 事業名称</div>
+    <div style="font-size:13px;">4月度例会～新時代スポーツフェスティバルinパークアリーナ小牧～</div>
+  </div>
+  <div style="background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:8px 10px;">
+    <div style="font-size:11px;color:#888;margin-bottom:4px;">3. 事業の対象者</div>
+    <div style="font-size:13px;">対外）小学生新1〜6年生　100名<br>対内）小牧青年会議所メンバー39名＋新入会員10名</div>
+  </div>
+  <div style="background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:8px 10px;">
+    <div style="font-size:11px;color:#888;margin-bottom:4px;">4. 事業目的</div>
+    <div style="font-size:13px;">対外）自分の可能性を広げるきっかけを作る。<br>対内）子どもたちの感性を知る。</div>
+  </div>
+  <button style="font-size:12px;padding:6px;border-style:dashed;">＋ 他の項目を表示（2. 背景／5. 検証の指標／6. 期待される効果）</button>
+</div>
+
+<div style="font-size:14px;font-weight:500;margin:14px 0 8px 2px;">審議対象資料一覧</div>
+<div id="shingi-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+
+<div style="font-size:14px;font-weight:500;margin:14px 0 8px 2px;">参考資料一覧</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+  <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:7px 10px;">
+    <div style="width:20px;font-size:12px;color:#888;text-align:center;">1</div>
+    <div style="width:32px;height:32px;border-radius:6px;background:#e8f0fe;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;">📄</div>
+    <div style="flex:1;font-size:13px;">備品リスト</div>
+    <span style="color:#1a7f37;">✓</span>
+  </div>
+  <button style="font-size:12px;padding:6px;border-style:dashed;">＋ ファイルを追加</button>
+</div>
+
+<div style="display:flex;gap:8px;">
+  <button style="flex:1;">下書き保存</button>
+  <button style="flex:1;background:#111;color:#fff;border:none;">会議へ上程</button>
+</div>
+
+<script>
+// 審議対象資料一覧：連番管理（欠番は許容しない。削除時は自動繰り上げ）
+const items = [
+  {n:1, name:"事業収支予算書", ok:true},
+  {n:2, name:"式次第", ok:true},
+  {n:3, name:"案内文", ok:false},
+  {n:4, name:"セレモニー配置図", ok:true},
+  {n:5, name:"会場配置図", ok:true},
+  {n:6, name:"会場選定理由", ok:true},
+  {n:7, name:"種目選定理由", ok:true},
+  {n:8, name:"看板デザイン", ok:true},
+  {n:9, name:"応募フォーム", ok:true},
+  {n:10, name:"受付用参加者名簿", ok:true},
+  {n:11, name:"メンバー用参加者名簿", ok:true},
+  {n:12, name:"運営資料", ok:true},
+  {n:13, name:"メンバー用アンケート", ok:true},
+  {n:14, name:"参加者感想", ok:false},
+  {n:15, name:"事業収支決算書", ok:true},
+];
+const list = document.getElementById('shingi-list');
+items.forEach(it => {
+  const row = document.createElement('div');
+  row.style.cssText = "display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e5e5e5;border-radius:6px;padding:7px 10px;";
+  const bg = it.ok ? "#e8f0fe" : "#fde8e8";
+  const mark = it.ok ? '<span style="color:#1a7f37;">✓</span>' : '<span style="color:#c0392b;">⚠</span>';
+  row.innerHTML = `
+    <div style="width:20px;font-size:12px;color:#888;text-align:center;">${it.n}</div>
+    <div style="width:32px;height:32px;border-radius:6px;background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;">📄</div>
+    <div style="flex:1;font-size:13px;">${it.name}</div>
+    ${mark}
+  `;
+  list.appendChild(row);
+});
+</script>
+
+</body>
+</html>

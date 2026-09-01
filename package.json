@@ -1,0 +1,27 @@
+{
+  "name": "yuhitsu",
+  "version": "0.1.0",
+  "private": true,
+  "description": "JC向け アジェンダ・議案管理システム プロトタイプ（モックデータ）",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "next": "^15.5.24",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "y-indexeddb": "^9.0.12",
+    "yjs": "^13.6.32"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.7",
+    "@types/react": "19.0.7",
+    "@types/react-dom": "19.0.3",
+    "typescript": "5.7.3"
+  }
+}

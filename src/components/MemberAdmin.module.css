@@ -1,0 +1,232 @@
+.wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.head {
+  margin-bottom: 18px;
+}
+
+.crumb {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted-strong);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 8px 0 6px;
+}
+
+.note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.back {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.denied {
+  font-size: 14px;
+  color: var(--warn-fg);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+
+.flash {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ok-fg);
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.issue {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.issueTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.issueRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.issueInput {
+  flex: 1;
+  min-width: 200px;
+}
+
+.issueBtn {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+.issueBtn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid var(--border);
+  padding: 9px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table thead th {
+  background: var(--panel);
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.email {
+  color: var(--muted-strong);
+}
+
+.status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.active {
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+}
+.retired {
+  background: var(--badge-locked-bg);
+  color: var(--badge-locked-fg);
+}
+
+.rowBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+}
+
+.roleSelect {
+  width: auto;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.masterMark {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--role-master-bg);
+  color: var(--role-master-fg);
+}
+
+.dim {
+  color: var(--muted);
+}
+
+.retiredMark {
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--muted-strong);
+}
+
+/* 変更ダイアログ */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal {
+  background: var(--panel, #fff);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  width: min(420px, 92vw);
+  box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.2));
+}
+.modalTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.modalLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-strong);
+  margin-bottom: 12px;
+}
+.modalInput {
+  font-size: 13px;
+  padding: 7px 9px;
+}
+.modalErr {
+  font-size: 12px;
+  color: var(--danger, #c0392b);
+  margin-bottom: 12px;
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}

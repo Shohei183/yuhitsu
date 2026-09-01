@@ -1,0 +1,134 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { logout } from "@/lib/authStore";
+import { setRoleOverride, setYear } from "@/lib/activeViewStore";
+import { ROLE_LABEL, Role, SELECTABLE_ROLES } from "@/lib/yearStore";
+import {
+  useActiveView,
+  useAuthMember,
+  useCan,
+  useEffectiveRole,
+  useYears,
+} from "@/lib/useOrg";
+import styles from "./TopBar.module.css";
+
+const LOM_NAME = "一般社団法人小牧青年会議所";
+
+const ROLE_CLASS: Record<Role, string> = {
+  master: styles.roleMaster,
+  president: styles.roleOfficer,
+  executive_director: styles.roleOfficer,
+  secretary_general: styles.roleOfficer,
+  vice_president: styles.roleBoard,
+  auditor: styles.roleBoard,
+  director: styles.roleBoard,
+  committee_chair: styles.roleChair,
+  committee_member: styles.roleMember,
+};
+
+export default function TopBar() {
+  const router = useRouter();
+  const member = useAuthMember();
+  const years = useYears();
+  const view = useActiveView();
+  const effectiveRole = useEffectiveRole();
+  const can = useCan();
+
+  if (!member) return null;
+
+  const onLogout = () => {
+    logout();
+    router.replace("/login");
+  };
+
+  return (
+    <header className={styles.bar}>
+      <div className={styles.left}>
+        <Link href="/" className={styles.logo} aria-label="ユーヒツ（仮）">
+          <span className={styles.logoMark}>ユ</span>
+          <span className={styles.logoName}>
+            ユーヒツ<span className={styles.logoTag}>(仮)</span>
+          </span>
+        </Link>
+        <span className={styles.lomDivider} aria-hidden="true" />
+        <Link href="/" className={styles.lom}>
+          {LOM_NAME}
+        </Link>
+        {member.isMaster && <span className={styles.masterTag}>マスター</span>}
+      </div>
+
+      <nav className={styles.center}>
+        <div className={styles.years} role="tablist" aria-label="年度">
+          {years.map((y) => (
+            <button
+              key={y.id}
+              type="button"
+              role="tab"
+              aria-selected={y.id === view.yearId}
+              className={`${styles.yearTab} ${
+                y.id === view.yearId ? styles.yearTabActive : ""
+              }`}
+              onClick={() => setYear(y.id)}
+            >
+              {y.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      <div className={styles.right}>
+        <span className={`${styles.roleBadge} ${ROLE_CLASS[effectiveRole]}`}>
+          {ROLE_LABEL[effectiveRole]}
+        </span>
+
+        {!member.isMaster && (
+          <label className={styles.demo} title="再ログインせずロール別の表示を確認（デモ）">
+            <span className={styles.demoLabel}>デモ表示</span>
+            <select
+              className={styles.demoSelect}
+              value={view.roleOverride ?? ""}
+              onChange={(e) =>
+                setRoleOverride(
+                  e.target.value ? (e.target.value as Role) : null
+                )
+              }
+            >
+              <option value="">実ロール</option>
+              {SELECTABLE_ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABEL[r]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {can.editTemplates && (
+          <Link href="/templates" className={styles.navLink}>
+            テンプレート
+          </Link>
+        )}
+        {member.isMaster && (
+          <>
+            <Link href="/members" className={styles.navLink}>
+              メンバー管理
+            </Link>
+            <Link href="/roles" className={styles.navLink}>
+              ロール権限
+            </Link>
+            <Link href="/sync-lab" className={styles.navLink}>
+              同期ラボ
+            </Link>
+          </>
+        )}
+
+        <span className={styles.user}>{member.name}</span>
+        <button type="button" className={styles.logout} onClick={onLogout}>
+          ログアウト
+        </button>
+      </div>
+    </header>
+  );
+}

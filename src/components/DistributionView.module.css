@@ -1,0 +1,151 @@
+.page {
+  min-height: calc(100vh - var(--topbar-h));
+  background: var(--bg);
+  padding: 20px 16px 72px;
+}
+
+.toolbar {
+  max-width: 900px;
+  margin: 0 auto 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.navLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.downloadBtn {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 7px;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--accent-line);
+  cursor: pointer;
+}
+.downloadBtn:hover {
+  background: var(--accent-weak);
+}
+
+.lockTag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--badge-locked-fg);
+  background: var(--badge-locked-bg);
+  border: 1px solid #d2d6e0;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.doc {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 44px 52px 56px;
+  color: var(--text);
+}
+
+.head {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 14px;
+  margin-bottom: 8px;
+}
+
+.kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+
+.name {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 4px 0 8px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 13px;
+  color: var(--muted-strong);
+}
+
+.h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 30px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.sidaiBox {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  background: var(--panel);
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.gianLinks {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gianLink {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.gianLink:hover {
+  text-decoration: none;
+  border-color: var(--accent-line);
+  background: #fff;
+}
+
+.fileGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--border-strong);
+}
+
+.fileFolder {
+  font-weight: 700;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .doc {
+    padding: 28px 18px 36px;
+  }
+
+  .sidaiBox {
+    padding: 14px 12px;
+  }
+}

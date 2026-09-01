@@ -1,0 +1,19 @@
+/node_modules
+/.next
+/out
+/build
+next-env.d.ts
+.DS_Store
+*.pem
+npm-debug.log*
+.env*
+!.env.example
+/.vercel
+*.tsbuildinfo
+
+# Claude Code / ローカルツール設定（マシン依存パスを含む）
+/.claude
+
+# 参照用サンプル資料（約250MB・アプリのビルド／実行には不要）
+# 議案資料は IndexedDB にユーザーがアップロードする方式。リポジトリには含めない。
+/サンプル/

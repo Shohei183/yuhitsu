@@ -1,0 +1,248 @@
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* 製品ロゴ（仮。のちに画像ロゴへ差し替え予定） */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.logo:hover {
+  text-decoration: none;
+}
+.logoMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+}
+.logoName {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.logoTag {
+  margin-left: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--muted);
+  vertical-align: super;
+}
+.lomDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--border-strong);
+  margin: 0 2px;
+}
+@media (max-width: 1100px) {
+  .logoName {
+    display: none;
+  }
+  .lomDivider {
+    display: none;
+  }
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.right {
+  margin-left: auto;
+}
+
+.lom {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.lom:hover {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+.masterTag {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--role-master-bg);
+  color: var(--role-master-fg);
+  white-space: nowrap;
+}
+
+/* 年度タブ */
+.years {
+  display: flex;
+  gap: 2px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.yearTab {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+.yearTab:hover {
+  background: #fff;
+}
+.yearTabActive,
+.yearTabActive:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* 期間トグル */
+.periods {
+  display: flex;
+  gap: 2px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.periodBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+.periodBtn:hover {
+  background: #fff;
+}
+.periodBtnActive,
+.periodBtnActive:hover {
+  background: var(--accent-weak);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-line);
+}
+
+/* ロールバッジ */
+.roleBadge {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.roleMaster {
+  background: var(--role-master-bg);
+  color: var(--role-master-fg);
+}
+.roleOfficer {
+  background: var(--role-officer-bg);
+  color: var(--role-officer-fg);
+}
+.roleBoard {
+  background: var(--role-board-bg);
+  color: var(--role-board-fg);
+}
+.roleChair {
+  background: var(--role-chair-bg);
+  color: var(--role-chair-fg);
+}
+.roleMember {
+  background: var(--role-member-bg);
+  color: var(--role-member-fg);
+}
+
+/* デモ用ロール切替 */
+.demo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.demoLabel {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.demoSelect {
+  width: auto;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.navLink {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.user {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+
+.logout {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .demoLabel {
+    display: none;
+  }
+  .lom {
+    font-size: 14px;
+  }
+}

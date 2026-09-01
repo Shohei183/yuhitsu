@@ -1,0 +1,30 @@
+.boot {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.gate {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted-strong);
+  font-size: 14px;
+}
+
+.frame {
+  min-height: 100vh;
+}
+
+/*
+ * TopBar は position: fixed（高さ --topbar-h）。
+ * 通常フローのページはこの分だけ下げる。
+ * 一部の画面（議案構築・次第作成）は自前で position: fixed / inset: var(--topbar-h) 0 0
+ * を使うので、その場合はこの padding は無視される（子が out of flow）。
+ */
+.body {
+  padding-top: var(--topbar-h);
+  min-width: 0;
+}

@@ -1,0 +1,365 @@
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.head {
+  margin-bottom: 18px;
+}
+
+.crumb {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted-strong);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 8px 0 6px;
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 10px;
+  line-height: 1.7;
+}
+
+.back {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.notFound {
+  font-size: 14px;
+  color: var(--warn-fg);
+  margin: 12px 0;
+}
+
+/* 委員会フォルダ：2つのサブフォルダカード */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.folderCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+.folderCard:hover {
+  text-decoration: none;
+  border-color: var(--accent-line);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.folderIcon {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.folderBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.folderName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.folderDesc {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 3px 0 6px;
+  line-height: 1.6;
+}
+
+.folderMeta {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+
+.folderArrow {
+  font-size: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* 議案構築エリア：新規作成 */
+.createRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.createLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+
+.createBtn {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  box-shadow: var(--shadow-sm);
+}
+.createBtn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* 議案リスト */
+.gianList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gianItem {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.gianMain {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.gianMain:hover {
+  text-decoration: none;
+}
+.gianMain:hover .gianTopic {
+  color: var(--accent);
+}
+
+.kindTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.kindKyogi {
+  background: var(--role-officer-bg);
+  color: var(--role-officer-fg);
+}
+.kindShingi {
+  background: var(--role-chair-bg);
+  color: var(--role-chair-fg);
+}
+.kindKessanKyogi {
+  background: var(--role-board-bg);
+  color: var(--role-board-fg);
+}
+.kindKessanShingi {
+  background: var(--role-member-bg);
+  color: var(--role-member-fg);
+}
+.kindKihon {
+  background: var(--role-master-bg);
+  color: var(--role-master-fg);
+}
+
+.gianTopic {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.editing {
+  background: var(--badge-edit-bg);
+  color: var(--badge-edit-fg);
+}
+.submitted {
+  background: var(--badge-submitted-bg);
+  color: var(--badge-submitted-fg);
+}
+.locked {
+  background: var(--badge-locked-bg);
+  color: var(--badge-locked-fg);
+}
+
+.gianActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.viewLink {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.delBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 11px;
+  color: var(--warn-fg);
+}
+
+.dlBtn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 11px;
+  border-radius: 7px;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--accent-line);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.dlBtn:hover {
+  background: var(--accent-weak);
+}
+
+.dupBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 11px;
+}
+
+/* 共有用フォルダ */
+.err {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--warn-fg);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.flash {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ok-fg);
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 16px;
+  margin-bottom: 16px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 12px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.dropzoneOver {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+}
+
+.dropText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted-strong);
+}
+
+.fileList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  padding: 9px 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.fileNameBtn {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fileNameBtn:hover {
+  background: transparent;
+  text-decoration: none;
+}
+
+.fileSize {
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.fileDate {
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}

@@ -1,0 +1,443 @@
+.page {
+  min-height: calc(100vh - var(--topbar-h));
+  background: var(--bg);
+  padding: 20px 16px 72px;
+}
+
+.toolbar {
+  max-width: 860px;
+  margin: 0 auto 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.navLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pdfBtn {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 7px;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  cursor: pointer;
+}
+.pdfBtn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.downloadBtn {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 7px;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--accent-line);
+  cursor: pointer;
+}
+.downloadBtn:hover {
+  background: var(--accent-weak);
+}
+
+.badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.editing {
+  background: var(--badge-edit-bg);
+  color: var(--badge-edit-fg);
+  border-color: #ecd9a8;
+}
+
+.submitted {
+  background: var(--badge-submitted-bg);
+  color: var(--badge-submitted-fg);
+  border-color: #bcd4f2;
+}
+
+.locked {
+  background: var(--badge-locked-bg);
+  color: var(--badge-locked-fg);
+  border-color: #d2d6e0;
+}
+
+.snapTag {
+  font-size: 12px;
+  color: var(--muted-strong);
+  background: #f7efd9;
+  border: 1px solid #e6d2a0;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+/* ── ドキュメント本体 ── */
+.doc {
+  max-width: 860px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 52px 60px 60px;
+  color: var(--text);
+  line-height: 1.8;
+}
+
+/* 埋め込み表示（配信データ画面など）：枠・影を控えめに */
+.docEmbedded {
+  max-width: none;
+  margin: 0;
+  border: none;
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 16px 20px;
+  background: #fff;
+  line-height: 1.7;
+}
+
+.docEmbedded .topic {
+  font-size: 16px;
+}
+
+.docEmbedded .h2 {
+  font-size: 14px;
+  margin: 20px 0 8px;
+}
+
+.docHead {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.lom {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.meeting {
+  font-size: 14px;
+  color: var(--muted-strong);
+  margin-top: 4px;
+}
+
+.topic {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+.proposalLine {
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted-strong);
+  margin: 0 0 6px;
+}
+
+.proposalMeta {
+  text-align: right;
+  font-size: 14px;
+  margin: 0 0 24px;
+  line-height: 1.9;
+}
+
+.kvList {
+  margin: 0 0 18px;
+  border-top: 1px solid var(--border);
+}
+
+.kv {
+  display: flex;
+  gap: 12px;
+  padding: 6px 2px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.kv dt {
+  flex-shrink: 0;
+  width: 160px;
+  color: var(--muted-strong);
+  font-weight: 600;
+}
+
+.kv dd {
+  margin: 0;
+  flex: 1;
+}
+
+.subLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted-strong);
+  margin: 16px 0 8px;
+}
+
+.h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 34px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--accent);
+}
+
+/* 項目リスト（事業要綱・事業概要） */
+.itemList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.itemList > li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.itemLabel {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.planLink {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.planViewLink {
+  font-size: 12.5px;
+  color: var(--muted-strong);
+  margin-top: 2px;
+}
+
+.budgetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 700px) {
+  .budgetGrid {
+    grid-template-columns: 1fr;
+  }
+}
+.budgetCol {
+  min-width: 0;
+}
+.budgetColTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.budgetTotalRow td {
+  font-weight: 700;
+  background: var(--panel);
+}
+
+.itemBody {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.bodyInline {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* テーブル */
+.tableWrap {
+  overflow-x: auto;
+  margin: 8px 0 4px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--border-strong);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+  white-space: pre-wrap;
+}
+
+.table thead th {
+  background: var(--panel);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.noCol {
+  width: 64px;
+}
+
+.fileLink {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.fileLink:hover {
+  text-decoration: none;
+  background: transparent;
+}
+
+.fileLinkMark {
+  text-decoration: none;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.fileMissing {
+  color: var(--muted-strong);
+  font-weight: 600;
+}
+
+/* 資料一覧（アップロード） */
+.resGroup {
+  margin: 4px 0 12px;
+}
+.resGroupTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted-strong);
+  margin-bottom: 4px;
+}
+.resList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.resList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.resSize {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.dateCol {
+  width: 180px;
+}
+
+.fbCol {
+  width: 74px;
+  background: var(--panel);
+  white-space: nowrap;
+  color: var(--muted-strong);
+}
+
+.fbRound {
+  margin-bottom: 16px;
+}
+
+.fbHead {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+@media (max-width: 700px) {
+  .doc {
+    padding: 32px 20px 40px;
+  }
+
+  .kv dt {
+    width: 110px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm;
+  }
+
+  .page {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+
+  .toolbar {
+    display: none;
+  }
+
+  .doc {
+    box-shadow: none;
+    border: none;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    /* A4 の刷り上がり幅に合わせて本文を少し詰める */
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+
+  .doc h1,
+  .topic {
+    font-size: 15pt;
+  }
+  .doc h2 {
+    font-size: 12pt;
+    break-after: avoid;
+  }
+
+  /* 表・資料グループ・前回までの流れの各回はページ跨ぎを避ける */
+  .tableWrap,
+  .resGroup,
+  .fbRound {
+    break-inside: avoid;
+  }
+
+  .itemList > li {
+    break-inside: avoid;
+  }
+
+  .doc a,
+  .fileLink {
+    color: inherit;
+    text-decoration: none;
+  }
+}
