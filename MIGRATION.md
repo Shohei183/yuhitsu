@@ -73,7 +73,21 @@ R2_BUCKET=yuhitsu-files
 ## 進捗ログ
 
 - 2026-09-02: 移行方針確定、本ドキュメント作成。着手。
-- 2026-09-02: 土台コミット `0850d11`。schema.sql / supabase・r2 クライアント /
-  API routes（files 3本・members 2本）/ netlify.toml / .env.example 完了。
-  ビルド・型チェック通過。アプリはモックのまま従来どおり動作（新コードは未接続）。
-  **次：キー受領 → ストア移行（memberStore→auth→年度系→議案系→ファイル系）。**
+- 2026-09-02: 土台コミット `0850d11`。schema / クライアント / API routes / netlify.toml。
+- 2026-09-02: 接続完了。本番DBにスキーマ適用（`725ae85`）。R2 疎通OK。マスター作成済み
+  （`yoroizuka@eitex.co.jp` / is_master）。パスワード最小長を下げられず 8桁に変更。
+- 2026-09-02: **ストア移行 完了**（`36171a9`）。全ストア Supabase 化、ファイル→R2、
+  Supabase Auth、DataProvider。tsc / next build 通過。未認証リダイレクト確認。
+  fy-2026 に総務委員会・事業委員会をシード。
+  **次：ユーザーがログイン疎通テスト → 資料アップロード確認 → Resend SMTP → Netlify デプロイ。**
+
+## 未了 / 要対応
+
+- [ ] **ログイン疎通テスト**（ユーザー。私はパスワード入力不可）
+- [ ] **Resend SMTP を Supabase に設定** — 未設定だと招待・リセットのメールが飛ばない
+      （マスターはパスワード直設定済みなので影響なし）
+- [ ] **Netlify デプロイ** + 環境変数登録 + `NEXT_PUBLIC_SITE_URL` を本番URLに
+- [ ] Supabase Auth の Redirect URLs に本番 `/login/set-password` を追加
+- [ ] 通しテスト（議案作成→上程→次第→配信確定→資料）
+- [ ] `notificationStore` は localStorage のまま（差し替え通知のクリア状態・端末ローカル）
+- [ ] ローンチ後：`sb_secret` / R2 secret / アクセストークン のローテーション
