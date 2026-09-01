@@ -78,7 +78,18 @@ function items(prefix: string, labels: string[]): TemplateItem[] {
   return labels.map((label, i) => ({ id: `${prefix}-${i + 1}`, label }));
 }
 
+// 既定テンプレートは yearId ごとにメモ化する
+// （useSyncExternalStore の getSnapshot は安定参照を返す必要があるため）
+const defaultCache: Record<string, YearTemplate> = {};
 function defaultTemplate(yearId: string): YearTemplate {
+  const hit = defaultCache[yearId];
+  if (hit) return hit;
+  const t = buildDefaultTemplate(yearId);
+  defaultCache[yearId] = t;
+  return t;
+}
+
+function buildDefaultTemplate(yearId: string): YearTemplate {
   return {
     yearId,
     kyogi: {
