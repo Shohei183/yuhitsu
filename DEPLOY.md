@@ -1,50 +1,78 @@
-# デプロイ手順（Vercel）
+# デプロイ手順（Netlify + Supabase + R2）
 
-このアプリは **フロントエンドのみ**（サーバー・DB なし）。ビルドすると静的アセット＋
-軽量なサーバーレス関数になり、Vercel がそのまま配信できる。環境変数の設定は不要。
-
-> **データはブラウザごとに独立**（localStorage / IndexedDB）。
-> URL を配っても、閲覧者それぞれが自分のブラウザ内でしかデータを共有できない
-> ＝「常時触れるデモ」用。複数人で同じ議案を共有するにはバックエンド（Supabase 等）が必要。
-
-初回ログイン：`master@komaki-jc.example` ／ パスワード `jc`
-（初回アクセス時にブラウザ内へシードデータが自動投入される）
+本番構成：Netlify（Next.js ホスティング）／ Supabase（Auth + Postgres）／ Cloudflare R2（ファイル）。
 
 ---
 
-## 方法A：Vercel CLI（最短・GitHub 不要）
+## 1. GitHub にリポジトリを用意
+
+private リポジトリを作成し push（secret は `.gitignore` 済みなので入りません）：
 
 ```bash
-npm i -g vercel
-vercel login
-vercel            # プレビュー環境へデプロイ（初回は対話でプロジェクト名等を確認）
-vercel --prod     # 本番URLへ反映
+git remote add origin https://github.com/<user>/yuhitsu.git
+git push -u origin main
 ```
 
-- ルート設定はすべて自動検出（Framework: Next.js / Build: `next build` / Install: `npm install`）。
-- 2 回目以降は `vercel --prod` だけ。
+## 2. Netlify で Import
 
-## 方法B：GitHub + Vercel ダッシュボード（継続開発向け）
+1. [app.netlify.com](https://app.netlify.com) → Add new site → Import an existing project → GitHub → このリポジトリ
+2. Build 設定は `netlify.toml` から自動検出（Build command `npm run build` / Publish `.next` / plugin `@netlify/plugin-nextjs`）。変更不要
+3. **Deploy site** を押す前に、環境変数を設定（次項）。または一度デプロイ→環境変数追加→再デプロイ
 
-1. GitHub で **private リポジトリ**を作成し、このプロジェクトを push
-   ```bash
-   git remote add origin https://github.com/<user>/yuhitsu.git
-   git push -u origin main
-   ```
-2. [vercel.com/new](https://vercel.com/new) → リポジトリを Import → **Deploy**（設定変更不要）
-3. 以降は `main` に push するたび自動で本番デプロイ、PR ごとにプレビューURL。
+## 3. 環境変数（Site settings → Environment variables）
+
+`.env.local` と同じ値を登録：
+
+| キー | 値 |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://oxrlfveljtwzdeuyjrkp.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_...` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `sb_secret_...`（秘密） |
+| `R2_ACCOUNT_ID` | `900fe0c6...` |
+| `R2_ACCESS_KEY_ID` | `2961...` |
+| `R2_SECRET_ACCESS_KEY` | `7fbb...`（秘密） |
+| `R2_BUCKET` | `yuhitsu-files` |
+| `NEXT_PUBLIC_SITE_URL` | **最初のデプロイ後**に決まる Netlify の URL（例 `https://yuhitsu.netlify.app`） |
+
+`NEXT_PUBLIC_*` はビルド時に埋め込まれるので、`NEXT_PUBLIC_SITE_URL` を変えたら **Trigger deploy → Clear cache and deploy**。
+
+## 4. 初回デプロイ後の設定
+
+1. Netlify の URL（`https://xxxx.netlify.app`）を控える
+2. その URL を `NEXT_PUBLIC_SITE_URL` に設定 → 再デプロイ
+3. **Supabase** → Authentication → URL Configuration:
+   - Site URL: `https://xxxx.netlify.app`
+   - Redirect URLs に追加: `https://xxxx.netlify.app/**`（招待・リセットの着地に必要）
+4. **R2 CORS**：`*.netlify.app` は許可済み。**独自ドメインを使う場合**は
+   `scripts/r2-cors.mjs` の AllowedOrigin にそのドメインを足して `node scripts/r2-cors.mjs`
+
+## 5. メール送信（Resend → Supabase SMTP）
+
+未設定だと **メンバー招待・パスワードリセットのメールが届きません**（マスターは
+ダッシュボードでパスワード設定済みなので、あなたのログインには不要）。
+
+1. [resend.com](https://resend.com) → API Keys → 作成、送信ドメインを追加（DNS に SPF/DKIM）
+2. Supabase → Authentication → Emails → **SMTP Settings** に Resend の値を入力
+   - Host `smtp.resend.com` / Port `465` / User `resend` / Pass `<APIキー>` / Sender は認証済みドメインのアドレス
+3. ドメイン認証が間に合わなければ、当面は Supabase 内蔵メール（時間あたり数通の制限あり）でも動く
 
 ---
 
-## 補足
+## 運用開始時の初期設定（マスターでログインして画面から）
 
-- **Node**：`.nvmrc` で 22 を指定。Vercel のプロジェクト設定 → General → Node.js Version が
-  20 以上になっていること（デフォルトで可）。
-- **含めないもの**：`サンプル/`（約250MB の参照用PDF・アプリ実行に不要）と `.claude/` は
-  `.gitignore` 済み。議案資料はデプロイ後、画面からアップロードして IndexedDB に入る。
-- **ビルド確認**（ローカル）：
-  ```bash
-  npm run build && npm start
-  ```
-- **プレゼン当日にローカルで見せる場合**：`start-prod.bat`（build → start）でも可。
-  URL 配布が不要ならこれが一番確実。
+1. 年度フォルダは `fy-2026`（2026年度）が入っています。委員会は 総務／事業 の2つをシード済み
+   → 実際の委員会構成に合わせて追加・改名（ダッシュボードの「委員会」セクション）
+2. メンバー管理 → アカウント発行（＝招待メール）で各メンバーを追加
+3. メンバー管理 → 選択中年度のロールを割当
+4. 必要なら テンプレート編集（/templates）で議案・次第の項目を調整
+
+## ローカルでの確認
+
+```bash
+npm run dev    # .env.local を読み込む
+```
+
+## セキュリティ（ローンチ後）
+
+チャットで共有した `sb_secret` キー・R2 シークレット・Supabase アクセストークンは、
+落ち着いたら各ダッシュボードで**再発行（ローテーション）**してください。
