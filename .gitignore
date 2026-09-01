@@ -17,3 +17,7 @@ npm-debug.log*
 # 参照用サンプル資料（約250MB・アプリのビルド／実行には不要）
 # 議案資料は IndexedDB にユーザーがアップロードする方式。リポジトリには含めない。
 /サンプル/
+
+# Supabase CLI ローカル
+/supabase/.temp
+/supabase/.branches
