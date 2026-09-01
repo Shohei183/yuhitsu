@@ -8,7 +8,6 @@ import {
   FeedbackExchange,
   FeedbackRound,
   Gian,
-  MOCK_GIANS,
   ScheduleEntry,
   ScheduleRow,
   STATUS_LABEL,
@@ -24,7 +23,6 @@ import {
   lockGian,
   requestReplacement,
   isKihon,
-  resetGian,
   saveDraftSnapshot,
   saveGian,
   showsPriorFeedback,
@@ -60,10 +58,8 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   const kihon = isKihon(gian.kind);
   /** 基本方針「事業計画」のリンク先候補（自分以外の協議議案のみ） */
   const linkOptions = kihon
-    ? [
-        ...MOCK_GIANS,
-        ...Object.values(gianStore).map((e) => e.gian),
-      ]
+    ? Object.values(gianStore)
+        .map((e) => e.gian)
         .filter(
           (g, i, arr) =>
             g.id !== gianId &&
@@ -412,18 +408,6 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     flash("配信確定にしました（完全ロック）");
   }
 
-  function resetFlow() {
-    if (
-      !window.confirm(
-        "この議案の状態・スナップショット・差し替え申請をすべて初期状態に戻します。よろしいですか？"
-      )
-    ) {
-      return;
-    }
-    resetGian(gianId);
-    flash("初期状態に戻しました");
-  }
-
   return (
     <div className={styles.root}>
       {/* ── トップバー（全カラムを横断）── */}
@@ -605,7 +589,6 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
             canApprove={can.approveReplacement}
             onDecide={decide}
             onDistribution={confirmDistribution}
-            onReset={resetFlow}
           />
         </main>
 
@@ -1680,7 +1663,6 @@ function FlowPanel({
   canApprove,
   onDecide,
   onDistribution,
-  onReset,
 }: {
   gian: Gian;
   snapshots: Snapshot[];
@@ -1688,7 +1670,6 @@ function FlowPanel({
   canApprove: boolean;
   onDecide: (requestId: string, approve: boolean) => void;
   onDistribution: () => void;
-  onReset: () => void;
 }) {
   const [openSnap, setOpenSnap] = useState<string | null>(null);
 
@@ -1701,12 +1682,7 @@ function FlowPanel({
 
   return (
     <section className={styles.card}>
-      <div className={styles.cardHeading}>
-        上程フロー・履歴
-        <button type="button" className={styles.linkBtn} onClick={onReset}>
-          状態をリセット
-        </button>
-      </div>
+      <div className={styles.cardHeading}>上程フロー・履歴</div>
 
       <div className={styles.flowStatus}>
         <span>

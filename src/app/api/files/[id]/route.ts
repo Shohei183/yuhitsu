@@ -34,7 +34,7 @@ export async function GET(
     600,
     wantsDownload ? data.name : undefined
   );
-  return NextResponse.json({ url });
+  return NextResponse.json({ url, name: data.name });
 }
 
 /**

@@ -7,9 +7,9 @@
 // roleOverride はプロトタイプのデモ専用（再ログインせずロール別表示を確認する）。
 // ─────────────────────────────────────────────────────────────
 
-import { Period, Role, YEAR_ORDER } from "./yearStore";
+import { Period, Role } from "./yearStore";
 
-const LS_KEY = "yuhitsu.active-view.v2"; // v1→v2: roleOverride のロール体系変更
+const LS_KEY = "yuhitsu.active-view.v3"; // v3: 年度 seed 変更に伴いキャッシュ更新
 
 export interface ActiveView {
   yearId: string;
@@ -19,7 +19,7 @@ export interface ActiveView {
 }
 
 const DEFAULT_VIEW: ActiveView = {
-  yearId: "fy-2027",
+  yearId: "",
   period: "live",
   roleOverride: null,
 };
@@ -39,10 +39,6 @@ function load(): ActiveView {
       : DEFAULT_VIEW;
   } catch {
     cache = DEFAULT_VIEW;
-  }
-  // 未知の年度が保存されていたら既定に戻す
-  if (cache && !YEAR_ORDER.includes(cache.yearId)) {
-    cache = { ...cache, yearId: DEFAULT_VIEW.yearId };
   }
   return cache;
 }

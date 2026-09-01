@@ -38,8 +38,8 @@ export default function TopBar() {
 
   if (!member) return null;
 
-  const onLogout = () => {
-    logout();
+  const onLogout = async () => {
+    await logout();
     router.replace("/login");
   };
 

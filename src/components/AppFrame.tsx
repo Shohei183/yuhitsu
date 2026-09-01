@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuthMember } from "@/lib/useOrg";
+import { useAuthState } from "@/lib/useOrg";
 import TopBar from "./TopBar";
+import DataProvider from "./DataProvider";
 import styles from "./AppFrame.module.css";
 
 /** ログイン不要で表示するパス */
@@ -15,29 +16,25 @@ function isPublicPath(pathname: string): boolean {
 export default function AppFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const member = useAuthMember();
-
-  // SSR / ハイドレーション時は localStorage を読めないため、
-  // マウント後に認証状態で描画を切り替える（既存ストアの getXDefault 方針と同じ）。
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const { userId, ready } = useAuthState();
 
   const publicPath = isPublicPath(pathname);
 
   useEffect(() => {
-    if (mounted && !publicPath && !member) {
+    if (ready && !publicPath && !userId) {
       router.replace("/login");
     }
-  }, [mounted, publicPath, member, router]);
+  }, [ready, publicPath, userId, router]);
 
   // ログイン画面など：フレームなしで素通し
   if (publicPath) return <>{children}</>;
 
-  if (!mounted) {
+  // セッション判定中
+  if (!ready) {
     return <div className={styles.boot} aria-hidden />;
   }
 
-  if (!member) {
+  if (!userId) {
     return (
       <div className={styles.gate}>
         <p>ログインが必要です。</p>
@@ -47,9 +44,11 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={styles.frame}>
-      <TopBar />
-      <div className={styles.body}>{children}</div>
-    </div>
+    <DataProvider>
+      <div className={styles.frame}>
+        <TopBar />
+        <div className={styles.body}>{children}</div>
+      </div>
+    </DataProvider>
   );
 }

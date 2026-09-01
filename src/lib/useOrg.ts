@@ -11,7 +11,6 @@ import {
   Member,
   MemberStore,
   getMember,
-  getMemberDefault,
   getStore as getMemberStore,
   getStoreDefault as getMemberStoreDefault,
   subscribe as subscribeMembers,
@@ -24,7 +23,6 @@ import {
   getStore as getYearStore,
   getStoreDefault as getYearStoreDefault,
   getYear,
-  getYearDefault,
   listYears,
   roleOf,
   subscribe as subscribeYears,
@@ -47,20 +45,14 @@ import {
 // ── 個別フック ───────────────────────────────────────────────
 
 export function useAuthState(): AuthState {
-  return useSyncExternalStore(
-    subscribeAuth,
-    getAuthState,
-    getAuthStateDefault
-  );
+  return useSyncExternalStore(subscribeAuth, getAuthState, getAuthStateDefault);
 }
 
 export function useAuthMember(): Member | null {
-  const { currentMemberId } = useAuthState();
-  const member = useSyncExternalStore(
-    subscribeMembers,
-    () => (currentMemberId ? getMember(currentMemberId) : undefined),
-    () => (currentMemberId ? getMemberDefault(currentMemberId) : undefined)
-  );
+  const { userId } = useAuthState();
+  useMemberStore(); // メンバーのハイドレーション／変更で再評価
+  if (!userId) return null;
+  const member = getMember(userId);
   if (!member || member.status === "retired") return null;
   return member;
 }
@@ -92,18 +84,13 @@ export function useActiveView(): ActiveView {
 
 export function useActiveYear(): FiscalYear | undefined {
   const { yearId } = useActiveView();
-  return useSyncExternalStore(
-    subscribeYears,
-    () => getYear(yearId),
-    () => getYearDefault(yearId)
-  );
+  useYearStore();
+  return getYear(yearId);
 }
 
 export function useCommittee(committeeId: string):
   | { year: FiscalYear; committee: Committee }
   | undefined {
-  // useSyncExternalStore の getSnapshot は安定参照を返す必要があるため、
-  // 安定参照の store から useMemo で導出する。
   const store = useYearStore();
   return useMemo(() => {
     for (const year of Object.values(store)) {
@@ -114,7 +101,6 @@ export function useCommittee(committeeId: string):
   }, [store, committeeId]);
 }
 
-/** 議案 id からその所属委員会・年度 */
 export function useCommitteeOfGian(gianId: string):
   | { year: FiscalYear; committee: Committee }
   | undefined {
@@ -132,11 +118,10 @@ export function useCommitteeOfGian(gianId: string):
 
 // ── ロール / 権限 ────────────────────────────────────────────
 
-/** 実効ロール（デモ上書き → master 属性 → 年度割当 の順で決定） */
 export function useEffectiveRole(): Role {
   const member = useAuthMember();
   const { yearId, roleOverride } = useActiveView();
-  useYearStore(); // 割当変更で再評価
+  useYearStore();
   if (member?.isMaster) return "master";
   if (roleOverride) return roleOverride;
   return roleOf(yearId, member?.id ?? null);
@@ -144,13 +129,9 @@ export function useEffectiveRole(): Role {
 
 export type CanMap = Record<Capability, boolean>;
 
-/**
- * 実効ロール × ロール権限ストア（/roles でマスターが編集）から、
- * 現在のユーザーの操作可否を解決する。
- */
 export function useCan(): CanMap {
   const role = useEffectiveRole();
-  useRolePermStore(); // 権限変更で再評価
+  useRolePermStore();
   const out = {} as CanMap;
   for (const k of CAPABILITY_KEYS) out[k] = can(role, k);
   return out;

@@ -16,7 +16,7 @@ export function useGianEntry(id: string): GianEntry | undefined {
   return useSyncExternalStore(
     subscribe,
     () => getEntry(id),
-    () => getEntryDefault(id)
+    () => getEntryDefault()
   );
 }
 

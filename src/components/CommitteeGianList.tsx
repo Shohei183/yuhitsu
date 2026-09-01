@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GianKind, MOCK_GIANS, STATUS_LABEL } from "@/lib/mockData";
 import { createGian, deleteGian, duplicateGian } from "@/lib/gianStore";
-import { addGianToCommittee, removeGianFromCommittee } from "@/lib/yearStore";
 import { useCommittee, useCan } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
 import styles from "./CommitteeFolder.module.css";
@@ -49,23 +48,20 @@ export default function CommitteeGianList({
     const id = createGian({
       yearId: year.id,
       committee: committee.name,
+      committeeId,
       kind,
     });
-    addGianToCommittee(committeeId, id);
     router.push(`/gian/${id}`);
   };
 
   const onDelete = (id: string) => {
     if (!confirm("この下書き議案を削除します。よろしいですか？")) return;
-    if (deleteGian(id)) removeGianFromCommittee(committeeId, id);
+    deleteGian(id);
   };
 
   const onDuplicate = (id: string, targetKind?: GianKind) => {
     const newId = duplicateGian(id, targetKind);
-    if (newId) {
-      addGianToCommittee(committeeId, newId);
-      router.push(`/gian/${newId}`);
-    }
+    if (newId) router.push(`/gian/${newId}`);
   };
 
   return (

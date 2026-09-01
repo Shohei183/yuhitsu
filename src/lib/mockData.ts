@@ -112,6 +112,10 @@ export interface Gian {
   committee: string;
   kind: GianKind;
   status: GianStatus;
+  /** 所属年度（本番DB: gians.fiscal_year_id） */
+  yearId?: string;
+  /** 所属委員会id（本番DB: gians.committee_id） */
+  committeeId?: string;
 
   // ── ヘッダー（提案議題ブロック）──
   /** 発行元 LOM 名 */
@@ -641,17 +645,14 @@ const gian004: Gian = {
   referenceResources: [],
 };
 
-export const MOCK_GIANS: Gian[] = [
-  gian001,
-  gian002,
-  gian003,
-  gian004,
-  gian2026a,
-  gian2026b,
-];
+// 本番はシードデータを持たない（議案は運用開始後に作成）。
+// 下の gian001〜gian2026b / lightGian は旧プロトタイプの参考用。未使用。
+void [gian001, gian002, gian003, gian004, gian2026a, gian2026b];
 
-export function getGian(id: string): Gian | undefined {
-  return MOCK_GIANS.find((g) => g.id === id);
+export const MOCK_GIANS: Gian[] = [];
+
+export function getGian(_id: string): Gian | undefined {
+  return undefined;
 }
 
 export const STATUS_LABEL: Record<GianStatus, string> = {

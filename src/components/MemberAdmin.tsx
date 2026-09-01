@@ -62,17 +62,17 @@ export default function MemberAdmin() {
   const members = listMembers();
   const canEditRoles = can.editRoles;
 
-  const onIssue = (e: React.FormEvent) => {
+  const onIssue = async (e: React.FormEvent) => {
     e.preventDefault();
-    const created = issueAccount({ name, email });
-    if (created) {
-      setFlash(`${created.name} のアカウントを発行しました（初期パスワード: jc）`);
+    const res = await issueAccount({ name, email });
+    if (res.ok) {
+      setFlash(`${name} に招待メールを送信しました（本人がリンクからパスワードを設定します）`);
       setName("");
       setEmail("");
     } else {
-      setFlash("発行できませんでした（氏名・メール未入力、またはメール重複）");
+      setFlash(res.error ?? "発行できませんでした");
     }
-    window.setTimeout(() => setFlash(null), 3200);
+    window.setTimeout(() => setFlash(null), 4000);
   };
 
   const committeeIdOf = (memberId: string): string | null => {
@@ -292,19 +292,19 @@ export default function MemberAdmin() {
               <button
                 type="button"
                 className={styles.issueBtn}
-                onClick={() => {
-                  const ok = updateMember(editing.id, {
+                onClick={async () => {
+                  const res = await updateMember(editing.id, {
                     name: editing.name,
                     email: editing.email,
                   });
-                  if (ok) {
+                  if (res.ok) {
                     setFlash("メンバー情報を更新しました");
                     setEditing(null);
                     window.setTimeout(() => setFlash(null), 3200);
                   } else {
                     setEditing({
                       ...editing,
-                      err: "更新できませんでした（メールアドレスの重複など）",
+                      err: res.error ?? "更新できませんでした",
                     });
                   }
                 }}

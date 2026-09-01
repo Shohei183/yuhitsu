@@ -1,18 +1,19 @@
+"use client";
+
 // ─────────────────────────────────────────────────────────────
-// 配信データに凍結コピーされた資料の実体ストア（IndexedDB）
+// 配信データの凍結資料コピー（本番: Supabase file_objects[scope=dist] + R2）
 //
-// 配信確定時に、各議案の資料（gianFilesDb の Blob）を「その配信データ専用の
-// 凍結コピー」としてこのストアへ複製する。元の議案資料が後から差し替え・削除
-// されても、配信データ側は確定時点のファイルをそのまま開ける。
-//
-// プロトタイプ: 外部ストレージは使わず IndexedDB に保存。
+// 凍結コピーの作成は distributionStore が /api/files/copy 経由で行う。
+// ここでは主に「開く」用の Blob 取得を提供する。
 // ─────────────────────────────────────────────────────────────
 
-import { GianFileCategory } from "./gianFilesDb";
-
-const DB_NAME = "yuhitsu-dist-files";
-const DB_VERSION = 1;
-const STORE = "files";
+import {
+  FileObj,
+  uploadFile,
+  getFileBlobById,
+  subscribeFiles,
+} from "./backend/files";
+import type { GianFileCategory } from "./gianFilesDb";
 
 export interface DistFileMeta {
   id: string;
@@ -25,98 +26,34 @@ export interface DistFileMeta {
   addedAt: string;
 }
 
-interface DistFileRecord extends DistFileMeta {
-  blob: Blob;
+function toMeta(f: FileObj): DistFileMeta {
+  return {
+    id: f.id,
+    distId: f.ownerId,
+    gianId: f.gianId ?? "",
+    category: (f.category ?? "review") as GianFileCategory,
+    name: f.name,
+    type: f.type,
+    size: f.size,
+    addedAt: f.createdAt,
+  };
 }
 
-let dbPromise: Promise<IDBDatabase> | null = null;
+export const subscribe = subscribeFiles;
 
-function openDb(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve, reject) => {
-    if (typeof indexedDB === "undefined") {
-      reject(new Error("IndexedDB is not available"));
-      return;
-    }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) {
-        const os = db.createObjectStore(STORE, { keyPath: "id" });
-        os.createIndex("distId", "distId", { unique: false });
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-  return dbPromise;
-}
-
-function tx(mode: IDBTransactionMode): Promise<IDBObjectStore> {
-  return openDb().then((db) => db.transaction(STORE, mode).objectStore(STORE));
-}
-
-function reqToPromise<T>(req: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-let seq = 0;
-function newId(): string {
-  seq += 1;
-  return `df-${Date.now().toString(36)}-${seq}`;
-}
-
-/** 資料 Blob を配信データ用に 1 件コピー保存。新しい meta（新 id）を返す。 */
+/** 単発アップロード（通常は /api/files/copy で複製するので使わない） */
 export async function putDistFile(
   distId: string,
   gianId: string,
   category: GianFileCategory,
-  file: { name: string; type: string; size: number; blob: Blob }
+  data: { name: string; type: string; size: number; blob: Blob }
 ): Promise<DistFileMeta> {
-  const record: DistFileRecord = {
-    id: newId(),
-    distId,
-    gianId,
-    category,
-    name: file.name,
-    type: file.type || "application/octet-stream",
-    size: file.size,
-    addedAt: new Date().toISOString(),
-    blob: file.blob,
-  };
-  const store = await tx("readwrite");
-  await reqToPromise(store.add(record));
-  const { blob: _b, ...meta } = record;
-  void _b;
-  return meta;
+  const file = new File([data.blob], data.name, { type: data.type });
+  return toMeta(await uploadFile("dist", distId, file, { category, gianId }));
 }
 
 export async function getDistFileBlob(
   id: string
-): Promise<{ name: string; type: string; blob: Blob } | null> {
-  try {
-    const store = await tx("readonly");
-    const rec = await reqToPromise<DistFileRecord | undefined>(
-      store.get(id) as IDBRequest<DistFileRecord | undefined>
-    );
-    if (!rec) return null;
-    return { name: rec.name, type: rec.type, blob: rec.blob };
-  } catch {
-    return null;
-  }
-}
-
-/** 動作確認用：配信資料 DB を丸ごと削除 */
-export async function resetDistFiles(): Promise<void> {
-  dbPromise = null;
-  await new Promise<void>((resolve) => {
-    if (typeof indexedDB === "undefined") return resolve();
-    const req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = () => resolve();
-    req.onerror = () => resolve();
-    req.onblocked = () => resolve();
-  });
+): Promise<{ blob: Blob; name: string; type: string } | undefined> {
+  return getFileBlobById(id);
 }

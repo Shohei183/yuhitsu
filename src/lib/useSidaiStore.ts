@@ -15,7 +15,7 @@ export function useSidai(id: string): Sidai | undefined {
   return useSyncExternalStore(
     subscribe,
     () => getSidai(id),
-    () => getSidaiDefault(id)
+    () => getSidaiDefault()
   );
 }
 
