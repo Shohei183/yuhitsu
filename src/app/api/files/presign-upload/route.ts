@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabaseAdmin";
+import { requireUser, hasAnyCapability } from "@/lib/supabaseAdmin";
 import { presignPut, buildKey, r2Configured } from "@/lib/r2";
 
 export const runtime = "nodejs";
@@ -18,6 +18,9 @@ export async function POST(req: Request) {
   }
   const auth = await requireUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await hasAnyCapability(auth.userId, ["editGian", "manageFixedFiles"]))) {
+    return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+  }
 
   let body: {
     scope?: Scope;

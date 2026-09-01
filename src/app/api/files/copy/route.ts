@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser, getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { requireUser, hasCapability, getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { copyObject, buildKey, r2Configured } from "@/lib/r2";
 
 export const runtime = "nodejs";
@@ -13,6 +13,9 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const auth = await requireUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await hasCapability(auth.userId, "finalizeDistribution"))) {
+    return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+  }
   if (!r2Configured()) {
     return NextResponse.json({ error: "R2 未設定" }, { status: 503 });
   }

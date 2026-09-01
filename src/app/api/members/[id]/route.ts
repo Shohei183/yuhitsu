@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser, isMaster, getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import { requireUser, hasCapability, getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export const runtime = "nodejs";
 
@@ -14,7 +14,7 @@ export async function PATCH(
 ) {
   const auth = await requireUser(req);
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  if (!(await isMaster(auth.userId))) {
+  if (!(await hasCapability(auth.userId, "manageMembers"))) {
     return NextResponse.json({ error: "権限がありません" }, { status: 403 });
   }
 

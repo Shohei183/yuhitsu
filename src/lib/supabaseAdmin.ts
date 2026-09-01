@@ -66,3 +66,30 @@ export async function isMaster(userId: string): Promise<boolean> {
     .maybeSingle();
   return Boolean(data?.is_master);
 }
+
+/** 呼び出し元が capability を持つか（DB の member_has_cap を使う＝RLS と同じ判定） */
+export async function hasCapability(
+  userId: string,
+  cap: string
+): Promise<boolean> {
+  const { data, error } = await getSupabaseAdmin().rpc("member_has_cap", {
+    p_uid: userId,
+    p_cap: cap,
+  });
+  if (error) {
+    console.error("[supabaseAdmin] member_has_cap 失敗:", error.message);
+    return false;
+  }
+  return data === true;
+}
+
+/** どれか1つでも持っていれば true */
+export async function hasAnyCapability(
+  userId: string,
+  caps: string[]
+): Promise<boolean> {
+  for (const c of caps) {
+    if (await hasCapability(userId, c)) return true;
+  }
+  return false;
+}

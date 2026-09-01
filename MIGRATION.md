@@ -90,6 +90,36 @@ R2_BUCKET=yuhitsu-files
 
 `https://yuhitus.netlify.app` — Supabase(Auth+DB) + R2 + Netlify で稼働中。
 
+## RLS 本格化 v2（2026-09-02 夜・要朝レビュー）
+
+`supabase/rls.sql` を**本番DBに適用済み**。permissions.ts の権限モデルを DB 側でも強制。
+
+- **SELECT は従来どおり**（認証済みなら全行）＝読みは一切変えていない
+- **INSERT/UPDATE/DELETE のみ capability でゲート**：
+  - gians / gian_snapshots ← `editGian`
+  - replacement_requests ← `requestReplacement` or `approveReplacement`
+  - sidais ← `createSidai`／distributions ← `finalizeDistribution`
+  - year_templates ← `editTemplates`／committees ← `editCommittees`
+  - role_assignments / role_perm_overrides ← `editRoles`／fiscal_years ← `createYear`
+  - file_objects ← `editGian` or `manageFixedFiles`
+- `auth_is_master()` で **master は全許可に短絡＝ロックアウトなし**
+- ロール判定は「割り当てのあるいずれかの年度で持っていれば可」（緩め・締め出し回避）。
+  年度スコープの厳密化はローンチ後の課題
+- API route も `member_has_cap()` RPC でサーバー側チェック追加：
+  members invite/PATCH ← `manageMembers`、files copy ← `finalizeDistribution`、
+  files presign-upload/delete ← `editGian` or `manageFixedFiles`
+- **検証済み**：`default_perm` 全ロール×全capを DEFAULT_PERMS と照合一致／
+  committee_chair は gian可・sidai/committee/roles/templates 不可／
+  executive_director は officer 操作可／master は全可／未認証は全拒否。
+  テスト用 auth ユーザーは作成→検証→削除済み（残骸なし）。
+- **ロールバック**：`rls.sql` 末尾コメントの do ブロック（緩い「認証済みなら全書き込み」に戻す）
+- コミット `<未>`／未 push（`b66e1a9` の次）
+
+## ⚠️ 本番DBにテストデータあり
+
+ユーザーの通しテストで作成：gians 2／sidais 1／distributions 1／file_objects 7。
+ローンチ前に消すか、参考例として残すか要判断（消すなら Claude が SQL で対応）。
+
 ## 残タスク（運用と並行で可・ブロッカーではない）
 
 - [ ] **Resend SMTP を Supabase に設定**（Authentication → Emails → SMTP）
