@@ -1,16 +1,16 @@
+"use client";
+
 // ─────────────────────────────────────────────────────────────
 // ロール × 操作権限の上書きストア
 //
-// 既定値は permissions.ts の DEFAULT_PERMS。ここには「既定から変更した分」だけを
-// 保存する（role → capability → boolean）。マスターは常に全許可・編集不可。
-//
-// プロトタイプ: localStorage のみ。
+// 既定値は permissions.ts の DEFAULT_PERMS。Supabase `role_perm_overrides`
+// テーブルには「既定から変更した分」だけを行として保存する。
+// master は常に全許可・編集不可。
 // ─────────────────────────────────────────────────────────────
 
 import { Role } from "./yearStore";
 import { Capability, DEFAULT_PERMS } from "./permissions";
-
-const LS_KEY = "yuhitsu.role-perms.v2"; // v1→v2: ロール体系を JC 役職に変更
+import { db } from "./backend/client";
 
 /** 既定からの上書き分のみ（未指定なら DEFAULT_PERMS を使う） */
 export type RolePermOverrides = Partial<
@@ -18,47 +18,38 @@ export type RolePermOverrides = Partial<
 >;
 
 const EMPTY: RolePermOverrides = {};
-
-let cache: RolePermOverrides | null = null;
-
-function load(): RolePermOverrides {
-  if (cache) return cache;
-  if (typeof window === "undefined") {
-    cache = EMPTY;
-    return cache;
-  }
-  try {
-    const raw = window.localStorage.getItem(LS_KEY);
-    cache = raw ? (JSON.parse(raw) as RolePermOverrides) : {};
-  } catch {
-    cache = {};
-  }
-  return cache;
-}
-
+let cache: RolePermOverrides = {};
 const listeners = new Set<() => void>();
 
-function commit(next: RolePermOverrides): void {
-  cache = next;
-  if (typeof window !== "undefined") {
-    try {
-      window.localStorage.setItem(LS_KEY, JSON.stringify(next));
-    } catch {
-      /* noop */
-    }
-  }
+function notify() {
   listeners.forEach((fn) => fn());
 }
 
 export function subscribe(fn: () => void): () => void {
   listeners.add(fn);
-  return () => {
-    listeners.delete(fn);
-  };
+  return () => listeners.delete(fn);
+}
+
+export async function hydrate(): Promise<void> {
+  const { data, error } = await db().from("role_perm_overrides").select("*");
+  if (error) {
+    console.error("[rolePermStore] hydrate 失敗:", error.message);
+    return;
+  }
+  const next: RolePermOverrides = {};
+  for (const r of (data ?? []) as {
+    role: Role;
+    capability: Capability;
+    allowed: boolean;
+  }[]) {
+    (next[r.role] ??= {})[r.capability] = r.allowed;
+  }
+  cache = next;
+  notify();
 }
 
 export function getStore(): RolePermOverrides {
-  return load();
+  return cache;
 }
 export function getStoreDefault(): RolePermOverrides {
   return EMPTY;
@@ -67,14 +58,14 @@ export function getStoreDefault(): RolePermOverrides {
 /** 実効権限：master は常に全許可。それ以外は 上書き → 既定 の順で解決 */
 export function can(role: Role, cap: Capability): boolean {
   if (role === "master") return true;
-  const override = load()[role]?.[cap];
+  const override = cache[role]?.[cap];
   if (typeof override === "boolean") return override;
   return DEFAULT_PERMS[role][cap];
 }
 
 export function permsForRole(role: Role): Record<Capability, boolean> {
   const base = DEFAULT_PERMS[role];
-  const override = load()[role] ?? {};
+  const override = cache[role] ?? {};
   const out = { ...base };
   for (const k of Object.keys(override) as Capability[]) {
     const v = override[k];
@@ -83,51 +74,55 @@ export function permsForRole(role: Role): Record<Capability, boolean> {
   return out;
 }
 
-/** そのロールが既定から変更されているか */
 export function isRoleCustomized(role: Role): boolean {
-  const override = load()[role];
+  const override = cache[role];
   if (!override) return false;
   return (Object.keys(override) as Capability[]).some(
     (k) => override[k] !== DEFAULT_PERMS[role][k]
   );
 }
 
-// ── 変更操作（マスターのみ。権限チェックは画面側）──
+// ── 変更操作（master のみ・楽観更新＋Supabase 書き込み）──
 
-export function setPerm(role: Role, cap: Capability, value: boolean): void {
+export async function setPerm(
+  role: Role,
+  cap: Capability,
+  value: boolean
+): Promise<void> {
   if (role === "master") return;
-  const store = load();
-  const roleOverride = { ...(store[role] ?? {}) };
-  if (value === DEFAULT_PERMS[role][cap]) {
-    delete roleOverride[cap]; // 既定と同じなら上書きを消す
+  const roleOverride = { ...(cache[role] ?? {}) };
+  const isDefault = value === DEFAULT_PERMS[role][cap];
+
+  // 楽観更新
+  const next = { ...cache };
+  if (isDefault) {
+    delete roleOverride[cap];
   } else {
     roleOverride[cap] = value;
   }
-  const next = { ...store };
-  if (Object.keys(roleOverride).length === 0) {
-    delete next[role];
+  if (Object.keys(roleOverride).length === 0) delete next[role];
+  else next[role] = roleOverride;
+  cache = next;
+  notify();
+
+  // 永続化
+  if (isDefault) {
+    await db()
+      .from("role_perm_overrides")
+      .delete()
+      .eq("role", role)
+      .eq("capability", cap);
   } else {
-    next[role] = roleOverride;
+    await db()
+      .from("role_perm_overrides")
+      .upsert({ role, capability: cap, allowed: value });
   }
-  commit(next);
 }
 
-/** そのロールを既定に戻す */
-export function resetRole(role: Role): void {
-  const next = { ...load() };
+export async function resetRole(role: Role): Promise<void> {
+  const next = { ...cache };
   delete next[role];
-  commit(next);
-}
-
-/** 動作確認用：すべて既定へ */
-export function resetRolePermStore(): void {
-  if (typeof window !== "undefined") {
-    try {
-      window.localStorage.removeItem(LS_KEY);
-    } catch {
-      /* noop */
-    }
-  }
-  cache = null;
-  commit({});
+  cache = next;
+  notify();
+  await db().from("role_perm_overrides").delete().eq("role", role);
 }
