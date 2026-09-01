@@ -73,3 +73,7 @@ R2_BUCKET=yuhitsu-files
 ## 進捗ログ
 
 - 2026-09-02: 移行方針確定、本ドキュメント作成。着手。
+- 2026-09-02: 土台コミット `0850d11`。schema.sql / supabase・r2 クライアント /
+  API routes（files 3本・members 2本）/ netlify.toml / .env.example 完了。
+  ビルド・型チェック通過。アプリはモックのまま従来どおり動作（新コードは未接続）。
+  **次：キー受領 → ストア移行（memberStore→auth→年度系→議案系→ファイル系）。**
