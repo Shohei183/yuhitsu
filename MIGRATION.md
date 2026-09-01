@@ -78,20 +78,29 @@ R2_BUCKET=yuhitsu-files
   （`yoroizuka@eitex.co.jp` / is_master）。パスワード最小長を下げられず 8桁に変更。
 - 2026-09-02: **ストア移行 完了**（`36171a9`）。全ストア Supabase 化、ファイル→R2、
   Supabase Auth、DataProvider。tsc / next build 通過。
-- 2026-09-02: ログイン疎通OK。`useTemplate` の無限ループ修正（`5466087`）。
-  R2 に CORS 設定（`scripts/r2-cors.mjs`／localhost:3000・*.netlify.app）→ 資料アップロード・
-  オープン OK。**ログイン・ダッシュボード・議案作成・保存・資料 まで動作確認済み。**
+- 2026-09-02: ログイン疎通OK。`useTemplate` 無限ループ修正（`5466087`）。R2 CORS 設定。
+  ローカルで **上程→次第→配信確定→凍結資料 まで全フロー確認**。`prod-migration` を
+  `main` に fast-forward（`cacd632`）。
+- 2026-09-02: **本番デプロイ完了**（Netlify `yuhitus.netlify.app` ← `github.com/Shohei183/yuhitsu`）。
+  Netlify のサイト保護を解除。`NEXT_PUBLIC_SUPABASE_URL` に `/rest/v1/` が付いていて
+  "Invalid path" → コードで URL を origin に正規化（`a945adb`）。
+  **本番でログイン成功・スマホからもログイン成功（＝共有DB稼働）。**
 
-## 未了 / 要対応
+## 稼働状況：本番ライブ ✅
 
-- [x] ログイン疎通テスト
-- [x] 資料アップロード（R2 CORS 対応済み）
-- [ ] 通しテスト（上程→次第作成→配信確定→凍結資料コピー）
-- [ ] **Resend SMTP を Supabase に設定** — 未設定だと招待・リセットのメールが飛ばない
-      （マスターはパスワード直設定済みなので影響なし）
-- [ ] **Netlify デプロイ** + 環境変数登録 + `NEXT_PUBLIC_SITE_URL` を本番URLに
-- [ ] Supabase Auth の Redirect URLs に本番 `/login/set-password` を追加
-- [ ] 本番ドメインが `*.netlify.app` 以外なら R2 CORS に追加（`scripts/r2-cors.mjs` を編集して再実行）
-- [ ] `prod-migration` → `main` マージ
+`https://yuhitus.netlify.app` — Supabase(Auth+DB) + R2 + Netlify で稼働中。
+
+## 残タスク（運用と並行で可・ブロッカーではない）
+
+- [ ] **Resend SMTP を Supabase に設定**（Authentication → Emails → SMTP）
+      — 未設定だとメンバー招待・パスワードリセットのメールが飛ばない。マスターは直設定済み。
+- [ ] Supabase → Authentication → URL Configuration に本番URL登録
+      （Site URL `https://yuhitus.netlify.app` / Redirect URLs `https://yuhitus.netlify.app/**`）
+      — 招待・リセットリンクの着地に必要
+- [ ] Netlify env `NEXT_PUBLIC_SITE_URL` を `https://yuhitus.netlify.app` に（メールのリンク生成用）
+- [ ] 実運用の委員会構成をダッシュボードで登録（現在は総務／事業のダミー）
+- [ ] メンバー招待＋ロール割当
+- [ ] 独自ドメインを使うなら R2 CORS に追加（`scripts/r2-cors.mjs`）
 - [ ] `notificationStore` は localStorage のまま（差し替え通知のクリア状態・端末ローカル）
-- [ ] ローンチ後：`sb_secret` / R2 secret / アクセストークン のローテーション
+- [ ] **ローンチ後：`sb_secret` / R2 secret / Supabase アクセストークン をローテーション**
+      （チャットで共有済みのため）
