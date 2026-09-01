@@ -336,6 +336,32 @@ export async function addCommittee(
   return id;
 }
 
+export async function removeCommittee(
+  committeeId: string
+): Promise<{ ok: boolean; error?: string }> {
+  for (const [yid, year] of Object.entries(cache)) {
+    const committee = year.committees.find((c) => c.id === committeeId);
+    if (!committee) continue;
+    if (committee.gianIds.length > 0) {
+      return {
+        ok: false,
+        error: "この委員会には議案があります。先に議案を移動または削除してください。",
+      };
+    }
+    replaceYear(yid, {
+      ...year,
+      committees: year.committees.filter((c) => c.id !== committeeId),
+    });
+    const { error } = await db().from("committees").delete().eq("id", committeeId);
+    if (error) {
+      await hydrate();
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
+  }
+  return { ok: false, error: "委員会が見つかりません" };
+}
+
 export async function renameCommittee(
   committeeId: string,
   name: string

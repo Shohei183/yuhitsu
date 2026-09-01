@@ -7,6 +7,7 @@ import {
   Period,
   addCommittee,
   renameCommittee,
+  removeCommittee,
 } from "@/lib/yearStore";
 import { STATUS_LABEL } from "@/lib/mockData";
 import { dismiss as dismissNotifications } from "@/lib/notificationStore";
@@ -328,18 +329,36 @@ function CommitteesSection({
                 </div>
               </Link>
               {canEdit && (
-                <button
-                  type="button"
-                  className={styles.renameBtn}
-                  onClick={() => {
-                    const next = prompt("委員会フォルダの名称", c.name);
-                    if (next && next.trim() && next.trim() !== c.name) {
-                      renameCommittee(c.id, next);
-                    }
-                  }}
-                >
-                  名称変更
-                </button>
+                <div className={styles.committeeActions}>
+                  <button
+                    type="button"
+                    className={styles.renameBtn}
+                    onClick={() => {
+                      const next = prompt("委員会フォルダの名称", c.name);
+                      if (next && next.trim() && next.trim() !== c.name) {
+                        renameCommittee(c.id, next);
+                      }
+                    }}
+                  >
+                    名称変更
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.deleteBtn}
+                    onClick={async () => {
+                      if (
+                        !confirm(
+                          `委員会「${c.name}」を削除します。よろしいですか？`
+                        )
+                      )
+                        return;
+                      const res = await removeCommittee(c.id);
+                      if (!res.ok) alert(res.error ?? "削除できませんでした");
+                    }}
+                  >
+                    削除
+                  </button>
+                </div>
               )}
             </div>
           );
