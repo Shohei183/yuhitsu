@@ -9,11 +9,25 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// ダッシュボードからのコピペで `/rest/v1/` や末尾スラッシュが付くと
+// auth のリクエストパスが壊れる（"Invalid path specified in request URL"）。
+// プロジェクト origin だけに正規化する。
+function normalizeSupabaseUrl(raw: string | undefined): string | undefined {
+  if (!raw) return raw;
+  try {
+    return new URL(raw.trim()).origin;
+  } catch {
+    return raw.trim().replace(/\/(rest|auth|storage|realtime)\/v\d.*$/, "").replace(/\/+$/, "");
+  }
+}
+
+const url = normalizeSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 // 新形式（sb_publishable_…）は PUBLISHABLE_KEY、旧形式（JWT）は ANON_KEY。両対応。
-const anon =
+const anon = (
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  ""
+).trim();
 
 /** 環境変数が未設定でもビルドは通す。実行時に呼ぶと明示エラー。 */
 let client: SupabaseClient | null = null;
