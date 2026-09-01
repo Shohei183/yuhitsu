@@ -10,7 +10,10 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// 新形式（sb_publishable_…）は PUBLISHABLE_KEY、旧形式（JWT）は ANON_KEY。両対応。
+const anon =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 /** 環境変数が未設定でもビルドは通す。実行時に呼ぶと明示エラー。 */
 let client: SupabaseClient | null = null;

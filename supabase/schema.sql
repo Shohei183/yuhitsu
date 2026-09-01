@@ -269,3 +269,6 @@ on conflict (id) do nothing;
 
 -- role_perm_overrides は空スタート（既定は permissions.ts）
 -- committees / members は運用開始後、マスターが画面から作成する
+
+-- PostgREST にスキーマ再読込を通知（DDL 直後のキャッシュずれ対策）
+notify pgrst, 'reload schema';
