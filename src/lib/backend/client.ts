@@ -12,6 +12,21 @@ export function db() {
   return getSupabase();
 }
 
+/**
+ * 応答を待たずに DB 書き込みを実行する。
+ * supabase-js のクエリは PromiseLike で、`.then()` を呼ぶまで HTTP リクエストを
+ * 送らない。`void db().from(...).delete()` のような書き方だとリクエストが
+ * 一切飛ばないので、fire-and-forget はこのヘルパー経由にすること。
+ */
+export function fire(
+  query: PromiseLike<{ error: { message?: string } | null } | unknown>
+): void {
+  Promise.resolve(query).then((r) => {
+    const err = (r as { error?: { message?: string } } | null)?.error;
+    if (err) console.error("[db] 書き込み失敗:", err.message ?? err);
+  });
+}
+
 export async function authedFetch(
   path: string,
   init: RequestInit = {}

@@ -16,7 +16,7 @@ import {
   removeGianFromCommittee,
   syncCommitteeGians,
 } from "./yearStore";
-import { db } from "./backend/client";
+import { db, fire } from "./backend/client";
 
 export const AUTOSAVE_LIMIT = 5;
 
@@ -63,6 +63,8 @@ function newId(prefix: string): string {
 // ── キャッシュ ──
 let cache: GianStore = {};
 let hydrated = false;
+/** deleteGian 済みの id。永続化・再ハイドレートで復活させないためのガード */
+const deletedGianIds = new Set<string>();
 const EMPTY: GianStore = {};
 const listeners = new Set<() => void>();
 
@@ -100,6 +102,7 @@ export async function hydrate(): Promise<void> {
 
   const next: GianStore = {};
   for (const r of (gians.data ?? []) as GianRow[]) {
+    if (deletedGianIds.has(r.id)) continue; // 削除処理中の議案は取り込まない
     next[r.id] = { gian: normalizeGian(r), snapshots: [], requests: [] };
   }
   for (const s of (snaps.data ?? []) as SnapRow[]) {
@@ -201,6 +204,7 @@ export function isKihon(kind: GianKind): boolean {
 
 // ── 永続化ヘルパー ──
 async function persistGian(id: string): Promise<void> {
+  if (deletedGianIds.has(id)) return; // 削除済みは書き戻さない
   const e = cache[id];
   if (!e) return;
   const yid = yearIdOf(e.gian);
@@ -323,14 +327,16 @@ export function requestReplacement(id: string, note: string): void {
     decidedAt: null,
   };
   setEntry(id, { ...entry, requests: [...entry.requests, req] });
-  void db().from("replacement_requests").insert({
-    id: req.id,
-    gian_id: id,
-    requested_at: req.requestedAt,
-    note: req.note,
-    status: req.status,
-    decided_at: null,
-  });
+  fire(
+    db().from("replacement_requests").insert({
+      id: req.id,
+      gian_id: id,
+      requested_at: req.requestedAt,
+      note: req.note,
+      status: req.status,
+      decided_at: null,
+    })
+  );
 }
 
 export function decideReplacement(
@@ -351,13 +357,15 @@ export function decideReplacement(
         : r
     ),
   });
-  void db()
-    .from("replacement_requests")
-    .update({
-      status: approve ? "approved" : "rejected",
-      decided_at: now,
-    })
-    .eq("id", requestId);
+  fire(
+    db()
+      .from("replacement_requests")
+      .update({
+        status: approve ? "approved" : "rejected",
+        decided_at: now,
+      })
+      .eq("id", requestId)
+  );
   if (approve) void persistGian(id);
 }
 
@@ -479,11 +487,12 @@ export function deleteGian(id: string): boolean {
   const entry = cache[id];
   if (!entry || entry.gian.status !== "editing") return false;
   const committeeId = entry.gian.committeeId;
+  deletedGianIds.add(id);
   const next = { ...cache };
   delete next[id];
   cache = next;
   notify();
   if (committeeId) removeGianFromCommittee(committeeId, id);
-  void db().from("gians").delete().eq("id", id);
+  fire(db().from("gians").delete().eq("id", id));
   return true;
 }

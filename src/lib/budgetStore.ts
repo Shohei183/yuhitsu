@@ -7,7 +7,7 @@
 //  各科目の「予算額」は明細行の合計（単一ソース）。
 // ─────────────────────────────────────────────────────────────
 
-import { db } from "./backend/client";
+import { db, fire } from "./backend/client";
 import { deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
 
@@ -353,5 +353,5 @@ export function deleteBudget(id: string): void {
     for (const it of [...doc.revenue, ...doc.expense].flatMap((c) => c.items))
       if (it.attachmentId) void deleteFileObj(it.attachmentId);
   }
-  void db().from("budget_docs").delete().eq("id", id);
+  fire(db().from("budget_docs").delete().eq("id", id));
 }

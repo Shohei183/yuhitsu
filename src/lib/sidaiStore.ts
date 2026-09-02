@@ -9,7 +9,7 @@
 
 import { Period } from "./yearStore";
 import { sectionLabels } from "./templateStore";
-import { db } from "./backend/client";
+import { db, fire } from "./backend/client";
 
 export type SidaiRowType =
   | "heading"
@@ -258,5 +258,5 @@ export function deleteSidai(id: string): void {
   delete next[id];
   cache = next;
   notify();
-  void db().from("sidais").delete().eq("id", id);
+  fire(db().from("sidais").delete().eq("id", id));
 }

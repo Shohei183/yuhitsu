@@ -14,7 +14,7 @@ import {
   OUTLINE_LABELS,
   OVERVIEW_LABELS,
 } from "./mockData";
-import { db } from "./backend/client";
+import { db, fire } from "./backend/client";
 
 export interface TemplateItem {
   id: string;
@@ -286,5 +286,5 @@ export function resetTemplate(yearId: string): void {
   delete next[yearId];
   cache = next;
   notify();
-  void db().from("year_templates").delete().eq("fiscal_year_id", yearId);
+  fire(db().from("year_templates").delete().eq("fiscal_year_id", yearId));
 }
