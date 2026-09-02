@@ -1,0 +1,213 @@
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.head {
+  margin-bottom: 18px;
+}
+.crumb {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted-strong);
+}
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 8px 0 6px;
+}
+.note {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 0 0 10px;
+  line-height: 1.7;
+}
+.back {
+  font-size: 13px;
+  font-weight: 600;
+}
+.notFound {
+  font-size: 14px;
+  color: var(--warn-fg);
+  margin: 12px 0;
+}
+.empty {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 16px 0;
+}
+
+.createRow {
+  margin-bottom: 16px;
+}
+.createBtn {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.createBtn:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.itemMain {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.itemMain:hover {
+  text-decoration: none;
+}
+.itemMain:hover .itemTitle {
+  color: var(--accent);
+}
+.statusTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.draft {
+  background: var(--badge-edit-bg);
+  color: var(--badge-edit-fg);
+}
+.locked {
+  background: var(--badge-locked-bg);
+  color: var(--badge-locked-fg);
+}
+.itemTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.itemCount {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted-strong);
+  white-space: nowrap;
+}
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.viewLink {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.itemDate {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* 会議セレクタ */
+.meetingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.meetingLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+.meetingSelect {
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: #fff;
+}
+.meetingCount {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.docs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.docCard {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  padding: 24px 28px 28px;
+}
+.docCardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.docCardName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+.docCardLink {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.draftBlock {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.draftTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+@media (max-width: 640px) {
+  .docCard {
+    padding: 18px 16px 22px;
+  }
+  .itemMain {
+    grid-template-columns: auto 1fr;
+  }
+  .itemCount {
+    grid-column: 2;
+  }
+}

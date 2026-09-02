@@ -13,6 +13,7 @@ import { hydrate as hydrateGians } from "@/lib/gianStore";
 import { hydrate as hydrateSidais } from "@/lib/sidaiStore";
 import { hydrate as hydrateDistributions } from "@/lib/distributionStore";
 import { hydrate as hydrateBudgets } from "@/lib/budgetStore";
+import { hydrate as hydrateJotei } from "@/lib/joteiStore";
 
 let inflight: Promise<void> | null = null;
 
@@ -32,6 +33,7 @@ export async function hydrateAll(): Promise<void> {
       hydrateSidais(),
       hydrateDistributions(),
       hydrateBudgets(),
+      hydrateJotei(),
     ]);
   })();
   try {

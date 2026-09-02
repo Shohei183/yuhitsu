@@ -1,0 +1,106 @@
+.doc {
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.lom {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.1em;
+  margin: 0 0 24px;
+}
+
+.lead {
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+.lead strong {
+  font-weight: 700;
+}
+
+.meta {
+  text-align: right;
+  margin: 0 0 24px;
+}
+.date {
+  font-size: 13.5px;
+}
+.submitter {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.section {
+  margin: 0 0 18px;
+  break-inside: avoid;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 1px 0 1px 1em;
+}
+.no {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.itemText {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 0 1em;
+}
+
+@media (max-width: 640px) {
+  .doc {
+    font-size: 13px;
+  }
+  .title {
+    font-size: 19px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm;
+  }
+  .doc {
+    font-size: 11pt;
+  }
+  .title {
+    break-after: avoid;
+  }
+  .sectionTitle {
+    break-after: avoid;
+  }
+}

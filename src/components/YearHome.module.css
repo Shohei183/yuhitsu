@@ -51,6 +51,12 @@
   font-weight: 700;
   margin: 0;
 }
+.h2Link {
+  color: var(--accent);
+}
+.h2Link:hover {
+  text-decoration: underline;
+}
 
 .sectionNote {
   font-size: 12px;

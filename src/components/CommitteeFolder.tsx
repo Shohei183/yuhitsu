@@ -4,6 +4,8 @@ import Link from "next/link";
 import { STATUS_LABEL } from "@/lib/mockData";
 import { useCommittee } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
+import { useJoteiStore } from "@/lib/useJoteiStore";
+import { listJoteiForCommittee } from "@/lib/joteiStore";
 import { useSharedFiles } from "@/lib/useSharedStore";
 import styles from "./CommitteeFolder.module.css";
 
@@ -14,6 +16,7 @@ export default function CommitteeFolder({
 }) {
   const found = useCommittee(committeeId);
   const gianStore = useGianStore();
+  useJoteiStore();
   const { files: sharedFiles } = useSharedFiles(committeeId);
 
   if (!found) {
@@ -36,6 +39,8 @@ export default function CommitteeFolder({
     submitted: gians.filter((g) => g.status === "submitted").length,
     locked: gians.filter((g) => g.status === "locked").length,
   };
+  const joteiList = listJoteiForCommittee(committeeId);
+  const joteiSubmitted = joteiList.filter((j) => j.status === "submitted").length;
 
   return (
     <main className={styles.wrap}>
@@ -69,6 +74,24 @@ export default function CommitteeFolder({
                   {STATUS_LABEL.locked} {byStatus.locked}）
                 </>
               )}
+            </div>
+          </div>
+          <div className={styles.folderArrow}>→</div>
+        </Link>
+
+        <Link
+          href={`/committee/${committeeId}/jotei`}
+          className={styles.folderCard}
+        >
+          <div className={styles.folderIcon}>📁</div>
+          <div className={styles.folderBody}>
+            <div className={styles.folderName}>上程届作成</div>
+            <div className={styles.folderDesc}>
+              会議ごとに提出する上程届（協議・審議・報告事項の一覧）の作成エリア。提出でロック。
+            </div>
+            <div className={styles.folderMeta}>
+              上程届 {joteiList.length} 件
+              {joteiList.length > 0 && <>（提出済み {joteiSubmitted}）</>}
             </div>
           </div>
           <div className={styles.folderArrow}>→</div>

@@ -15,6 +15,8 @@ import { dismiss as dismissNotifications } from "@/lib/notificationStore";
 import { useReplacementNotifications } from "@/lib/useNotifications";
 import { listDistributionsFor } from "@/lib/distributionStore";
 import { listSidaiFor } from "@/lib/sidaiStore";
+import { listJoteiForYear, submittedMeetings } from "@/lib/joteiStore";
+import { useJoteiStore } from "@/lib/useJoteiStore";
 import { deleteFixedFile, putFixedFile } from "@/lib/fixedFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useFixedFiles } from "@/lib/useFixedFiles";
@@ -70,8 +72,35 @@ export default function YearHome() {
         committees={year.committees}
         canEdit={can.editCommittees}
       />
+      <JoteiSection yearId={year.id} />
       <PeriodsSection yearId={year.id} canCreate={can.createSidai} />
     </main>
+  );
+}
+
+/* ── 上程届 ─────────────────────────────────────────── */
+function JoteiSection({ yearId }: { yearId: string }) {
+  useJoteiStore();
+  const list = listJoteiForYear(yearId);
+  const submitted = list.filter((j) => j.status === "submitted").length;
+  const meetings = submittedMeetings(yearId).length;
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHead}>
+        <h2 className={styles.h2}>
+          <Link href="/jotei" className={styles.h2Link}>
+            上程届 一覧 →
+          </Link>
+        </h2>
+        <span className={styles.sectionNote}>
+          委員会が会議ごとに提出する上程届。作成は各委員会フォルダの「上程届作成」から。
+        </span>
+      </div>
+      <p className={styles.sub}>
+        上程届 {list.length} 件（提出済み {submitted}／会議 {meetings}）
+      </p>
+    </section>
   );
 }
 
@@ -294,7 +323,7 @@ function CommitteesSection({
       <div className={styles.sectionHead}>
         <h2 className={styles.h2}>委員会</h2>
         <span className={styles.sectionNote}>
-          各委員会フォルダ（議案構築／共有用フォルダ）
+          各委員会フォルダ（議案構築／上程届作成／共有用フォルダ）
         </span>
       </div>
       <div className={styles.committeeGrid}>
@@ -315,7 +344,7 @@ function CommitteesSection({
                     `（${gians.map((g) => `${g.kind}${STATUS_LABEL[g.status]}`).join("・")}）`}
                 </div>
                 <div className={styles.committeeSub}>
-                  議案構築 ／ 共有用フォルダ →
+                  議案構築 ／ 上程届 ／ 共有用フォルダ →
                 </div>
               </Link>
               {canEdit && (
