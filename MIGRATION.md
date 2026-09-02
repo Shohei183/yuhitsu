@@ -134,3 +134,19 @@ R2_BUCKET=yuhitsu-files
 - [ ] `notificationStore` は localStorage のまま（差し替え通知のクリア状態・端末ローカル）
 - [ ] **ローンチ後：`sb_secret` / R2 secret / Supabase アクセストークン をローテーション**
       （チャットで共有済みのため）
+
+## 事業収支予算書 機能（2026-09-02 追加・要 push）
+
+サンプル `審議1_事業収支予算書.xlsx` の 様式1＋様式2・3 を再現（決算=様式4-7 は未実装）。
+
+- `budget_docs` テーブル（本番DB適用済み）・RLS は editGian
+- 科目固定：収益8（登録料収益〜雑収益）／費用15（会場設営費〜予備費）
+- 予算額 = 明細（細目/摘要/金額）の合計＝単一ソース
+- `/budget`（一覧・作成）／`/budget/[id]`（編集）／`/budget/[id]/view`（閲覧・印刷・DL）
+- 議案構築ナビから「事業収支予算書を作成/開く」（gian_id で紐づけ・任意）
+- YearHome に予算書セクション、年度ごと
+- コミット `65cdc66`（未 push）
+
+### 未 push コミット（`git push` で本番反映）
+`d043034`（RLS route）→ `a37715c`（template guard）→ `65cdc66`（予算書）
+※ DB 変更（RLS・budget_docs）は適用済みで push 不要
