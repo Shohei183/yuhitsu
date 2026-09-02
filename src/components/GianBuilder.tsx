@@ -375,11 +375,6 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     flash(`下書きを保存しました（一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
   }
 
-  function syncNow() {
-    saveDraftSnapshot(gianId, "オフライン同期");
-    flash(`サーバーと同期しました（一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
-  }
-
   function submitToMeeting() {
     if (
       !window.confirm(
@@ -450,10 +445,6 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
           </span>
         </div>
         <div className={styles.tbRight}>
-          <span className={styles.online}>● オンライン ・ 編集中 3名</span>
-          <button type="button" className={styles.ghostBtn} onClick={syncNow}>
-            同期する
-          </button>
           <span className={`${styles.badge} ${styles[gian.status]}`}>
             {STATUS_LABEL[gian.status]}
           </span>
