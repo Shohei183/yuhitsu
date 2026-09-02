@@ -41,9 +41,15 @@
   cursor: pointer;
 }
 
-.card {
+/* カードは常に中央 900px。資料パネルはその右の余白へ絶対配置（カードは動かない） */
+.pageBody {
   max-width: 900px;
   margin: 0 auto;
+  position: relative;
+}
+
+.card {
+  width: 100%;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -283,25 +289,17 @@
   padding: 0 3px;
 }
 
-/* 費用明細タブ：本体＋右カラム */
-.form3Layout {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-.form3Main {
-  flex: 1;
-  min-width: 0;
-}
+/* 費用明細タブ：カードの右余白に置く資料パネル */
 .side {
-  flex-shrink: 0;
-  width: 240px;
-  position: sticky;
-  top: 12px;
+  position: absolute;
+  top: 0;
+  left: calc(100% + 20px);
+  width: 280px;
+  background: #fff;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  background: var(--panel);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 16px;
 }
 .sideTitle {
   font-size: 13px;
@@ -405,13 +403,13 @@
   margin-top: 8px;
 }
 
-@media (max-width: 900px) {
-  .form3Layout {
-    flex-direction: column;
-  }
+/* 右余白が足りない画面では資料パネルをカードの下へ */
+@media (max-width: 1540px) {
   .side {
-    width: 100%;
     position: static;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: none;
   }
 }
 .attach {

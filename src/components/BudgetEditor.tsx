@@ -99,71 +99,68 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
         )}
       </div>
 
-      <div className={styles.card}>
-        <label className={styles.titleLabel}>
-          事業名
-          <input
-            className={styles.titleInput}
-            value={budget.title}
-            readOnly={readOnly}
-            placeholder="例：4月度例会"
-            onChange={(e) => setField({ title: e.target.value })}
-          />
-        </label>
+      <div className={styles.pageBody}>
+        <div className={styles.card}>
+          <label className={styles.titleLabel}>
+            事業名
+            <input
+              className={styles.titleInput}
+              value={budget.title}
+              readOnly={readOnly}
+              placeholder="例：4月度例会"
+              onChange={(e) => setField({ title: e.target.value })}
+            />
+          </label>
 
-        <div className={styles.tabs} role="tablist">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={tab === t.key}
-              className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""}`}
-              onClick={() => setTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+          <div className={styles.tabs} role="tablist">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.key}
+                className={`${styles.tab} ${tab === t.key ? styles.tabActive : ""}`}
+                onClick={() => setTab(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-        {tab === "form1" && (
-          <Form1Summary
-            revenue={budget.revenue}
-            expense={budget.expense}
-            rev={rev}
-            exp={exp}
-            bal={bal}
-          />
-        )}
+          {tab === "form1" && (
+            <Form1Summary
+              revenue={budget.revenue}
+              expense={budget.expense}
+              rev={rev}
+              exp={exp}
+              bal={bal}
+            />
+          )}
 
-        {tab === "form2" && (
-          <CategoryGroup
-            heading="収益明細書"
-            budget={budget}
-            section="revenue"
-            update={update}
-            readOnly={readOnly}
-          />
-        )}
-
-        {tab === "form3" && (
-          <div className={styles.form3Layout}>
-            <div className={styles.form3Main}>
-              <CategoryGroup
-                heading="費用明細書"
-                budget={budget}
-                section="expense"
-                update={update}
-                readOnly={readOnly}
-                showAttachments
-              />
-            </div>
-            <AttachmentPanel
+          {tab === "form2" && (
+            <CategoryGroup
+              heading="収益明細書"
               budget={budget}
+              section="revenue"
               update={update}
               readOnly={readOnly}
             />
-          </div>
+          )}
+
+          {tab === "form3" && (
+            <CategoryGroup
+              heading="費用明細書"
+              budget={budget}
+              section="expense"
+              update={update}
+              readOnly={readOnly}
+              showAttachments
+            />
+          )}
+        </div>
+
+        {tab === "form3" && (
+          <AttachmentPanel budget={budget} update={update} readOnly={readOnly} />
         )}
       </div>
 
