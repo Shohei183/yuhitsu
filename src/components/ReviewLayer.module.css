@@ -31,10 +31,16 @@
   border-radius: 8px;
   background: var(--accent);
   color: #fff;
-  border: 0;
+  border: 1px solid var(--accent);
   box-shadow: var(--shadow-md);
   cursor: pointer;
   white-space: nowrap;
+}
+.floatBtn:hover,
+.floatBtn:focus-visible {
+  background: var(--accent-hover, #24487e);
+  border-color: var(--accent-hover, #24487e);
+  color: #fff;
 }
 
 /* 編集ポップオーバー */
@@ -116,6 +122,11 @@
   background: var(--accent);
   color: #fff;
   border: 1px solid var(--accent);
+}
+.saveBtn:hover:not(:disabled) {
+  background: var(--accent-hover, #24487e);
+  border-color: var(--accent-hover, #24487e);
+  color: #fff;
 }
 .saveBtn:disabled {
   opacity: 0.5;
