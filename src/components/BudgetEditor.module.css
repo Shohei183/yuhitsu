@@ -233,12 +233,42 @@
   line-height: 1;
 }
 
+.itemTableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.summaryWrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 @media (max-width: 700px) {
+  .page {
+    padding: 16px 10px 64px;
+  }
   .card {
-    padding: 24px 14px 32px;
+    padding: 22px 12px 30px;
+  }
+  .itemTable {
+    font-size: 12px;
+    min-width: 440px;
   }
   .subCol {
-    width: auto;
+    width: 96px;
+  }
+  .itemAmtCol {
+    width: 78px;
+  }
+  .atCol {
+    width: 110px;
+  }
+  .tabs {
+    gap: 2px;
+  }
+  .tab {
+    padding: 7px 9px;
+    font-size: 12px;
   }
 }
 

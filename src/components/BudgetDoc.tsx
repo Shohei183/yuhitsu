@@ -78,34 +78,36 @@ export default function BudgetDoc({
         <section className={styles.formSection}>
           <Head />
           <h2 className={styles.h2}>［様式1］収支予算書</h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className={styles.colCat}>科目</th>
-                <th className={styles.colAmt}>予算額</th>
-                <th>摘要</th>
-              </tr>
-            </thead>
-            <tbody>
-              <Form1Section label="（収益の部）" cats={budget.revenue} />
-              <tr className={styles.totalRow}>
-                <td>収益計</td>
-                <td className={styles.amount}>{yen(rev)}</td>
-                <td />
-              </tr>
-              <Form1Section label="（費用の部）" cats={budget.expense} />
-              <tr className={styles.totalRow}>
-                <td>費用計</td>
-                <td className={styles.amount}>{yen(exp)}</td>
-                <td />
-              </tr>
-              <tr className={styles.balanceRow}>
-                <td>収支差額</td>
-                <td className={styles.amount}>{yen(bal)}</td>
-                <td />
-              </tr>
-            </tbody>
-          </table>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th className={styles.colCat}>科目</th>
+                  <th className={styles.colAmt}>予算額</th>
+                  <th>摘要</th>
+                </tr>
+              </thead>
+              <tbody>
+                <Form1Section label="（収益の部）" cats={budget.revenue} />
+                <tr className={styles.totalRow}>
+                  <td>収益計</td>
+                  <td className={styles.amount}>{yen(rev)}</td>
+                  <td />
+                </tr>
+                <Form1Section label="（費用の部）" cats={budget.expense} />
+                <tr className={styles.totalRow}>
+                  <td>費用計</td>
+                  <td className={styles.amount}>{yen(exp)}</td>
+                  <td />
+                </tr>
+                <tr className={styles.balanceRow}>
+                  <td>収支差額</td>
+                  <td className={styles.amount}>{yen(bal)}</td>
+                  <td />
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 
@@ -168,27 +170,29 @@ function BudgetDetail({
   if (used.length === 0) return <p className={styles.empty}>（明細なし）</p>;
 
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th className={styles.colCat}>科目</th>
-          <th className={styles.colSub}>細目</th>
-          <th>摘要（算出根拠）</th>
-          <th className={styles.colAmt}>金額</th>
-          {withAttachments && <th className={styles.colNo}>資料</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {used.map((c) => (
-          <DetailRows
-            key={c.name}
-            cat={c}
-            withAttachments={!!withAttachments}
-            attById={attById}
-          />
-        ))}
-      </tbody>
-    </table>
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th className={styles.colCat}>科目</th>
+            <th className={styles.colSub}>細目</th>
+            <th>摘要（算出根拠）</th>
+            <th className={styles.colAmt}>金額</th>
+            {withAttachments && <th className={styles.colNo}>資料</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {used.map((c) => (
+            <DetailRows
+              key={c.name}
+              cat={c}
+              withAttachments={!!withAttachments}
+              attById={attById}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

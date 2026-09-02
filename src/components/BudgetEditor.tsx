@@ -192,6 +192,7 @@ function Form1Summary({
       <p className={styles.hint}>
         各科目の予算額は、様式2・3の明細合計が自動反映されます（このタブは編集不可）。
       </p>
+      <div className={styles.summaryWrap}>
       <table className={styles.summary}>
         <thead>
           <tr>
@@ -236,6 +237,7 @@ function Form1Summary({
           </tr>
         </tbody>
       </table>
+      </div>
     </>
   );
 }
@@ -281,32 +283,34 @@ function CategoryGroup({
             <span className={styles.catTotal}>小計 {yen(categoryTotal(c))}</span>
           </div>
           {c.items.length > 0 && (
-            <table className={styles.itemTable}>
-              <thead>
-                <tr>
-                  <th className={styles.subCol}>細目</th>
-                  <th>摘要（算出根拠）</th>
-                  <th className={styles.itemAmtCol}>金額</th>
-                  {showAttachments && <th className={styles.atCol}>資料</th>}
-                  <th className={styles.xCol} />
-                </tr>
-              </thead>
-              <tbody>
-                {c.items.map((it) => (
-                  <ItemRow
-                    key={it.id}
-                    budget={budget}
-                    section={section}
-                    catName={c.name}
-                    item={it}
-                    readOnly={readOnly}
-                    update={update}
-                    mutateCat={mutateCat}
-                    showAttachment={!!showAttachments}
-                  />
-                ))}
-              </tbody>
-            </table>
+            <div className={styles.itemTableWrap}>
+              <table className={styles.itemTable}>
+                <thead>
+                  <tr>
+                    <th className={styles.subCol}>細目</th>
+                    <th>摘要（算出根拠）</th>
+                    <th className={styles.itemAmtCol}>金額</th>
+                    {showAttachments && <th className={styles.atCol}>資料</th>}
+                    <th className={styles.xCol} />
+                  </tr>
+                </thead>
+                <tbody>
+                  {c.items.map((it) => (
+                    <ItemRow
+                      key={it.id}
+                      budget={budget}
+                      section={section}
+                      catName={c.name}
+                      item={it}
+                      readOnly={readOnly}
+                      update={update}
+                      mutateCat={mutateCat}
+                      showAttachment={!!showAttachments}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           {!readOnly && (
             <button

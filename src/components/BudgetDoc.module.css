@@ -55,6 +55,13 @@
   margin: 16px 0 6px;
 }
 
+.tableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 6px;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -129,12 +136,33 @@
 
 @media (max-width: 700px) {
   .doc {
-    padding: 28px 16px 36px;
+    padding: 24px 12px 32px;
   }
-  .colCat,
-  .colSub,
+  .table {
+    font-size: 12px;
+    table-layout: auto;
+  }
+  .table th,
+  .table td {
+    padding: 4px 6px;
+  }
+  .colCat {
+    width: 92px;
+  }
+  .colSub {
+    width: 80px;
+  }
   .colAmt {
-    width: auto;
+    width: 76px;
+  }
+  .colNo {
+    width: 34px;
+  }
+  .title {
+    font-size: 17px;
+  }
+  .subject {
+    font-size: 17px;
   }
 }
 
