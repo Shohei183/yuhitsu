@@ -10,6 +10,14 @@
   line-height: 1.7;
 }
 
+/* 印刷・PDF：様式ごとに改ページ（画面では無効なプロパティ） */
+.formSection {
+  break-before: page;
+}
+.formSection:first-child {
+  break-before: auto;
+}
+
 .head {
   text-align: center;
   margin-bottom: 24px;
@@ -150,6 +158,19 @@
   }
   .table tr {
     break-inside: avoid;
+  }
+  .head {
+    break-after: avoid;
+    margin-bottom: 16px;
+  }
+  .h2 {
+    break-after: avoid;
+  }
+  .formSection {
+    break-before: page;
+  }
+  .formSection:first-child {
+    break-before: auto;
   }
 }
 

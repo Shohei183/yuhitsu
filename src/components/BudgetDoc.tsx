@@ -62,18 +62,22 @@ export default function BudgetDoc({
   const exp = sectionTotal(budget.expense);
   const bal = balance(budget);
   const show = (f: BudgetForm) => !only || only === f;
+  const allForms = !only; // 印刷・DL は全様式（様式ごとに改ページ）
+
+  const Head = () => (
+    <header className={styles.head}>
+      <div className={styles.lom}>{budget.lomName}</div>
+      <h1 className={styles.title}>事業収支予算書</h1>
+      {budget.title && <div className={styles.subject}>{budget.title}</div>}
+      <div className={styles.unit}>（単位：円）</div>
+    </header>
+  );
 
   return (
     <article className={styles.doc}>
-      <header className={styles.head}>
-        <div className={styles.lom}>{budget.lomName}</div>
-        <h1 className={styles.title}>事業収支予算書</h1>
-        {budget.title && <div className={styles.subject}>{budget.title}</div>}
-        <div className={styles.unit}>（単位：円）</div>
-      </header>
-
       {show("form1") && (
-        <>
+        <section className={styles.formSection}>
+          <Head />
           <h2 className={styles.h2}>［様式1］収支予算書</h2>
           <table className={styles.table}>
             <thead>
@@ -103,18 +107,20 @@ export default function BudgetDoc({
               </tr>
             </tbody>
           </table>
-        </>
+        </section>
       )}
 
       {show("form2") && (
-        <>
+        <section className={styles.formSection}>
+          {allForms && <Head />}
           <h2 className={styles.h2}>［様式2］収益明細書</h2>
           <BudgetDetail cats={budget.revenue} attachments={budget.attachments} />
-        </>
+        </section>
       )}
 
       {show("form3") && (
-        <>
+        <section className={styles.formSection}>
+          {allForms && <Head />}
           <h2 className={styles.h2}>［様式3］費用明細書</h2>
           <BudgetDetail
             cats={budget.expense}
@@ -142,7 +148,7 @@ export default function BudgetDoc({
               </ol>
             </div>
           )}
-        </>
+        </section>
       )}
     </article>
   );

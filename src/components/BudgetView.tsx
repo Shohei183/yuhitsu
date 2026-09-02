@@ -83,8 +83,10 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
       </div>
 
       {/* 印刷・ダウンロード用：全様式（画面外／印刷時のみ表示） */}
-      <div className={styles.exportSrc} ref={docRef}>
-        <BudgetDoc budget={budget} />
+      <div className={styles.exportSrc}>
+        <div ref={docRef}>
+          <BudgetDoc budget={budget} />
+        </div>
       </div>
     </div>
   );
