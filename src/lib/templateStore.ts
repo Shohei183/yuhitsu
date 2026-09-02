@@ -169,10 +169,33 @@ export async function hydrate(): Promise<void> {
   }
   const next: TemplateStore = {};
   for (const r of (data ?? []) as { fiscal_year_id: string; data: YearTemplate }[]) {
-    next[r.fiscal_year_id] = r.data;
+    // 壊れた行（必須キー欠落）はコード既定で補完する
+    next[r.fiscal_year_id] = mergeWithDefault(r.fiscal_year_id, r.data);
   }
   cache = next;
   notify();
+}
+
+function mergeWithDefault(yearId: string, raw: unknown): YearTemplate {
+  const def = defaultTemplate(yearId);
+  if (!raw || typeof raw !== "object") return def;
+  const r = raw as Partial<YearTemplate>;
+  const g = (a?: GianTemplate, b?: GianTemplate): GianTemplate => ({
+    outline: Array.isArray(a?.outline) ? a!.outline : b!.outline,
+    overview: Array.isArray(a?.overview) ? a!.overview : b!.overview,
+  });
+  return {
+    yearId,
+    kyogi: g(r.kyogi, def.kyogi),
+    shingi: g(r.shingi, def.shingi),
+    kessanKyogi: g(r.kessanKyogi, def.kessanKyogi),
+    kessanShingi: g(r.kessanShingi, def.kessanShingi),
+    kihon: g(r.kihon, def.kihon),
+    sidaiSections: Array.isArray(r.sidaiSections)
+      ? r.sidaiSections
+      : def.sidaiSections,
+    updatedAt: typeof r.updatedAt === "string" ? r.updatedAt : def.updatedAt,
+  };
 }
 
 export function getStore(): TemplateStore {
