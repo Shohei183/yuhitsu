@@ -29,12 +29,13 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
     );
   }
 
-  const onDownload = () =>
-    downloadDocHtml(
+  const onDownload = () => {
+    void downloadDocHtml(
       docRef.current,
       `次第_${sidai.meetingName}`,
       `次第：${sidai.meetingName}`
-    );
+    ).catch((e) => console.error("[次第] ダウンロード失敗:", e));
+  };
 
   return (
     <div className={styles.page}>

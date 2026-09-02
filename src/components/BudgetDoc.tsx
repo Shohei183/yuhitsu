@@ -140,6 +140,8 @@ export default function BudgetDoc({
                       <button
                         type="button"
                         className={styles.attachLink}
+                        data-file-id={a.fileId}
+                        data-file-name={a.name}
                         onClick={() => openFileByIdAsync(a.fileId, a.name)}
                       >
                         {a.name}

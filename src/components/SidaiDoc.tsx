@@ -177,6 +177,7 @@ export default function SidaiDoc({
                         <a
                           href={linkGianTo(row.linkedGianId)}
                           className={styles.gianChip}
+                          data-doc-anchor={`gian-${row.linkedGianId}`}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -193,6 +194,8 @@ export default function SidaiDoc({
                       <button
                         type="button"
                         className={styles.gianChip}
+                        data-file-id={row.linkedFixedFileId}
+                        data-file-name={ff.name}
                         onClick={() =>
                           onOpenFixedFile(row.linkedFixedFileId as string, ff.name)
                         }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { PERIOD_LABEL, getYear } from "@/lib/yearStore";
 import { useDistribution } from "@/lib/useDistributionStore";
 import { useFixedFiles } from "@/lib/useFixedFiles";
@@ -25,6 +25,7 @@ export default function DistributionView({ distId }: { distId: string }) {
   const pkg = useDistribution(distId);
   const { files: fixedFiles } = useFixedFiles(pkg?.yearId ?? "");
   const exportRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
 
   if (!pkg) {
     return (
@@ -37,12 +38,22 @@ export default function DistributionView({ distId }: { distId: string }) {
     );
   }
 
-  const onDownload = () =>
-    downloadDocHtml(
-      exportRef.current,
-      `配信データ_${pkg.name}_v${pkg.version}`,
-      `配信データ：${pkg.name}_v${pkg.version}`
-    );
+  const onDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await downloadDocHtml(
+        exportRef.current,
+        `配信データ_${pkg.name}_v${pkg.version}`,
+        `配信データ：${pkg.name}_v${pkg.version}`
+      );
+    } catch (e) {
+      console.error("[配信データ] ダウンロード失敗:", e);
+      alert("ダウンロードの生成に失敗しました。時間をおいて再度お試しください。");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const sidaiDoc = (
     <SidaiDoc
@@ -85,9 +96,10 @@ export default function DistributionView({ distId }: { distId: string }) {
           type="button"
           className={styles.downloadBtn}
           onClick={onDownload}
-          title="配信データ（次第＋収録議案）を単一 HTML ファイルとして保存"
+          disabled={downloading}
+          title="配信データ（次第＋収録議案＋資料ファイル）を単一 HTML ファイルとして保存"
         >
-          ダウンロード
+          {downloading ? "生成中…" : "ダウンロード"}
         </button>
         <span className={styles.lockTag}>完全ロック（編集不可）</span>
       </div>
@@ -98,14 +110,15 @@ export default function DistributionView({ distId }: { distId: string }) {
           <h2 className={styles.h2}>次第</h2>
           <div className={styles.sidaiBox}>{sidaiDoc}</div>
           <p className={styles.empty}>
-            ※ 次第の議案名リンクから、確定時点の議案（別タブ）を開けます。
+            ※ 次第の議案名リンクから、確定時点の議案を開けます（ダウンロード版は
+            同じファイル内の該当議案へ移動し、資料ファイルもファイル内に同梱されます）。
           </p>
         </article>
 
         {/* ダウンロード時のみ出力：収録議案（確定時点の凍結コピー）を次第の後ろに連結 */}
         <div data-export-show style={{ display: "none" }}>
           {pkg.gians.map((g) => (
-            <div key={g.id} data-export-gian>
+            <div key={g.id} data-export-gian id={`gian-${g.id}`}>
               <GianView
                 gian={g}
                 frozenFiles={

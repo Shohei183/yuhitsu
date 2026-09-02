@@ -10,7 +10,15 @@
 //
 // クラウド不要。ダウンロードした HTML はオフラインでそのまま開けて、
 // ブラウザの印刷から A4 PDF にもできる（@page 指定を同梱）。
+//
+// リンクの扱い（downloadDocHtml）:
+//  - [data-file-id]   … 資料ファイルの実体を data: URI で HTML に同梱し <a download> にする
+//  - [data-doc-anchor]… 同じ HTML 内の別セクション（例：次第の議案名→議案本文）への
+//                        ページ内アンカー <a href="#..."> にする（対象が無ければただの文字）
+//  - それ以外の <a>/<button>/入力欄 … 静的テキストに置き換える
 // ─────────────────────────────────────────────────────────────
+
+import { getFileBlobById } from "./backend/files";
 
 /** ファイル名に使えない文字を _ に置換 */
 export function sanitizeFilename(s: string): string {
@@ -66,16 +74,27 @@ function collectPageCss(): string {
   return css;
 }
 
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result as string);
+    fr.onerror = () => reject(fr.error ?? new Error("read failed"));
+    fr.readAsDataURL(blob);
+  });
+}
+
 /**
  * 表示中のドキュメント要素（`<article>` など）を、
  * ページの CSS を同梱した自己完結の HTML ファイルとして保存する。
- * ボタン・リンク・入力欄は静的テキストに置き換える。
+ *
+ * 資料ファイル（[data-file-id]）は実体を HTML に同梱するため、
+ * 大きな資料が多いと生成に時間がかかり、ファイルも大きくなる。
  */
-export function downloadDocHtml(
+export async function downloadDocHtml(
   el: HTMLElement | null,
   filename: string,
   title: string
-): void {
+): Promise<void> {
   if (!el) return;
   const clone = el.cloneNode(true) as HTMLElement;
 
@@ -84,19 +103,68 @@ export function downloadDocHtml(
     .querySelectorAll<HTMLElement>("[data-export-show]")
     .forEach((n) => (n.style.display = "block"));
 
-  // インタラクティブ要素 → 静的テキスト
   const toSpan = (node: Element, text: string, keepClass = true) => {
     const s = document.createElement("span");
     if (keepClass) s.className = (node as HTMLElement).className;
     s.textContent = text;
     node.replaceWith(s);
   };
+
+  // 1) 資料ファイルリンク → 実体を data: URI で同梱した <a download>
+  const fileNodes = Array.from(
+    clone.querySelectorAll<HTMLElement>("[data-file-id]")
+  );
+  await Promise.all(
+    fileNodes.map(async (node) => {
+      const id = node.getAttribute("data-file-id") || "";
+      const label = node.textContent?.trim() || "";
+      const name =
+        node.getAttribute("data-file-name") || label || "download";
+      try {
+        const got = id ? await getFileBlobById(id) : undefined;
+        if (!got) throw new Error("not found");
+        const dataUrl = await blobToDataUrl(got.blob);
+        const a = document.createElement("a");
+        a.className = (node as HTMLElement).className;
+        a.setAttribute("href", dataUrl);
+        a.setAttribute("download", name);
+        a.textContent = label || name;
+        node.replaceWith(a);
+      } catch {
+        toSpan(node, label || name);
+      }
+    })
+  );
+
+  // 2) ドキュメント内アンカー（例：次第の議案名 → 議案本文）
+  clone
+    .querySelectorAll<HTMLElement>("[data-doc-anchor]")
+    .forEach((node) => {
+      const anchor = node.getAttribute("data-doc-anchor") || "";
+      const label = node.textContent?.trim() ?? "";
+      const target =
+        anchor && clone.querySelector(`[id="${anchor.replace(/"/g, "")}"]`);
+      if (target) {
+        const a = document.createElement("a");
+        a.className = (node as HTMLElement).className;
+        a.setAttribute("href", `#${anchor}`);
+        a.textContent = label;
+        node.replaceWith(a);
+      } else {
+        toSpan(node, label);
+      }
+    });
+
+  // 3) 残りのインタラクティブ要素 → 静的テキスト
   clone
     .querySelectorAll("button")
     .forEach((b) => toSpan(b, b.textContent?.trim() ?? ""));
-  clone
-    .querySelectorAll("a")
-    .forEach((a) => toSpan(a, a.textContent?.trim() ?? ""));
+  clone.querySelectorAll("a").forEach((a) => {
+    const href = a.getAttribute("href") || "";
+    // 同梱リンク（data:）・ページ内アンカー（#）は残す
+    if (href.startsWith("data:") || href.startsWith("#")) return;
+    toSpan(a, a.textContent?.trim() ?? "");
+  });
   clone.querySelectorAll("input, textarea").forEach((i) => {
     toSpan(i, (i as HTMLInputElement).value ?? "", false);
   });
@@ -117,7 +185,7 @@ export function downloadDocHtml(
     `html,body{margin:0;background:#fff;color:#1a2230}` +
     `body{display:flex;justify-content:center;padding:16px}` +
     `.__exp{max-width:900px;width:100%}` +
-    `.__exp [data-export-gian]{break-before:page;margin-top:28px}` +
+    `.__exp [data-export-gian]{break-before:page;margin-top:28px;scroll-margin-top:12px}` +
     `</style></head><body><div class="__exp">${clone.outerHTML}</div></body></html>`;
 
   downloadBlob(

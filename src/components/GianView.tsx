@@ -83,12 +83,13 @@ export default function GianView({
   const kihon = isKihon(gian.kind);
 
   const kindLabel = kihon ? "基本方針" : `${gian.kind}議案`;
-  const onDownload = () =>
-    downloadDocHtml(
+  const onDownload = () => {
+    void downloadDocHtml(
       docRef.current,
       `${kindLabel}_${gian.topic}`,
       `${kindLabel}：${gian.topic}`
-    );
+    ).catch((e) => console.error("[議案] ダウンロード失敗:", e));
+  };
 
   const body = (
     <article
@@ -567,6 +568,8 @@ function LiveResourceList({
               <button
                 type="button"
                 className={styles.fileLink}
+                data-file-id={f.id}
+                data-file-name={f.name}
                 onClick={() => openFileByIdAsync(f.id, f.name)}
               >
                 📄 {f.name}
@@ -603,6 +606,8 @@ function FrozenResourceList({
               <button
                 type="button"
                 className={styles.fileLink}
+                data-file-id={f.id}
+                data-file-name={f.name}
                 onClick={() => openFileByIdAsync(f.id, f.name)}
               >
                 📄 {f.name}

@@ -64,12 +64,13 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   const exp = sectionTotal(budget.expense);
   const bal = balance(budget);
 
-  const onDownload = () =>
-    downloadDocHtml(
+  const onDownload = () => {
+    void downloadDocHtml(
       previewRef.current,
       `事業収支予算書_${budget.title || "無題"}`,
       `事業収支予算書：${budget.title || "無題"}`
-    );
+    ).catch((e) => console.error("[予算書] ダウンロード失敗:", e));
+  };
 
   return (
     <div className={styles.page}>

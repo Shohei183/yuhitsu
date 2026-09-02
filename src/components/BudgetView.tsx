@@ -33,12 +33,13 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
 
   const backHref = budget.gianId ? `/gian/${budget.gianId}` : "/";
 
-  const onDownload = () =>
-    downloadDocHtml(
+  const onDownload = () => {
+    void downloadDocHtml(
       docRef.current,
       `事業収支予算書_${budget.title || "無題"}`,
       `事業収支予算書：${budget.title || "無題"}`
-    );
+    ).catch((e) => console.error("[予算書] ダウンロード失敗:", e));
+  };
 
   return (
     <div className={styles.page}>
