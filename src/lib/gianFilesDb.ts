@@ -47,13 +47,43 @@ function toMeta(f: FileObj): GianFileMeta {
 
 export const subscribe = subscribeFiles;
 
+/** 資料のファイル名プレフィックス（種類を表す記号＋番号） */
+const NAME_PREFIX: Record<GianFileCategory, string> = {
+  review: "審議",
+  reference: "参考",
+};
+/** 既存プレフィックス（審 / 審議 / 参 / 参考 ＋ 数字 ＋ 区切り）を落とす */
+const PREFIX_RE = /^\s*(?:審議|参考|審|参)\s*\d+\s*[-__.\s]+/;
+
+function prefixedName(
+  category: GianFileCategory,
+  original: string,
+  existing: GianFileMeta[]
+): string {
+  const title = original.replace(PREFIX_RE, "").trim() || original;
+  const pfx = NAME_PREFIX[category];
+  const used = existing
+    .map((f) => {
+      const m = f.name.match(/^(?:審議|参考|審|参)\s*(\d+)/);
+      return m ? Number(m[1]) : 0;
+    })
+    .filter((n) => n > 0);
+  const next = (used.length ? Math.max(...used) : 0) + 1;
+  return `${pfx}${next}-${title}`;
+}
+
 export async function putGianFile(
   gianId: string,
   category: GianFileCategory,
   file: File
 ): Promise<GianFileMeta> {
+  // 「審議N-タイトル」「参考N-タイトル」に自動リネームして保存
+  const existing = await listGianFiles(gianId, category);
+  const newName = prefixedName(category, file.name, existing);
+  const renamed =
+    newName === file.name ? file : new File([file], newName, { type: file.type });
   return toMeta(
-    await uploadFile("gian", gianId, file, { category, gianId })
+    await uploadFile("gian", gianId, renamed, { category, gianId })
   );
 }
 

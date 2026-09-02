@@ -14,10 +14,13 @@ import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
 import { isKihon, showsPriorFeedback } from "@/lib/gianStore";
 import { useGianEntry } from "@/lib/useGianStore";
+import { useBudgetStore } from "@/lib/useBudgetStore";
+import { budgetForGian, sectionTotal } from "@/lib/budgetStore";
 import { useCommitteeOfGian } from "@/lib/useOrg";
 import styles from "./GianView.module.css";
 
 const SCHEDULE_LABEL = "実施までのスケジュール";
+const BUDGET_LABEL = "予算総額";
 
 /** 配信データの凍結時点の資料メタ（実体はパッケージには含めない） */
 export interface FrozenGianFiles {
@@ -55,6 +58,8 @@ export default function GianView({
   const entry = useGianEntry(gianId ?? "");
   const committeeInfo = useCommitteeOfGian(gianId ?? "");
   const docRef = useRef<HTMLElement>(null);
+  useBudgetStore();
+  const linkedBudget = gianId ? budgetForGian(gianId) : undefined;
 
   const snap =
     snapshotId && entry
@@ -259,6 +264,17 @@ export default function GianView({
                   </div>
                 ) : (
                   <Body text={it.body} />
+                )}
+                {it.label === BUDGET_LABEL && linkedBudget && (
+                  <a
+                    href={`/budget/${linkedBudget.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.budgetLink}
+                  >
+                    💰 事業収支予算書（費用計 ¥
+                    {jpNum(sectionTotal(linkedBudget.expense))}） ↗
+                  </a>
                 )}
               </li>
             ))}

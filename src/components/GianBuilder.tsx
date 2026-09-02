@@ -31,7 +31,7 @@ import {
 } from "@/lib/gianStore";
 import { useGianEntry, useGianStore } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
-import { budgetForGian, createBudget } from "@/lib/budgetStore";
+import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCan, useCommitteeOfGian } from "@/lib/useOrg";
 import { jpNum, sumAmounts } from "@/lib/format";
 import GianResourcePanel from "./GianResourcePanel";
@@ -40,6 +40,8 @@ import styles from "./GianBuilder.module.css";
 
 /** 事業概要の中で、日付／内容の表として編集する項目のラベル */
 const SCHEDULE_ITEM_LABEL = "実施までのスケジュール";
+/** 事業概要の中で、事業収支予算書へのリンクを出す項目のラベル */
+const BUDGET_ITEM_LABEL = "予算総額";
 
 /** SSR で useLayoutEffect の警告を出さないための切り替え */
 const useIsoLayoutEffect =
@@ -57,6 +59,19 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   const can = useCan();
   const committeeInfo = useCommitteeOfGian(gianId);
   const gianStore = useGianStore();
+  const router = useRouter();
+  useBudgetStore();
+  const linkedBudget = budgetForGian(gianId);
+  const openOrCreateBudget = () => {
+    if (linkedBudget) {
+      router.push(`/budget/${linkedBudget.id}`);
+      return;
+    }
+    const yearId = committeeInfo?.year.id;
+    if (!yearId) return;
+    const id = createBudget({ yearId, gianId, title: gian.topic });
+    router.push(`/budget/${id}`);
+  };
 
   const kihon = isKihon(gian.kind);
   /** 基本方針「事業計画」のリンク先候補（自分以外の協議議案のみ） */
@@ -543,6 +558,13 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
               onScheduleChange={updateScheduleEntry}
               onScheduleAdd={addScheduleEntry}
               onScheduleRemove={removeScheduleEntry}
+              budgetLink={{
+                hasBudget: !!linkedBudget,
+                total: linkedBudget
+                  ? sectionTotal(linkedBudget.expense)
+                  : null,
+                onOpen: openOrCreateBudget,
+              }}
             />
           )}
 
@@ -1299,6 +1321,7 @@ function TemplateSection({
   onScheduleChange,
   onScheduleAdd,
   onScheduleRemove,
+  budgetLink,
 }: {
   title: string;
   items: TemplateItem[];
@@ -1309,6 +1332,12 @@ function TemplateSection({
   onScheduleChange?: (id: string, patch: Partial<ScheduleEntry>) => void;
   onScheduleAdd?: () => void;
   onScheduleRemove?: (id: string) => void;
+  /** 「予算総額」項目に事業収支予算書へのリンクを出す */
+  budgetLink?: {
+    hasBudget: boolean;
+    total: number | null;
+    onOpen: () => void;
+  };
 }) {
   return (
     <section className={styles.card}>
@@ -1333,12 +1362,29 @@ function TemplateSection({
               />
             </div>
           ) : (
-            <TemplateCard
-              key={item.no}
-              item={item}
-              readOnly={readOnly}
-              onChange={(body) => onChange(item.no, body)}
-            />
+            <div key={item.no} className={styles.tplCard}>
+              <TemplateCard
+                item={item}
+                readOnly={readOnly}
+                onChange={(body) => onChange(item.no, body)}
+                bare
+              />
+              {budgetLink && item.label === BUDGET_ITEM_LABEL && (
+                <button
+                  type="button"
+                  className={styles.budgetLinkBtn}
+                  onClick={budgetLink.onOpen}
+                >
+                  💰{" "}
+                  {budgetLink.hasBudget
+                    ? `事業収支予算書を開く（費用計 ¥${jpNum(
+                        budgetLink.total ?? 0
+                      )}）`
+                    : "事業収支予算書を作成する"}{" "}
+                  →
+                </button>
+              )}
+            </div>
           )
         )}
       </div>
@@ -1501,14 +1547,19 @@ function TemplateCard({
   item,
   readOnly,
   onChange,
+  bare,
+  footer,
 }: {
   item: TemplateItem;
   readOnly: boolean;
   onChange: (body: string) => void;
+  /** 外側で .tplCard をラップする場合は中身だけ描画 */
+  bare?: boolean;
+  footer?: React.ReactNode;
 }) {
   const empty = item.body.trim() === "";
-  return (
-    <div className={styles.tplCard}>
+  const inner = (
+    <>
       <div className={styles.tplHead}>
         <span className={styles.tplNo}>{item.no}</span>
         <span className={styles.tplLabel}>{item.label}</span>
@@ -1522,8 +1573,10 @@ function TemplateCard({
         placeholder="ここに内容を記入します"
         onChange={onChange}
       />
-    </div>
+      {footer}
+    </>
   );
+  return bare ? inner : <div className={styles.tplCard}>{inner}</div>;
 }
 
 function ScheduleTable({
