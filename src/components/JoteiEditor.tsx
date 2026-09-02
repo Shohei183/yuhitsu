@@ -2,44 +2,49 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef } from "react";
+import { useId, useMemo, useRef } from "react";
 import {
   JoteiSection,
   JOTEI_SECTIONS,
   blankItem,
   deleteJotei,
+  listJoteiForYear,
   reopenJotei,
   saveJotei,
   sectionItems,
   submitJotei,
   withSection,
 } from "@/lib/joteiStore";
-import { useJotei } from "@/lib/useJoteiStore";
-import { useGianStore } from "@/lib/useGianStore";
+import { useJotei, useJoteiStore } from "@/lib/useJoteiStore";
+import { listSidai } from "@/lib/sidaiStore";
+import { useSidaiStore } from "@/lib/useSidaiStore";
 import { useCommittee, useAuthMember, useCan } from "@/lib/useOrg";
 import { downloadDocHtml } from "@/lib/download";
 import JoteiDoc from "./JoteiDoc";
 import styles from "./JoteiEditor.module.css";
 
-function kindLabel(kind: string): string {
-  return kind === "基本方針" ? "基本方針" : `${kind}議案`;
-}
-
 export default function JoteiEditor({ joteiId }: { joteiId: string }) {
   const router = useRouter();
   const jotei = useJotei(joteiId);
-  const gianStore = useGianStore();
+  useJoteiStore();
+  useSidaiStore();
   const found = useCommittee(jotei?.committeeId ?? "");
   const member = useAuthMember();
   const can = useCan();
   const previewRef = useRef<HTMLDivElement>(null);
+  const listId = useId();
 
-  const committeeGians = useMemo(() => {
-    const ids = found?.committee.gianIds ?? [];
-    return ids
-      .map((id) => gianStore[id]?.gian)
-      .filter((g): g is NonNullable<typeof g> => !!g);
-  }, [found, gianStore]);
+  const meetingSuggestions = useMemo(() => {
+    const yid = jotei?.yearId ?? "";
+    const names = new Set<string>();
+    for (const j of listJoteiForYear(yid)) {
+      if (j.meetingName.trim()) names.add(j.meetingName.trim());
+    }
+    for (const s of listSidai()) {
+      if (s.yearId === yid && s.meetingName.trim()) names.add(s.meetingName.trim());
+    }
+    return [...names].sort();
+  }, [jotei?.yearId]);
 
   if (!jotei) {
     return (
@@ -123,7 +128,11 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
             提出を取り消す
           </button>
         )}
-        <span className={`${styles.badge} ${readOnly ? styles.badgeLocked : styles.badgeDraft}`}>
+        <span
+          className={`${styles.badge} ${
+            readOnly ? styles.badgeLocked : styles.badgeDraft
+          }`}
+        >
           {readOnly ? "提出済み（ロック）" : "下書き"}
         </span>
       </div>
@@ -148,9 +157,15 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
               className={styles.input}
               value={jotei.meetingName}
               placeholder="7月度定例理事会"
+              list={listId}
               readOnly={readOnly}
               onChange={(e) => update({ meetingName: e.target.value })}
             />
+            <datalist id={listId}>
+              {meetingSuggestions.map((m) => (
+                <option key={m} value={m} />
+              ))}
+            </datalist>
           </label>
           <label className={styles.field}>
             <span className={styles.fieldLabel}>提出日</span>
@@ -186,45 +201,20 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
 
         {JOTEI_SECTIONS.map(({ key, label }) => {
           const items = sectionItems(jotei, key);
-          const usedGianIds = new Set(items.map((it) => it.gianId).filter(Boolean));
-          const addable = committeeGians.filter((g) => !usedGianIds.has(g.id));
           return (
             <section key={key} className={styles.section}>
               <div className={styles.sectionHead}>
                 <h2 className={styles.sectionTitle}>■{label}</h2>
                 {!readOnly && (
-                  <div className={styles.sectionActions}>
-                    {addable.length > 0 && (
-                      <select
-                        className={styles.addSelect}
-                        value=""
-                        onChange={(e) => {
-                          const g = committeeGians.find((x) => x.id === e.target.value);
-                          if (!g) return;
-                          mutateSection(key, (arr) => [
-                            ...arr,
-                            { id: blankItem().id, title: g.topic, gianId: g.id },
-                          ]);
-                        }}
-                      >
-                        <option value="">＋ 議案から追加…</option>
-                        {addable.map((g) => (
-                          <option key={g.id} value={g.id}>
-                            {kindLabel(g.kind)}：{g.topic}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    <button
-                      type="button"
-                      className={styles.addBtn}
-                      onClick={() =>
-                        mutateSection(key, (arr) => [...arr, blankItem()])
-                      }
-                    >
-                      ＋ 行を追加
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className={styles.addBtn}
+                    onClick={() =>
+                      mutateSection(key, (arr) => [...arr, blankItem()])
+                    }
+                  >
+                    ＋ 行を追加
+                  </button>
                 )}
               </div>
 
@@ -232,108 +222,72 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
                 <p className={styles.emptyRow}>（項目なし）</p>
               ) : (
                 <ol className={styles.rows}>
-                  {items.map((it, i) => {
-                    const linkedGian = it.gianId
-                      ? gianStore[it.gianId]?.gian
-                      : undefined;
-                    return (
-                      <li key={it.id} className={styles.row}>
-                        <span className={styles.rowNo}>{i + 1}．</span>
-                        <div className={styles.rowMain}>
-                          <textarea
-                            className={styles.rowInput}
-                            rows={1}
-                            value={it.title}
-                            placeholder="項目名"
-                            readOnly={readOnly}
-                            onChange={(e) =>
+                  {items.map((it, i) => (
+                    <li key={it.id} className={styles.row}>
+                      <span className={styles.rowNo}>{i + 1}．</span>
+                      <div className={styles.rowMain}>
+                        <textarea
+                          className={styles.rowInput}
+                          rows={1}
+                          value={it.title}
+                          placeholder="項目名"
+                          readOnly={readOnly}
+                          onChange={(e) =>
+                            mutateSection(key, (arr) =>
+                              arr.map((x) =>
+                                x.id === it.id
+                                  ? { ...x, title: e.target.value }
+                                  : x
+                              )
+                            )
+                          }
+                        />
+                      </div>
+                      {!readOnly && (
+                        <div className={styles.rowBtns}>
+                          <button
+                            type="button"
+                            className={styles.moveBtn}
+                            disabled={i === 0}
+                            onClick={() =>
+                              mutateSection(key, (arr) => {
+                                const c = [...arr];
+                                [c[i - 1], c[i]] = [c[i], c[i - 1]];
+                                return c;
+                              })
+                            }
+                          >
+                            ▲
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.moveBtn}
+                            disabled={i === items.length - 1}
+                            onClick={() =>
+                              mutateSection(key, (arr) => {
+                                const c = [...arr];
+                                [c[i + 1], c[i]] = [c[i], c[i + 1]];
+                                return c;
+                              })
+                            }
+                          >
+                            ▼
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.xBtn}
+                            onClick={() =>
                               mutateSection(key, (arr) =>
-                                arr.map((x) =>
-                                  x.id === it.id
-                                    ? { ...x, title: e.target.value }
-                                    : x
-                                )
+                                arr.filter((x) => x.id !== it.id)
                               )
                             }
-                          />
-                          {!readOnly ? (
-                            <select
-                              className={styles.rowGian}
-                              value={it.gianId ?? ""}
-                              onChange={(e) =>
-                                mutateSection(key, (arr) =>
-                                  arr.map((x) =>
-                                    x.id === it.id
-                                      ? { ...x, gianId: e.target.value || null }
-                                      : x
-                                  )
-                                )
-                              }
-                            >
-                              <option value="">議案リンクなし</option>
-                              {committeeGians.map((g) => (
-                                <option key={g.id} value={g.id}>
-                                  {kindLabel(g.kind)}：{g.topic}
-                                </option>
-                              ))}
-                            </select>
-                          ) : linkedGian ? (
-                            <a
-                              href={`/gian/${linkedGian.id}/view`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.rowGianLink}
-                            >
-                              🔗 {kindLabel(linkedGian.kind)} ↗
-                            </a>
-                          ) : null}
+                          >
+                            ×
+                          </button>
                         </div>
-                        {!readOnly && (
-                          <div className={styles.rowBtns}>
-                            <button
-                              type="button"
-                              className={styles.moveBtn}
-                              disabled={i === 0}
-                              onClick={() =>
-                                mutateSection(key, (arr) => {
-                                  const c = [...arr];
-                                  [c[i - 1], c[i]] = [c[i], c[i - 1]];
-                                  return c;
-                                })
-                              }
-                            >
-                              ▲
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.moveBtn}
-                              disabled={i === items.length - 1}
-                              onClick={() =>
-                                mutateSection(key, (arr) => {
-                                  const c = [...arr];
-                                  [c[i + 1], c[i]] = [c[i], c[i + 1]];
-                                  return c;
-                                })
-                              }
-                            >
-                              ▼
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.xBtn}
-                              onClick={() =>
-                                mutateSection(key, (arr) =>
-                                  arr.filter((x) => x.id !== it.id)
-                                )
-                              }
-                            >
-                              ×
-                            </button>
-                          </div>
-                        )}
-                      </li>
-                    );
-                  })}
+                      )}
+                    </li>
+                  ))}
                 </ol>
               )}
             </section>

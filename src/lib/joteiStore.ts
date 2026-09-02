@@ -11,11 +11,10 @@
 
 import { db, fire } from "./backend/client";
 
-/** 上程届の1項目（区分内の1行）。gianId で議案構築の議案に任意で紐づく。 */
+/** 上程届の1項目（区分内の1行）。 */
 export interface JoteiItem {
   id: string;
   title: string;
-  gianId?: string | null;
 }
 
 export type JoteiSection = "kyogi" | "shingi" | "houkoku";
@@ -60,7 +59,7 @@ function newId(prefix: string): string {
 }
 
 export function blankItem(): JoteiItem {
-  return { id: newId("ji"), title: "", gianId: null };
+  return { id: newId("ji"), title: "" };
 }
 
 export function sectionItems(j: JoteiTodoke, s: JoteiSection): JoteiItem[] {
@@ -83,7 +82,6 @@ function normalize(raw: Partial<JoteiTodoke>): JoteiTodoke {
       ? (v as JoteiItem[]).map((it) => ({
           id: it.id || newId("ji"),
           title: typeof it.title === "string" ? it.title : "",
-          gianId: it.gianId ?? null,
         }))
       : [];
   return {

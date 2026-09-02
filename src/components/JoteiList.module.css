@@ -132,30 +132,46 @@
   margin-left: auto;
 }
 
-/* 会議セレクタ */
-.meetingRow {
+/* 会議ごとのグループ */
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.group {
+  border-top: 2px solid var(--accent);
+  padding-top: 12px;
+}
+.groupHead {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
 }
-.meetingLabel {
-  font-size: 12.5px;
+.groupTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+.groupCount {
+  font-size: 12px;
   font-weight: 700;
   color: var(--muted-strong);
 }
-.meetingSelect {
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 6px 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: 7px;
-  background: #fff;
-}
-.meetingCount {
+.groupDl {
+  margin-left: auto;
   font-size: 12px;
-  color: var(--muted);
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 7px;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--accent-line);
+  cursor: pointer;
+}
+.groupDl:hover {
+  background: var(--accent-weak);
 }
 
 .docs {
