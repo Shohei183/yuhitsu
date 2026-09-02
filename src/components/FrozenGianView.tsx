@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { PERIOD_LABEL, getYear } from "@/lib/yearStore";
 import { useDistribution } from "@/lib/useDistributionStore";
 import GianView from "./GianView";
+import ReviewLayer from "./ReviewLayer";
 import styles from "./GianView.module.css";
 
 /**
@@ -37,21 +38,23 @@ export default function FrozenGianView({
   }
 
   return (
-    <GianView
-      gian={gian}
-      frozenFiles={pkg.gianFiles[gianId] ?? { review: [], reference: [] }}
-      toolbar={
-        <>
-          <Link href={`/haishin/${distId}`} className={styles.navLink}>
-            ← 配信データ
-          </Link>
-          <span className={styles.snapTag}>
-            {getYear(pkg.yearId)?.label ?? pkg.yearId}／
-            {PERIOD_LABEL[pkg.period]}・{pkg.name}_v{pkg.version} の収録議案
-            （確定時点・完全ロック）
-          </span>
-        </>
-      }
-    />
+    <ReviewLayer distId={distId} gianId={gianId}>
+      <GianView
+        gian={gian}
+        frozenFiles={pkg.gianFiles[gianId] ?? { review: [], reference: [] }}
+        toolbar={
+          <>
+            <Link href={`/haishin/${distId}`} className={styles.navLink}>
+              ← 配信データ
+            </Link>
+            <span className={styles.snapTag}>
+              {getYear(pkg.yearId)?.label ?? pkg.yearId}／
+              {PERIOD_LABEL[pkg.period]}・{pkg.name}_v{pkg.version} の収録議案
+              （確定時点・完全ロック）
+            </span>
+          </>
+        }
+      />
+    </ReviewLayer>
   );
 }

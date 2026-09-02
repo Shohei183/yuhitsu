@@ -194,7 +194,11 @@ export default function GianView({
         <h2 className={styles.h2}>{kihon ? "基本方針" : "事業要綱"}</h2>
         <ol className={styles.itemList}>
           {gian.outline.map((it) => (
-            <li key={it.no}>
+            <li
+              key={it.no}
+              data-note-item={`outline-${it.no}`}
+              data-note-label={`${kihon ? "基本方針" : "事業要綱"} ${it.no}. ${it.label}`}
+            >
               <div className={styles.itemLabel}>
                 {it.no}. {it.label}
               </div>
@@ -212,7 +216,11 @@ export default function GianView({
               </li>
             )}
             {gian.overview.map((it) => (
-              <li key={it.no}>
+              <li
+                key={it.no}
+                data-note-item={`overview-${it.no}`}
+                data-note-label={`事業計画 ${it.no}. ${it.label || "（事業名なし）"}`}
+              >
                 <div className={styles.itemLabel}>
                   {it.no}. {it.label || "（事業名なし）"}
                 </div>
@@ -230,7 +238,11 @@ export default function GianView({
         ) : (
           <ol className={styles.itemList}>
             {gian.overview.map((it) => (
-              <li key={it.no}>
+              <li
+                key={it.no}
+                data-note-item={`overview-${it.no}`}
+                data-note-label={`事業概要 ${it.no}. ${it.label}`}
+              >
                 <div className={styles.itemLabel}>
                   {it.no}. {it.label}
                 </div>
@@ -334,7 +346,12 @@ export default function GianView({
           <>
             <h2 className={styles.h2}>前回までの流れ（意見と対応）</h2>
             {gian.priorFeedback.map((round) => (
-              <div key={round.id} className={styles.fbRound}>
+              <div
+                key={round.id}
+                className={styles.fbRound}
+                data-note-item={`prior-${round.id}`}
+                data-note-label={`前回までの流れ：${round.meetingName}`}
+              >
                 <div className={styles.fbHead}>
                   ● {round.meetingName}　{round.date}　{round.format}
                 </div>
@@ -564,7 +581,11 @@ function LiveResourceList({
       ) : (
         <ul className={styles.resList}>
           {files.map((f) => (
-            <li key={f.id}>
+            <li
+              key={f.id}
+              data-note-item={`file-${f.id}`}
+              data-note-label={`資料：${f.name}`}
+            >
               <button
                 type="button"
                 className={styles.fileLink}
@@ -602,7 +623,11 @@ function FrozenResourceList({
       ) : (
         <ul className={styles.resList}>
           {files.map((f) => (
-            <li key={f.id}>
+            <li
+              key={f.id}
+              data-note-item={`file-${f.id}`}
+              data-note-label={`資料：${f.name}`}
+            >
               <button
                 type="button"
                 className={styles.fileLink}

@@ -9,6 +9,7 @@ import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
 import GianView from "./GianView";
 import SidaiDoc from "./SidaiDoc";
+import MyReviewNotes from "./MyReviewNotes";
 import styles from "./DistributionView.module.css";
 
 function fmt(iso: string): string {
@@ -130,6 +131,15 @@ export default function DistributionView({ distId }: { distId: string }) {
           ))}
         </div>
       </div>
+
+      <MyReviewNotes
+        distId={distId}
+        gianTitle={(gid) => {
+          const g = pkg.gians.find((x) => x.id === gid);
+          if (!g) return "（収録外の議案）";
+          return `${g.kind === "基本方針" ? "基本方針" : `${g.kind}議案`}：${g.topic}`;
+        }}
+      />
     </div>
   );
 }

@@ -164,3 +164,9 @@ a:hover {
 ::selection {
   background: rgba(47, 95, 168, 0.16);
 }
+
+/* 議案レビューメモ（ReviewLayer）のハイライト — CSS Custom Highlight API */
+::highlight(review-note) {
+  background-color: #fde68a;
+  color: inherit;
+}

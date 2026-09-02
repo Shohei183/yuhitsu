@@ -1,0 +1,282 @@
+.wrap {
+  position: relative;
+}
+
+/* CSS Custom Highlight API（DOM 非破壊のハイライト）のスタイルは
+   globals.css の ::highlight(review-note) に定義（CSS Modules では純粋でないため） */
+
+.flash {
+  animation: flash 1.1s ease-out;
+}
+@keyframes flash {
+  0%,
+  30% {
+    background-color: #fef3c7;
+    box-shadow: 0 0 0 6px #fef3c7;
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* 選択後のフロートボタン */
+.floatBtn {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  z-index: 60;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 編集ポップオーバー */
+.editorBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(20, 28, 44, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.editor {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.3));
+  padding: 16px;
+}
+.editorHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.editorItem {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.privacy {
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.quote {
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  border-left: 3px solid #fbbf24;
+  background: #fffbeb;
+  font-size: 12.5px;
+  color: var(--text);
+  max-height: 5em;
+  overflow: auto;
+}
+.textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.6;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  resize: vertical;
+}
+.editorBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.saveBtn,
+.cancelBtn,
+.delBtn {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.saveBtn {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+}
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.cancelBtn {
+  background: #fff;
+  color: var(--muted-strong);
+  border: 1px solid var(--border-strong);
+}
+.delBtn {
+  background: #fff;
+  color: var(--warn-fg);
+  border: 1px solid #e6c9c9;
+}
+
+/* サイドパネル */
+.panelToggle {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 55;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+.panelToggle b {
+  margin-left: 4px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 11px;
+}
+
+.panel {
+  position: fixed;
+  top: calc(var(--topbar-h) + 8px);
+  right: 12px;
+  bottom: 12px;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  z-index: 56;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg, 0 20px 60px rgba(0, 0, 0, 0.25));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.panelClose {
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted-strong);
+}
+.panelNote {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--panel);
+}
+.panelEmpty {
+  font-size: 12.5px;
+  color: var(--muted);
+  padding: 16px 14px;
+}
+.noteList {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.noteCard {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 10px;
+  background: var(--card);
+}
+.noteItem {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted-strong);
+  margin-bottom: 4px;
+}
+.noteQuote {
+  margin: 0 0 5px;
+  padding: 3px 8px;
+  border-left: 3px solid #fbbf24;
+  background: #fffbeb;
+  font-size: 11.5px;
+  color: var(--text);
+  max-height: 4em;
+  overflow: auto;
+}
+.noteBody {
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+.noteCardBtns {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+.miniBtn,
+.miniDel {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+}
+.miniBtn {
+  color: var(--accent);
+}
+.miniDel {
+  color: var(--warn-fg);
+  border-color: #e6c9c9;
+  margin-left: auto;
+}
+
+@media print {
+  .floatBtn,
+  .panelToggle,
+  .panel,
+  .editorBackdrop {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .panel {
+    width: auto;
+    left: 12px;
+  }
+}
