@@ -646,13 +646,9 @@ function GianNav({
     | { year: { id: string; label: string }; committee: { id: string; name: string; gianIds: string[] } }
     | undefined;
 }) {
-  const gianStore = useGianStore();
   const router = useRouter();
   useBudgetStore();
   const cid = committeeInfo?.committee.id;
-  const siblings = (committeeInfo?.committee.gianIds ?? []).filter(
-    (id) => id !== gianId
-  );
 
   const linkedBudget = budgetForGian(gianId);
   const onBudget = () => {
@@ -692,41 +688,8 @@ function GianNav({
           <Link href={`/committee/${cid}/shared`} className={styles.navItem}>
             📁 共有用フォルダ
           </Link>
-          {siblings.length > 0 && (
-            <div className={styles.navSub}>
-              <div className={styles.navSubTitle}>同じ委員会の議案</div>
-              {siblings.map((sid) => {
-                const s = gianStore[sid]?.gian;
-                return (
-                  <Link
-                    key={sid}
-                    href={`/gian/${sid}`}
-                    className={styles.navSubItem}
-                    title={s?.topic}
-                  >
-                    ↳ {s ? `${s.kind}／${s.topic}` : sid}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
         </div>
       )}
-
-      <div className={styles.navGroup}>
-        <div className={styles.navGroupTitle}>ページ</div>
-        <Link href="/" className={styles.navItem}>
-          🏠 年度フォルダ（トップ）
-        </Link>
-        <Link href="/sidai" className={styles.navItem}>
-          📋 次第作成
-        </Link>
-        <Link href="/templates" className={styles.navItem}>
-          🧩 議案・次第テンプレート
-        </Link>
-      </div>
-
-      <div className={styles.navNote}>{gian.committee}</div>
     </nav>
   );
 }
