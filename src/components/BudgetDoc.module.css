@@ -166,3 +166,15 @@
   text-underline-offset: 2px;
   cursor: pointer;
 }
+
+.attachPool {
+  margin-top: 16px;
+}
+.attachList {
+  margin: 4px 0 0;
+  padding-left: 22px;
+  font-size: 12.5px;
+}
+.attachList li {
+  margin: 2px 0;
+}

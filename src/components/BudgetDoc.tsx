@@ -6,6 +6,7 @@
 import {
   BudgetDoc as TBudgetDoc,
   BudgetCategory,
+  BudgetAttachment,
   categoryTotal,
   sectionTotal,
   balance,
@@ -92,30 +93,50 @@ export default function BudgetDoc({ budget }: { budget: TBudgetDoc }) {
       </table>
 
       <h2 className={styles.h2}>［様式2］収益明細書</h2>
-      <BudgetDetail cats={budget.revenue} />
+      <BudgetDetail cats={budget.revenue} attachments={budget.attachments} />
 
       <h2 className={styles.h2}>［様式3］費用明細書</h2>
-      <BudgetDetail cats={budget.expense} withAttachments />
+      <BudgetDetail
+        cats={budget.expense}
+        attachments={budget.attachments}
+        withAttachments
+      />
+
+      {budget.attachments.length > 0 && (
+        <div className={styles.attachPool}>
+          <h3 className={styles.h3}>添付資料</h3>
+          <ol className={styles.attachList}>
+            {[...budget.attachments]
+              .sort((a, b) => a.no - b.no)
+              .map((a) => (
+                <li key={a.id} value={a.no}>
+                  <button
+                    type="button"
+                    className={styles.attachLink}
+                    onClick={() => openFileByIdAsync(a.fileId, a.name)}
+                  >
+                    {a.name}
+                  </button>
+                </li>
+              ))}
+          </ol>
+        </div>
+      )}
     </article>
   );
 }
 
 function BudgetDetail({
   cats,
+  attachments,
   withAttachments,
 }: {
   cats: BudgetCategory[];
+  attachments: BudgetAttachment[];
   withAttachments?: boolean;
 }) {
   const used = cats.filter((c) => c.items.length > 0);
-
-  // 添付のある行に通し番号
-  const attachNo = new Map<string, number>();
-  if (withAttachments) {
-    let n = 0;
-    for (const c of used)
-      for (const it of c.items) if (it.attachmentId) attachNo.set(it.id, ++n);
-  }
+  const attById = new Map(attachments.map((a) => [a.id, a]));
 
   if (used.length === 0) return <p className={styles.empty}>（明細なし）</p>;
 
@@ -136,7 +157,7 @@ function BudgetDetail({
             key={c.name}
             cat={c}
             withAttachments={!!withAttachments}
-            attachNo={attachNo}
+            attById={attById}
           />
         ))}
       </tbody>
@@ -147,11 +168,11 @@ function BudgetDetail({
 function DetailRows({
   cat,
   withAttachments,
-  attachNo,
+  attById,
 }: {
   cat: BudgetCategory;
   withAttachments: boolean;
-  attachNo: Map<string, number>;
+  attById: Map<string, BudgetAttachment>;
 }) {
   return (
     <>
@@ -167,23 +188,23 @@ function DetailRows({
           <td className={styles.amount}>{yen(amountOf(it.amount))}</td>
           {withAttachments && (
             <td className={styles.noCell}>
-              {it.attachmentId ? (
-                <button
-                  type="button"
-                  className={styles.attachLink}
-                  title={it.attachmentName ?? "資料を開く"}
-                  onClick={() =>
-                    openFileByIdAsync(
-                      it.attachmentId!,
-                      it.attachmentName ?? "資料"
-                    )
-                  }
-                >
-                  {attachNo.get(it.id)}
-                </button>
-              ) : (
-                ""
-              )}
+              {(() => {
+                const a = it.attachmentRef
+                  ? attById.get(it.attachmentRef)
+                  : undefined;
+                return a ? (
+                  <button
+                    type="button"
+                    className={styles.attachLink}
+                    title={a.name}
+                    onClick={() => openFileByIdAsync(a.fileId, a.name)}
+                  >
+                    {a.no}
+                  </button>
+                ) : (
+                  ""
+                );
+              })()}
             </td>
           )}
         </tr>

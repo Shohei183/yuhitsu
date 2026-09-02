@@ -42,6 +42,20 @@ export const EXPENSE_CATEGORIES = [
   "予備費",
 ] as const;
 
+/**
+ * 予算書に添付された資料（見積書など）。予算書ごとの「資料プール」。
+ * 費用明細の各行はこの id を参照し、同じ資料を複数行から参照すると
+ * 表示番号（no）も同じになる（サンプル様式3の H 列と同じ挙動）。
+ */
+export interface BudgetAttachment {
+  id: string;
+  /** file_objects（scope=budget）の id */
+  fileId: string;
+  name: string;
+  /** 表示番号（作成時に採番・以降不変） */
+  no: number;
+}
+
 /** 明細の1行（様式2・3） */
 export interface BudgetLineItem {
   id: string;
@@ -51,9 +65,10 @@ export interface BudgetLineItem {
   note: string;
   /** 金額（自由記入。¥や,は許容） */
   amount: string;
-  /** 見積書などの添付ファイル（file_objects scope=budget の id） */
+  /** 参照する資料（BudgetAttachment.id）。null で添付なし */
+  attachmentRef?: string | null;
+  /** 旧形式（1行1ファイル）。normalize でプールへ移行 */
   attachmentId?: string | null;
-  /** 添付ファイル名（表示・オープン用） */
   attachmentName?: string | null;
 }
 
@@ -74,6 +89,8 @@ export interface BudgetDoc {
   lomName: string;
   revenue: BudgetCategory[];
   expense: BudgetCategory[];
+  /** 資料プール（見積書など） */
+  attachments: BudgetAttachment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -102,12 +119,13 @@ function blankDoc(yearId: string, gianId: string | null, title: string): BudgetD
     lomName: LOM_NAME,
     revenue: REVENUE_CATEGORIES.map((name) => ({ name, items: [] })),
     expense: EXPENSE_CATEGORIES.map((name) => ({ name, items: [] })),
+    attachments: [],
     createdAt: now,
     updatedAt: now,
   };
 }
 
-/** 明細が壊れていてもコード既定の科目リストで補完 */
+/** 明細が壊れていてもコード既定の科目リストで補完＋旧添付形式をプールへ移行 */
 function normalize(raw: BudgetDoc): BudgetDoc {
   const fix = (cats: BudgetCategory[] | undefined, names: readonly string[]) =>
     names.map((name) => {
@@ -117,12 +135,88 @@ function normalize(raw: BudgetDoc): BudgetDoc {
         items: Array.isArray(hit?.items) ? hit!.items : [],
       };
     });
+
+  const revenue = fix(raw.revenue, REVENUE_CATEGORIES);
+  const expense = fix(raw.expense, EXPENSE_CATEGORIES);
+  const attachments: BudgetAttachment[] = Array.isArray(raw.attachments)
+    ? [...raw.attachments]
+    : [];
+
+  // 旧形式（line.attachmentId）→ プール参照へ移行
+  let nextNo = attachments.reduce((m, a) => Math.max(m, a.no), 0);
+  for (const cats of [revenue, expense]) {
+    for (const c of cats) {
+      c.items = c.items.map((it) => {
+        if (it.attachmentRef !== undefined) return it;
+        if (!it.attachmentId) return it;
+        let a = attachments.find((x) => x.fileId === it.attachmentId);
+        if (!a) {
+          a = {
+            id: newId("ba"),
+            fileId: it.attachmentId,
+            name: it.attachmentName ?? "資料",
+            no: ++nextNo,
+          };
+          attachments.push(a);
+        }
+        return {
+          ...it,
+          attachmentRef: a.id,
+          attachmentId: undefined,
+          attachmentName: undefined,
+        };
+      });
+    }
+  }
+
   return {
     ...raw,
     lomName: raw.lomName || LOM_NAME,
-    revenue: fix(raw.revenue, REVENUE_CATEGORIES),
-    expense: fix(raw.expense, EXPENSE_CATEGORIES),
+    revenue,
+    expense,
+    attachments,
   };
+}
+
+// ── 資料プール操作 ──
+
+/** 同名の資料が既にあればそれを返す。無ければ新規に採番して追加。 */
+export function addOrReuseAttachment(
+  doc: BudgetDoc,
+  fileId: string,
+  name: string
+): { doc: BudgetDoc; attachment: BudgetAttachment } {
+  const existing = doc.attachments.find((a) => a.name === name);
+  if (existing) return { doc, attachment: existing };
+  const no =
+    doc.attachments.reduce((m, a) => Math.max(m, a.no), 0) + 1;
+  const attachment: BudgetAttachment = { id: newId("ba"), fileId, name, no };
+  return {
+    doc: { ...doc, attachments: [...doc.attachments, attachment] },
+    attachment,
+  };
+}
+
+/** どの行からも参照されなくなった資料プール項目を掃除（file_objects も削除） */
+export function pruneAttachments(doc: BudgetDoc): BudgetDoc {
+  const refs = new Set(
+    [...doc.revenue, ...doc.expense]
+      .flatMap((c) => c.items)
+      .map((it) => it.attachmentRef)
+      .filter(Boolean)
+  );
+  const kept = doc.attachments.filter((a) => refs.has(a.id));
+  const removed = doc.attachments.filter((a) => !refs.has(a.id));
+  for (const a of removed) void deleteFileObj(a.fileId);
+  return removed.length ? { ...doc, attachments: kept } : doc;
+}
+
+export function attachmentOf(
+  doc: BudgetDoc,
+  ref: string | null | undefined
+): BudgetAttachment | undefined {
+  if (!ref) return undefined;
+  return doc.attachments.find((a) => a.id === ref);
 }
 
 // ── 集計 ──
@@ -254,11 +348,10 @@ export function deleteBudget(id: string): void {
   notify();
   // 添付ファイル（見積書など）も片付ける
   if (doc) {
-    const attachIds = [...doc.revenue, ...doc.expense]
-      .flatMap((c) => c.items)
-      .map((it) => it.attachmentId)
-      .filter((v): v is string => !!v);
-    for (const fid of attachIds) void deleteFileObj(fid);
+    for (const a of doc.attachments ?? []) void deleteFileObj(a.fileId);
+    // 旧形式の取りこぼしも
+    for (const it of [...doc.revenue, ...doc.expense].flatMap((c) => c.items))
+      if (it.attachmentId) void deleteFileObj(it.attachmentId);
   }
   void db().from("budget_docs").delete().eq("id", id);
 }

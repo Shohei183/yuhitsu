@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBudget } from "@/lib/useBudgetStore";
@@ -14,6 +14,9 @@ import {
   categoryTotal,
   sectionTotal,
   balance,
+  attachmentOf,
+  addOrReuseAttachment,
+  pruneAttachments,
 } from "@/lib/budgetStore";
 import { useCan } from "@/lib/useOrg";
 import { jpNum } from "@/lib/format";
@@ -54,17 +57,6 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   const readOnly = !can.editGian;
   const update = (next: BudgetDoc) => saveBudget(budgetId, next);
   const setField = (patch: Partial<BudgetDoc>) => update({ ...budget, ...patch });
-
-  const mutateCat = (
-    section: "revenue" | "expense",
-    catName: string,
-    fn: (c: BudgetCategory) => BudgetCategory
-  ) => {
-    update({
-      ...budget,
-      [section]: budget[section].map((c) => (c.name === catName ? fn(c) : c)),
-    });
-  };
 
   const rev = sectionTotal(budget.revenue);
   const exp = sectionTotal(budget.expense);
@@ -150,20 +142,20 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
         {tab === "form2" && (
           <CategoryGroup
             heading="収益明細書"
-            budgetId={budgetId}
-            cats={budget.revenue}
+            budget={budget}
+            section="revenue"
+            update={update}
             readOnly={readOnly}
-            onMutate={(name, fn) => mutateCat("revenue", name, fn)}
           />
         )}
 
         {tab === "form3" && (
           <CategoryGroup
             heading="費用明細書"
-            budgetId={budgetId}
-            cats={budget.expense}
+            budget={budget}
+            section="expense"
+            update={update}
             readOnly={readOnly}
-            onMutate={(name, fn) => mutateCat("expense", name, fn)}
             showAttachments
           />
         )}
@@ -247,35 +239,37 @@ function Form1Summary({
 
 function CategoryGroup({
   heading,
-  budgetId,
-  cats,
+  budget,
+  section,
+  update,
   readOnly,
-  onMutate,
   showAttachments,
 }: {
   heading: string;
-  budgetId: string;
-  cats: BudgetCategory[];
+  budget: BudgetDoc;
+  section: "revenue" | "expense";
+  update: (b: BudgetDoc) => void;
   readOnly: boolean;
-  onMutate: (name: string, fn: (c: BudgetCategory) => BudgetCategory) => void;
   showAttachments?: boolean;
 }) {
-  // 添付のある明細行に通し番号を振る（サンプル H 列の「1」「5」のような表示）
-  const attachNo = useMemo(() => {
-    const map = new Map<string, number>();
-    let n = 0;
-    for (const c of cats)
-      for (const it of c.items)
-        if (it.attachmentId) map.set(it.id, ++n);
-    return map;
-  }, [cats]);
+  const cats = budget[section];
+
+  const mutateCat = (
+    catName: string,
+    fn: (c: BudgetCategory) => BudgetCategory
+  ) =>
+    update({
+      ...budget,
+      [section]: cats.map((c) => (c.name === catName ? fn(c) : c)),
+    });
 
   return (
     <div className={styles.group}>
       <h3 className={styles.h3}>{heading}</h3>
       {showAttachments && (
         <p className={styles.hint}>
-          見積書などは各明細行の右端「資料」から添付できます。
+          見積書などは各明細行の右端「資料」から添付します。同じファイルを複数行に付けると
+          番号も同じになります。
         </p>
       )}
       {cats.map((c) => (
@@ -299,13 +293,14 @@ function CategoryGroup({
                 {c.items.map((it) => (
                   <ItemRow
                     key={it.id}
-                    budgetId={budgetId}
+                    budget={budget}
+                    section={section}
                     catName={c.name}
                     item={it}
                     readOnly={readOnly}
-                    onMutate={onMutate}
+                    update={update}
+                    mutateCat={mutateCat}
                     showAttachment={!!showAttachments}
-                    attachNo={attachNo.get(it.id)}
                   />
                 ))}
               </tbody>
@@ -316,7 +311,7 @@ function CategoryGroup({
               type="button"
               className={styles.addBtn}
               onClick={() =>
-                onMutate(c.name, (cat) => ({
+                mutateCat(c.name, (cat) => ({
                   ...cat,
                   items: [...cat.items, blankLineItem()],
                 }))
@@ -332,50 +327,77 @@ function CategoryGroup({
 }
 
 function ItemRow({
-  budgetId,
+  budget,
+  section,
   catName,
   item,
   readOnly,
-  onMutate,
+  update,
+  mutateCat,
   showAttachment,
-  attachNo,
 }: {
-  budgetId: string;
+  budget: BudgetDoc;
+  section: "revenue" | "expense";
   catName: string;
   item: BudgetLineItem;
   readOnly: boolean;
-  onMutate: (name: string, fn: (c: BudgetCategory) => BudgetCategory) => void;
+  update: (b: BudgetDoc) => void;
+  mutateCat: (name: string, fn: (c: BudgetCategory) => BudgetCategory) => void;
   showAttachment: boolean;
-  attachNo?: number;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [picking, setPicking] = useState(false);
+
+  const att = attachmentOf(budget, item.attachmentRef);
 
   const patchItem = (patch: Partial<BudgetLineItem>) =>
-    onMutate(catName, (cat) => ({
+    mutateCat(catName, (cat) => ({
       ...cat,
       items: cat.items.map((x) => (x.id === item.id ? { ...x, ...patch } : x)),
     }));
 
-  const onPickFile = async (file: File | undefined) => {
+  /** 明細行の attachmentRef を差し替えた新 doc を返す */
+  const withRef = (doc: BudgetDoc, ref: string | null): BudgetDoc => ({
+    ...doc,
+    [section]: doc[section].map((c) =>
+      c.name === catName
+        ? {
+            ...c,
+            items: c.items.map((x) =>
+              x.id === item.id ? { ...x, attachmentRef: ref } : x
+            ),
+          }
+        : c
+    ),
+  });
+
+  const onUpload = async (file: File | undefined) => {
     if (!file) return;
     setBusy(true);
     try {
-      const obj = await uploadFile("budget", budgetId, file);
-      patchItem({ attachmentId: obj.id, attachmentName: obj.name });
+      const obj = await uploadFile("budget", budget.id, file);
+      const { doc, attachment } = addOrReuseAttachment(budget, obj.id, obj.name);
+      // 同名で既存が使われた場合は今アップした重複を消す
+      if (attachment.fileId !== obj.id) {
+        void deleteFileObj(obj.id);
+      }
+      update(pruneAttachments(withRef(doc, attachment.id)));
     } catch (e) {
       alert(e instanceof Error ? e.message : "添付に失敗しました");
     } finally {
       setBusy(false);
+      setPicking(false);
     }
   };
 
-  const removeAttachment = async () => {
-    if (item.attachmentId) {
-      const id = item.attachmentId;
-      patchItem({ attachmentId: null, attachmentName: null });
-      await deleteFileObj(id);
-    }
+  const chooseExisting = (attId: string) => {
+    update(withRef(budget, attId));
+    setPicking(false);
+  };
+
+  const detach = () => {
+    update(pruneAttachments(withRef(budget, null)));
   };
 
   return (
@@ -405,55 +427,81 @@ function ItemRow({
       </td>
       {showAttachment && (
         <td className={styles.atCell}>
-          {item.attachmentId ? (
+          {att ? (
             <span className={styles.attach}>
               <button
                 type="button"
                 className={styles.attachLink}
-                title={item.attachmentName ?? "資料を開く"}
-                onClick={() =>
-                  openFileByIdAsync(
-                    item.attachmentId!,
-                    item.attachmentName ?? "資料"
-                  )
-                }
+                title={att.name}
+                onClick={() => openFileByIdAsync(att.fileId, att.name)}
               >
-                {attachNo ?? "📎"}
+                {att.no}
               </button>
               {!readOnly && (
                 <button
                   type="button"
                   className={styles.attachX}
-                  title="添付を外す"
-                  onClick={removeAttachment}
+                  title="この行から外す"
+                  onClick={detach}
                 >
                   ×
                 </button>
               )}
             </span>
           ) : (
-            !readOnly && (
-              <>
+            !readOnly &&
+            (picking ? (
+              <span className={styles.pick}>
+                <select
+                  className={styles.pickSel}
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value === "__new") fileRef.current?.click();
+                    else if (e.target.value) chooseExisting(e.target.value);
+                  }}
+                >
+                  <option value="" disabled>
+                    選択…
+                  </option>
+                  <option value="__new">＋ 新しい資料をアップロード</option>
+                  {budget.attachments.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.no}. {a.name}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="button"
-                  className={styles.attachAdd}
-                  disabled={busy}
-                  onClick={() => fileRef.current?.click()}
+                  className={styles.attachX}
+                  onClick={() => setPicking(false)}
                 >
-                  {busy ? "…" : "＋"}
+                  ×
                 </button>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  hidden
-                  onChange={(e) => {
-                    onPickFile(e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
-                />
-              </>
-            )
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={styles.attachAdd}
+                disabled={busy}
+                onClick={() =>
+                  budget.attachments.length > 0
+                    ? setPicking(true)
+                    : fileRef.current?.click()
+                }
+              >
+                {busy ? "…" : "＋"}
+              </button>
+            ))
           )}
+          <input
+            ref={fileRef}
+            type="file"
+            hidden
+            onChange={(e) => {
+              onUpload(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
         </td>
       )}
       <td>
@@ -462,10 +510,16 @@ function ItemRow({
             type="button"
             className={styles.xBtn}
             onClick={() =>
-              onMutate(catName, (cat) => ({
-                ...cat,
-                items: cat.items.filter((x) => x.id !== item.id),
-              }))
+              update(
+                pruneAttachments({
+                  ...budget,
+                  [section]: budget[section].map((c) =>
+                    c.name === catName
+                      ? { ...c, items: c.items.filter((x) => x.id !== item.id) }
+                      : c
+                  ),
+                })
+              )
             }
           >
             ×

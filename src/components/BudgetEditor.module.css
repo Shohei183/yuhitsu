@@ -294,3 +294,13 @@
   padding: 1px 7px;
   cursor: pointer;
 }
+
+.pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.pickSel {
+  font-size: 11px;
+  max-width: 150px;
+}
