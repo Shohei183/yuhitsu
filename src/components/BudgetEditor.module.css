@@ -41,15 +41,21 @@
   cursor: pointer;
 }
 
-/* カードは常に中央 900px。資料パネルはその右の余白へ絶対配置（カードは動かない） */
+/* 本体カード（最大900px）＋ 右の資料パネル（280px）を横並び */
 .pageBody {
-  max-width: 900px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 1200px;
   margin: 0 auto;
-  position: relative;
 }
 
 .card {
-  width: 100%;
+  flex: 1 1 600px;
+  min-width: 0;
+  max-width: 900px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -332,12 +338,12 @@
   padding: 0 3px;
 }
 
-/* 費用明細タブ：カードの右余白に置く資料パネル */
+/* 費用明細タブ：カードの右に置く資料パネル */
 .side {
-  position: absolute;
-  top: 0;
-  left: calc(100% + 20px);
-  width: 280px;
+  flex: 0 0 280px;
+  align-self: flex-start;
+  position: sticky;
+  top: 12px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -448,11 +454,17 @@
 }
 
 /* 右余白が足りない画面では資料パネルをカードの下へ */
-@media (max-width: 1540px) {
+/* 狭い画面：資料パネルをカードの下へ全幅で */
+@media (max-width: 980px) {
+  .pageBody {
+    flex-direction: column;
+    align-items: center;
+  }
   .side {
-    position: static;
+    flex: 1 1 auto;
     width: 100%;
-    margin-top: 16px;
+    max-width: 900px;
+    position: static;
     box-shadow: none;
   }
 }
