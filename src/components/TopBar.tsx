@@ -118,9 +118,7 @@ export default function TopBar() {
             <Link href="/roles" className={styles.navLink}>
               ロール権限
             </Link>
-            <Link href="/sync-lab" className={styles.navLink}>
-              同期ラボ
-            </Link>
+            {/* 同期機能は後回し。/sync-lab のルートは残すがナビからは隠す */}
           </>
         )}
 
