@@ -18,11 +18,13 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
       <div className={styles.page}>
         <div className={styles.notFound}>
           <p>予算書が見つかりません。</p>
-          <Link href="/budget">← 予算書一覧へ</Link>
+          <Link href="/">← トップへ</Link>
         </div>
       </div>
     );
   }
+
+  const backHref = budget.gianId ? `/gian/${budget.gianId}` : "/";
 
   const onDownload = () =>
     downloadDocHtml(
@@ -34,8 +36,8 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href="/budget" className={styles.navLink}>
-          ← 予算書一覧
+        <Link href={backHref} className={styles.navLink}>
+          {budget.gianId ? "← 議案へ戻る" : "← トップへ"}
         </Link>
         {can.editGian && (
           <Link href={`/budget/${budgetId}`} className={styles.navLink}>

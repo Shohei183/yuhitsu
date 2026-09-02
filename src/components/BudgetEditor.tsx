@@ -48,11 +48,13 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
       <div className={styles.page}>
         <div className={styles.card}>
           <p>予算書が見つかりません。</p>
-          <Link href="/budget">← 予算書一覧へ</Link>
+          <Link href="/">← トップへ</Link>
         </div>
       </div>
     );
   }
+
+  const backHref = budget.gianId ? `/gian/${budget.gianId}` : "/";
 
   const readOnly = !can.editGian;
   const update = (next: BudgetDoc) => saveBudget(budgetId, next);
@@ -72,17 +74,12 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href="/budget" className={styles.navLink}>
-          ← 予算書一覧
+        <Link href={backHref} className={styles.navLink}>
+          {budget.gianId ? "← 議案へ戻る" : "← トップへ"}
         </Link>
         <Link href={`/budget/${budgetId}/view`} className={styles.navLink}>
           閲覧・印刷 →
         </Link>
-        {budget.gianId && (
-          <Link href={`/gian/${budget.gianId}`} className={styles.navLink}>
-            紐づく議案へ →
-          </Link>
-        )}
         <button type="button" className={styles.dlBtn} onClick={onDownload}>
           ダウンロード
         </button>
@@ -93,7 +90,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
             onClick={() => {
               if (confirm("この予算書を削除します。よろしいですか？")) {
                 deleteBudget(budgetId);
-                router.push("/budget");
+                router.push(backHref);
               }
             }}
           >
