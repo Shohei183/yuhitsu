@@ -54,7 +54,6 @@ export default function RolePermAdmin() {
         <p className={styles.note}>
           ロールを選び、そのロールでできる操作をチェックで切り替えます。変更は即座に反映され、
           該当ロールのユーザー（および上部バーの「デモ表示」で切り替えたロール）で挙動が変わります。
-          プロトタイプのため <code>localStorage</code> に保存されます。
         </p>
         <p className={styles.note}>
           いまログイン中のあなたの実効ロール：

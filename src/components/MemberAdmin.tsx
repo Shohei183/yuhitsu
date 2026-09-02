@@ -88,7 +88,7 @@ export default function MemberAdmin() {
         <p className={styles.note}>
           アカウントの発行・退会（LOM 全体・年度非依存）と、
           <strong>{year?.label ?? yearId}</strong> のロール割当を行います。
-          年度は上部バーの年度タブで切り替えます。プロトタイプのためダミーデータです。
+          年度は上部バーの年度タブで切り替えます。
         </p>
         <Link href="/" className={styles.back}>
           ← トップへ
