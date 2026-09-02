@@ -10,8 +10,19 @@
   },
   "observability": {
     "enabled": true
+  },
+
+  // 非機密の環境変数はここに置く（`wrangler deploy` はダッシュボードの平文変数を
+  // この内容で上書きするため、ダッシュボード側だけに置くと消える）。
+  // これらは公開されても問題ない値（Supabase URL・publishable キー・R2 アカウントID 等）。
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://oxrlfveljtwzdeuyjrkp.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_okAGXj4uZ4ibqYWOguqrow_LNm_YWwc",
+    "NEXT_PUBLIC_SITE_URL": "https://yuhitsu.yoroizuka.workers.dev",
+    "R2_ACCOUNT_ID": "900fe0c60b71d09b20c765747aaead2a",
+    "R2_BUCKET": "yuhitsu-files"
   }
-  // 環境変数（NEXT_PUBLIC_* / SUPABASE_SERVICE_ROLE_KEY / R2_* / NEXT_PUBLIC_SITE_URL）は
-  // Cloudflare ダッシュボードの「Variables and Secrets」で設定する。
-  // NEXT_PUBLIC_* はビルド時に埋め込まれるため、ビルド設定側にも必要。
+
+  // 機密（消えない・ダッシュボードの Secret のまま）:
+  //   SUPABASE_SERVICE_ROLE_KEY / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY
 }
