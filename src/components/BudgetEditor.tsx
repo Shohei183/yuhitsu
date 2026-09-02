@@ -376,14 +376,18 @@ function ItemRow({
   return (
     <tr>
       <td>
-        <input
+        <textarea
+          className={styles.cellInput}
+          rows={1}
           value={item.subItem}
           readOnly={readOnly}
           onChange={(e) => patchItem({ subItem: e.target.value })}
         />
       </td>
       <td>
-        <input
+        <textarea
+          className={styles.cellInput}
+          rows={1}
           value={item.note}
           readOnly={readOnly}
           onChange={(e) => patchItem({ note: e.target.value })}

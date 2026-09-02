@@ -48,10 +48,20 @@ function Form1Section({ label, cats }: { label: string; cats: BudgetCategory[] }
   );
 }
 
-export default function BudgetDoc({ budget }: { budget: TBudgetDoc }) {
+export type BudgetForm = "form1" | "form2" | "form3";
+
+export default function BudgetDoc({
+  budget,
+  only,
+}: {
+  budget: TBudgetDoc;
+  /** 指定した様式だけ描画（閲覧タブ用）。省略で全様式（印刷・DL用） */
+  only?: BudgetForm;
+}) {
   const rev = sectionTotal(budget.revenue);
   const exp = sectionTotal(budget.expense);
   const bal = balance(budget);
+  const show = (f: BudgetForm) => !only || only === f;
 
   return (
     <article className={styles.doc}>
@@ -62,65 +72,77 @@ export default function BudgetDoc({ budget }: { budget: TBudgetDoc }) {
         <div className={styles.unit}>（単位：円）</div>
       </header>
 
-      <h2 className={styles.h2}>［様式1］収支予算書</h2>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.colCat}>科目</th>
-            <th className={styles.colAmt}>予算額</th>
-            <th>摘要</th>
-          </tr>
-        </thead>
-        <tbody>
-          <Form1Section label="（収益の部）" cats={budget.revenue} />
-          <tr className={styles.totalRow}>
-            <td>収益計</td>
-            <td className={styles.amount}>{yen(rev)}</td>
-            <td />
-          </tr>
-          <Form1Section label="（費用の部）" cats={budget.expense} />
-          <tr className={styles.totalRow}>
-            <td>費用計</td>
-            <td className={styles.amount}>{yen(exp)}</td>
-            <td />
-          </tr>
-          <tr className={styles.balanceRow}>
-            <td>収支差額</td>
-            <td className={styles.amount}>{yen(bal)}</td>
-            <td />
-          </tr>
-        </tbody>
-      </table>
+      {show("form1") && (
+        <>
+          <h2 className={styles.h2}>［様式1］収支予算書</h2>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th className={styles.colCat}>科目</th>
+                <th className={styles.colAmt}>予算額</th>
+                <th>摘要</th>
+              </tr>
+            </thead>
+            <tbody>
+              <Form1Section label="（収益の部）" cats={budget.revenue} />
+              <tr className={styles.totalRow}>
+                <td>収益計</td>
+                <td className={styles.amount}>{yen(rev)}</td>
+                <td />
+              </tr>
+              <Form1Section label="（費用の部）" cats={budget.expense} />
+              <tr className={styles.totalRow}>
+                <td>費用計</td>
+                <td className={styles.amount}>{yen(exp)}</td>
+                <td />
+              </tr>
+              <tr className={styles.balanceRow}>
+                <td>収支差額</td>
+                <td className={styles.amount}>{yen(bal)}</td>
+                <td />
+              </tr>
+            </tbody>
+          </table>
+        </>
+      )}
 
-      <h2 className={styles.h2}>［様式2］収益明細書</h2>
-      <BudgetDetail cats={budget.revenue} attachments={budget.attachments} />
+      {show("form2") && (
+        <>
+          <h2 className={styles.h2}>［様式2］収益明細書</h2>
+          <BudgetDetail cats={budget.revenue} attachments={budget.attachments} />
+        </>
+      )}
 
-      <h2 className={styles.h2}>［様式3］費用明細書</h2>
-      <BudgetDetail
-        cats={budget.expense}
-        attachments={budget.attachments}
-        withAttachments
-      />
+      {show("form3") && (
+        <>
+          <h2 className={styles.h2}>［様式3］費用明細書</h2>
+          <BudgetDetail
+            cats={budget.expense}
+            attachments={budget.attachments}
+            withAttachments
+          />
 
-      {budget.attachments.length > 0 && (
-        <div className={styles.attachPool}>
-          <h3 className={styles.h3}>添付資料</h3>
-          <ol className={styles.attachList}>
-            {[...budget.attachments]
-              .sort((a, b) => a.no - b.no)
-              .map((a) => (
-                <li key={a.id} value={a.no}>
-                  <button
-                    type="button"
-                    className={styles.attachLink}
-                    onClick={() => openFileByIdAsync(a.fileId, a.name)}
-                  >
-                    {a.name}
-                  </button>
-                </li>
-              ))}
-          </ol>
-        </div>
+          {budget.attachments.length > 0 && (
+            <div className={styles.attachPool}>
+              <h3 className={styles.h3}>添付資料</h3>
+              <ol className={styles.attachList}>
+                {[...budget.attachments]
+                  .sort((a, b) => a.no - b.no)
+                  .map((a) => (
+                    <li key={a.id} value={a.no}>
+                      <button
+                        type="button"
+                        className={styles.attachLink}
+                        onClick={() => openFileByIdAsync(a.fileId, a.name)}
+                      >
+                        {a.name}
+                      </button>
+                    </li>
+                  ))}
+              </ol>
+            </div>
+          )}
+        </>
       )}
     </article>
   );

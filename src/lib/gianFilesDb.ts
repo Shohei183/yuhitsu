@@ -47,29 +47,23 @@ function toMeta(f: FileObj): GianFileMeta {
 
 export const subscribe = subscribeFiles;
 
-/** 資料のファイル名プレフィックス（種類を表す記号＋番号） */
-const NAME_PREFIX: Record<GianFileCategory, string> = {
-  review: "審議",
-  reference: "参考",
-};
-/** 既存プレフィックス（審 / 審議 / 参 / 参考 ＋ 数字 ＋ 区切り）を落とす */
-const PREFIX_RE = /^\s*(?:審議|参考|審|参)\s*\d+\s*[-__.\s]+/;
+/**
+ * ファイル名の先頭にある資料番号を読む（「審議1-…」「審1_…」「1. …」など）。
+ * 無ければ null。表示時の並べ替えに使う（リネームはしない）。
+ */
+export function resourceNo(name: string): number | null {
+  const m = name.match(/^\s*(?:審議|参考|審|参)?\s*(\d+)/);
+  return m ? Number(m[1]) : null;
+}
 
-function prefixedName(
-  category: GianFileCategory,
-  original: string,
-  existing: GianFileMeta[]
-): string {
-  const title = original.replace(PREFIX_RE, "").trim() || original;
-  const pfx = NAME_PREFIX[category];
-  const used = existing
-    .map((f) => {
-      const m = f.name.match(/^(?:審議|参考|審|参)\s*(\d+)/);
-      return m ? Number(m[1]) : 0;
-    })
-    .filter((n) => n > 0);
-  const next = (used.length ? Math.max(...used) : 0) + 1;
-  return `${pfx}${next}-${title}`;
+/** 資料番号 昇順（番号なしは末尾・その中は元の順） */
+function byResourceNo(a: GianFileMeta, b: GianFileMeta): number {
+  const na = resourceNo(a.name);
+  const nb = resourceNo(b.name);
+  if (na != null && nb != null) return na - nb;
+  if (na != null) return -1;
+  if (nb != null) return 1;
+  return a.addedAt.localeCompare(b.addedAt);
 }
 
 export async function putGianFile(
@@ -77,13 +71,9 @@ export async function putGianFile(
   category: GianFileCategory,
   file: File
 ): Promise<GianFileMeta> {
-  // 「審議N-タイトル」「参考N-タイトル」に自動リネームして保存
-  const existing = await listGianFiles(gianId, category);
-  const newName = prefixedName(category, file.name, existing);
-  const renamed =
-    newName === file.name ? file : new File([file], newName, { type: file.type });
+  // リネームはしない。ファイル名の番号は表示時に読み取って並べ替えるだけ。
   return toMeta(
-    await uploadFile("gian", gianId, renamed, { category, gianId })
+    await uploadFile("gian", gianId, file, { category, gianId })
   );
 }
 
@@ -91,13 +81,13 @@ export async function listGianFiles(
   gianId: string,
   category: GianFileCategory
 ): Promise<GianFileMeta[]> {
-  return (await listFiles("gian", gianId, category)).map(toMeta);
+  return (await listFiles("gian", gianId, category)).map(toMeta).sort(byResourceNo);
 }
 
 export async function listAllGianFiles(
   gianId: string
 ): Promise<{ review: GianFileMeta[]; reference: GianFileMeta[] }> {
-  const all = (await listFiles("gian", gianId)).map(toMeta);
+  const all = (await listFiles("gian", gianId)).map(toMeta).sort(byResourceNo);
   return {
     review: all.filter((f) => f.category === "review"),
     reference: all.filter((f) => f.category === "reference"),

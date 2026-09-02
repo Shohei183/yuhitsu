@@ -55,6 +55,7 @@
   border-collapse: collapse;
   font-size: 13px;
   margin-bottom: 6px;
+  table-layout: fixed;
 }
 .table th,
 .table td {
@@ -63,6 +64,8 @@
   text-align: left;
   vertical-align: top;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .table thead th {
   background: var(--panel);
