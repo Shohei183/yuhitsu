@@ -150,14 +150,23 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
         )}
 
         {tab === "form3" && (
-          <CategoryGroup
-            heading="費用明細書"
-            budget={budget}
-            section="expense"
-            update={update}
-            readOnly={readOnly}
-            showAttachments
-          />
+          <div className={styles.form3Layout}>
+            <div className={styles.form3Main}>
+              <CategoryGroup
+                heading="費用明細書"
+                budget={budget}
+                section="expense"
+                update={update}
+                readOnly={readOnly}
+                showAttachments
+              />
+            </div>
+            <AttachmentPanel
+              budget={budget}
+              update={update}
+              readOnly={readOnly}
+            />
+          </div>
         )}
       </div>
 
@@ -268,8 +277,7 @@ function CategoryGroup({
       <h3 className={styles.h3}>{heading}</h3>
       {showAttachments && (
         <p className={styles.hint}>
-          見積書などは各明細行の右端「資料」から添付します。同じファイルを複数行に付けると
-          番号も同じになります。
+          見積書などは右の「資料」パネルにアップロードし、各明細行の「資料」で番号を選びます。
         </p>
       )}
       {cats.map((c) => (
@@ -284,7 +292,7 @@ function CategoryGroup({
                 <tr>
                   <th className={styles.subCol}>細目</th>
                   <th>摘要（算出根拠）</th>
-                  <th className={styles.amtCol}>金額</th>
+                  <th className={styles.itemAmtCol}>金額</th>
                   {showAttachments && <th className={styles.atCol}>資料</th>}
                   <th className={styles.xCol} />
                 </tr>
@@ -345,10 +353,6 @@ function ItemRow({
   mutateCat: (name: string, fn: (c: BudgetCategory) => BudgetCategory) => void;
   showAttachment: boolean;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const [picking, setPicking] = useState(false);
-
   const att = attachmentOf(budget, item.attachmentRef);
 
   const patchItem = (patch: Partial<BudgetLineItem>) =>
@@ -357,47 +361,22 @@ function ItemRow({
       items: cat.items.map((x) => (x.id === item.id ? { ...x, ...patch } : x)),
     }));
 
-  /** 明細行の attachmentRef を差し替えた新 doc を返す */
-  const withRef = (doc: BudgetDoc, ref: string | null): BudgetDoc => ({
-    ...doc,
-    [section]: doc[section].map((c) =>
-      c.name === catName
-        ? {
-            ...c,
-            items: c.items.map((x) =>
-              x.id === item.id ? { ...x, attachmentRef: ref } : x
-            ),
-          }
-        : c
-    ),
-  });
-
-  const onUpload = async (file: File | undefined) => {
-    if (!file) return;
-    setBusy(true);
-    try {
-      const obj = await uploadFile("budget", budget.id, file);
-      const { doc, attachment } = addOrReuseAttachment(budget, obj.id, obj.name);
-      // 同名で既存が使われた場合は今アップした重複を消す
-      if (attachment.fileId !== obj.id) {
-        void deleteFileObj(obj.id);
-      }
-      update(pruneAttachments(withRef(doc, attachment.id)));
-    } catch (e) {
-      alert(e instanceof Error ? e.message : "添付に失敗しました");
-    } finally {
-      setBusy(false);
-      setPicking(false);
-    }
-  };
-
-  const chooseExisting = (attId: string) => {
-    update(withRef(budget, attId));
-    setPicking(false);
-  };
-
-  const detach = () => {
-    update(pruneAttachments(withRef(budget, null)));
+  const setRef = (ref: string | null) => {
+    update(
+      pruneAttachments({
+        ...budget,
+        [section]: budget[section].map((c) =>
+          c.name === catName
+            ? {
+                ...c,
+                items: c.items.map((x) =>
+                  x.id === item.id ? { ...x, attachmentRef: ref } : x
+                ),
+              }
+            : c
+        ),
+      })
+    );
   };
 
   return (
@@ -420,6 +399,7 @@ function ItemRow({
         <input
           className={styles.amtInput}
           inputMode="numeric"
+          maxLength={12}
           value={item.amount}
           readOnly={readOnly}
           onChange={(e) => patchItem({ amount: e.target.value })}
@@ -427,81 +407,46 @@ function ItemRow({
       </td>
       {showAttachment && (
         <td className={styles.atCell}>
-          {att ? (
-            <span className={styles.attach}>
+          {readOnly ? (
+            att ? (
               <button
                 type="button"
                 className={styles.attachLink}
-                title={att.name}
                 onClick={() => openFileByIdAsync(att.fileId, att.name)}
               >
-                {att.no}
+                {att.no}. {att.name}
               </button>
-              {!readOnly && (
-                <button
-                  type="button"
-                  className={styles.attachX}
-                  title="この行から外す"
-                  onClick={detach}
-                >
-                  ×
-                </button>
-              )}
-            </span>
+            ) : (
+              ""
+            )
           ) : (
-            !readOnly &&
-            (picking ? (
-              <span className={styles.pick}>
-                <select
-                  className={styles.pickSel}
-                  defaultValue=""
-                  onChange={(e) => {
-                    if (e.target.value === "__new") fileRef.current?.click();
-                    else if (e.target.value) chooseExisting(e.target.value);
-                  }}
-                >
-                  <option value="" disabled>
-                    選択…
-                  </option>
-                  <option value="__new">＋ 新しい資料をアップロード</option>
-                  {budget.attachments.map((a) => (
+            <div className={styles.atPick}>
+              <select
+                className={styles.atSelect}
+                value={item.attachmentRef ?? ""}
+                onChange={(e) => setRef(e.target.value || null)}
+              >
+                <option value="">— なし —</option>
+                {[...budget.attachments]
+                  .sort((a, b) => a.no - b.no)
+                  .map((a) => (
                     <option key={a.id} value={a.id}>
                       {a.no}. {a.name}
                     </option>
                   ))}
-                </select>
+              </select>
+              {att && (
                 <button
                   type="button"
-                  className={styles.attachX}
-                  onClick={() => setPicking(false)}
+                  className={styles.atOpen}
+                  title="開く"
+                  onClick={() => openFileByIdAsync(att.fileId, att.name)}
                 >
-                  ×
+                  ↗
                 </button>
-              </span>
-            ) : (
-              <button
-                type="button"
-                className={styles.attachAdd}
-                disabled={busy}
-                onClick={() =>
-                  budget.attachments.length > 0
-                    ? setPicking(true)
-                    : fileRef.current?.click()
-                }
-              >
-                {busy ? "…" : "＋"}
-              </button>
-            ))
+              )}
+            </div>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            hidden
-            onChange={(e) => {
-              onUpload(e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
         </td>
       )}
       <td>
@@ -527,5 +472,151 @@ function ItemRow({
         )}
       </td>
     </tr>
+  );
+}
+
+/** 費用明細タブの右カラム：見積書などの資料をアップロードして番号管理 */
+function AttachmentPanel({
+  budget,
+  update,
+  readOnly,
+}: {
+  budget: BudgetDoc;
+  update: (b: BudgetDoc) => void;
+  readOnly: boolean;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const list = [...budget.attachments].sort((a, b) => a.no - b.no);
+
+  const doUpload = async (files: FileList | File[]) => {
+    const arr = Array.from(files);
+    if (!arr.length) return;
+    setBusy(true);
+    setError(null);
+    try {
+      let doc = budget;
+      for (const f of arr) {
+        try {
+          const obj = await uploadFile("budget", budget.id, f);
+          const res = addOrReuseAttachment(doc, obj.id, obj.name);
+          if (res.attachment.fileId !== obj.id) void deleteFileObj(obj.id);
+          doc = res.doc;
+        } catch (e) {
+          setError(
+            e instanceof Error ? `${f.name}: ${e.message}` : `${f.name}: 失敗`
+          );
+        }
+      }
+      update(doc);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeAttachment = (attId: string) => {
+    const target = budget.attachments.find((a) => a.id === attId);
+    if (!target) return;
+    if (
+      !confirm(
+        `「${target.no}. ${target.name}」を削除します。参照している明細行の資料も外れます。`
+      )
+    )
+      return;
+    const cleared = (cats: BudgetCategory[]) =>
+      cats.map((c) => ({
+        ...c,
+        items: c.items.map((it) =>
+          it.attachmentRef === attId ? { ...it, attachmentRef: null } : it
+        ),
+      }));
+    update(
+      pruneAttachments({
+        ...budget,
+        revenue: cleared(budget.revenue),
+        expense: cleared(budget.expense),
+      })
+    );
+  };
+
+  return (
+    <aside className={styles.side}>
+      <div className={styles.sideTitle}>見積書などの資料</div>
+      {error && <div className={styles.sideErr}>{error}</div>}
+
+      {!readOnly && (
+        <div
+          className={`${styles.sideDz} ${dragOver ? styles.sideDzOver : ""}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            doUpload(e.dataTransfer.files);
+          }}
+        >
+          <span className={styles.sideDzText}>
+            {busy ? "アップロード中…" : "D&D または"}
+          </span>
+          {!busy && (
+            <button
+              type="button"
+              className={styles.sideSelect}
+              onClick={() => fileRef.current?.click()}
+            >
+              ファイルを選択
+            </button>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            multiple
+            hidden
+            onChange={(e) => {
+              if (e.target.files) doUpload(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </div>
+      )}
+
+      {list.length === 0 ? (
+        <p className={styles.sideEmpty}>資料がありません。</p>
+      ) : (
+        <ol className={styles.sideList}>
+          {list.map((a) => (
+            <li key={a.id} className={styles.sideItem}>
+              <span className={styles.sideNo}>{a.no}</span>
+              <button
+                type="button"
+                className={styles.sideName}
+                title={a.name}
+                onClick={() => openFileByIdAsync(a.fileId, a.name)}
+              >
+                {a.name}
+              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  className={styles.sideDel}
+                  onClick={() => removeAttachment(a.id)}
+                >
+                  削除
+                </button>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+      <p className={styles.sideHint}>
+        番号はアップロード順。明細行の「資料」でこの番号を選びます。
+      </p>
+    </aside>
   );
 }

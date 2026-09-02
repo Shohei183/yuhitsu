@@ -253,12 +253,166 @@
   border-bottom: 2px solid #fff;
 }
 
-/* 資料（見積書）添付セル */
+/* 明細テーブル：金額は狭く（最大8桁）、資料は広く */
+.itemAmtCol {
+  width: 92px;
+}
 .atCol {
-  width: 46px;
+  width: 124px;
 }
 .atCell {
+  text-align: left;
+}
+.atPick {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.atSelect {
+  flex: 1;
+  min-width: 0;
+  font-size: 11.5px;
+  padding: 2px 3px;
+}
+.atOpen {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0 3px;
+}
+
+/* 費用明細タブ：本体＋右カラム */
+.form3Layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.form3Main {
+  flex: 1;
+  min-width: 0;
+}
+.side {
+  flex-shrink: 0;
+  width: 240px;
+  position: sticky;
+  top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  background: var(--panel);
+}
+.sideTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.sideErr {
+  font-size: 11.5px;
+  color: var(--warn-fg);
+  margin-bottom: 6px;
+}
+.sideDz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border: 2px dashed var(--border-strong);
+  border-radius: 8px;
+  background: #fff;
   text-align: center;
+  margin-bottom: 10px;
+}
+.sideDzOver {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+}
+.sideDzText {
+  font-size: 11.5px;
+  color: var(--muted-strong);
+}
+.sideSelect {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--accent);
+  cursor: pointer;
+}
+.sideEmpty {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.sideList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sideItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+.sideNo {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sideName {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 11.5px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sideDel {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--warn-fg);
+  font-size: 11px;
+  cursor: pointer;
+}
+.sideHint {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .form3Layout {
+    flex-direction: column;
+  }
+  .side {
+    width: 100%;
+    position: static;
+  }
 }
 .attach {
   display: inline-flex;
