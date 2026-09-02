@@ -25,6 +25,8 @@ import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useGianStore } from "@/lib/useGianStore";
 import { useDistributionStore } from "@/lib/useDistributionStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
+import { useBudgetStore } from "@/lib/useBudgetStore";
+import { listBudgetsForYear } from "@/lib/budgetStore";
 import { useTemplate } from "@/lib/useTemplateStore";
 import { useActiveYear, useCan } from "@/lib/useOrg";
 import { setPeriod } from "@/lib/activeViewStore";
@@ -74,6 +76,7 @@ export default function YearHome() {
         committees={year.committees}
         canEdit={can.editCommittees}
       />
+      <BudgetSection yearId={year.id} />
       <PeriodsSection yearId={year.id} canCreate={can.createSidai} />
     </main>
   );
@@ -458,6 +461,26 @@ function ReplacementNotifications() {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+/* ── 事業収支予算書 ───────────── */
+
+function BudgetSection({ yearId }: { yearId: string }) {
+  useBudgetStore();
+  const budgets = listBudgetsForYear(yearId);
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHead}>
+        <h2 className={styles.h2}>事業収支予算書</h2>
+        <span className={styles.sectionNote}>
+          様式1（収支予算書）＋ 様式2・3（収益・費用明細書）
+        </span>
+      </div>
+      <Link href="/budget" className={styles.linkCard}>
+        💰 事業収支予算書の一覧・作成（{budgets.length} 件）→
+      </Link>
     </section>
   );
 }

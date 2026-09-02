@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   AssignedMember,
@@ -29,6 +30,8 @@ import {
   submitGian,
 } from "@/lib/gianStore";
 import { useGianEntry, useGianStore } from "@/lib/useGianStore";
+import { useBudgetStore } from "@/lib/useBudgetStore";
+import { budgetForGian, createBudget } from "@/lib/budgetStore";
 import { useCan, useCommitteeOfGian } from "@/lib/useOrg";
 import { jpNum, sumAmounts } from "@/lib/format";
 import GianResourcePanel from "./GianResourcePanel";
@@ -631,10 +634,24 @@ function GianNav({
     | undefined;
 }) {
   const gianStore = useGianStore();
+  const router = useRouter();
+  useBudgetStore();
   const cid = committeeInfo?.committee.id;
   const siblings = (committeeInfo?.committee.gianIds ?? []).filter(
     (id) => id !== gianId
   );
+
+  const linkedBudget = budgetForGian(gianId);
+  const onBudget = () => {
+    if (linkedBudget) {
+      router.push(`/budget/${linkedBudget.id}`);
+      return;
+    }
+    const yearId = committeeInfo?.year.id;
+    if (!yearId) return;
+    const id = createBudget({ yearId, gianId, title: gian.topic });
+    router.push(`/budget/${id}`);
+  };
 
   return (
     <nav className={styles.nav}>
@@ -643,6 +660,9 @@ function GianNav({
         <Link href={`/gian/${gianId}/view`} className={styles.navItem}>
           📄 議案を閲覧（読み取り専用）
         </Link>
+        <button type="button" className={styles.navItem} onClick={onBudget}>
+          💰 {linkedBudget ? "事業収支予算書を開く" : "事業収支予算書を作成"}
+        </button>
       </div>
 
       {committeeInfo && cid && (
