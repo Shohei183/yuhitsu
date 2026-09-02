@@ -9,10 +9,8 @@ import {
   GianFileCategory,
   GIAN_FILE_CATEGORY_LABEL,
   GianFileMeta,
-  getGianFileBlob,
 } from "@/lib/gianFilesDb";
-import { getDistFileBlob } from "@/lib/distFilesDb";
-import { openFileAsync } from "@/lib/sharedFilesDb";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
 import { isKihon, showsPriorFeedback } from "@/lib/gianStore";
 import { useGianEntry } from "@/lib/useGianStore";
@@ -553,11 +551,7 @@ function LiveResourceList({
               <button
                 type="button"
                 className={styles.fileLink}
-                onClick={() =>
-                  openFileAsync(f.name, () =>
-                    getGianFileBlob(f.id).then((got) => got?.blob)
-                  )
-                }
+                onClick={() => openFileByIdAsync(f.id, f.name)}
               >
                 📄 {f.name}
                 <span className={styles.fileLinkMark}> ↓</span>
@@ -593,11 +587,7 @@ function FrozenResourceList({
               <button
                 type="button"
                 className={styles.fileLink}
-                onClick={() =>
-                  openFileAsync(f.name, () =>
-                    getDistFileBlob(f.id).then((got) => got?.blob)
-                  )
-                }
+                onClick={() => openFileByIdAsync(f.id, f.name)}
               >
                 📄 {f.name}
                 <span className={styles.fileLinkMark}> ↓</span>

@@ -4,12 +4,10 @@ import { useRef, useState } from "react";
 import {
   GianFileCategory,
   GIAN_FILE_CATEGORY_LABEL,
-  MAX_GIAN_FILE_BYTES,
   deleteGianFile,
-  getGianFileBlob,
   putGianFile,
 } from "@/lib/gianFilesDb";
-import { openFileAsync } from "@/lib/sharedFilesDb";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
 import styles from "./GianResourcePanel.module.css";
 
@@ -55,7 +53,7 @@ export default function GianResourcePanel({
   };
 
   const onOpen = (id: string, name: string) => {
-    openFileAsync(name, () => getGianFileBlob(id).then((got) => got?.blob));
+    openFileByIdAsync(id, name);
   };
 
   return (
@@ -144,7 +142,7 @@ export default function GianResourcePanel({
 
       {editable && (
         <p className={styles.hint}>
-          1ファイル {Math.round(MAX_GIAN_FILE_BYTES / 1024 / 1024)}MB まで・形式自由
+          形式・容量制限なし
         </p>
       )}
     </div>

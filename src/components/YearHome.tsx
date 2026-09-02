@@ -10,17 +10,13 @@ import {
   removeCommittee,
 } from "@/lib/yearStore";
 import { STATUS_LABEL } from "@/lib/mockData";
+import { decideReplacement } from "@/lib/gianStore";
 import { dismiss as dismissNotifications } from "@/lib/notificationStore";
 import { useReplacementNotifications } from "@/lib/useNotifications";
 import { listDistributionsFor } from "@/lib/distributionStore";
 import { listSidaiFor } from "@/lib/sidaiStore";
-import {
-  deleteFixedFile,
-  getFixedFileBlob,
-  putFixedFile,
-  MAX_FIXED_FILE_BYTES,
-} from "@/lib/fixedFilesDb";
-import { openFileAsync } from "@/lib/sharedFilesDb";
+import { deleteFixedFile, putFixedFile } from "@/lib/fixedFilesDb";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useGianStore } from "@/lib/useGianStore";
 import { useDistributionStore } from "@/lib/useDistributionStore";
@@ -181,11 +177,7 @@ function FixedFilesSection({
                 type="button"
                 className={styles.fileLink}
                 title="開く（PDF等はタブ表示）"
-                onClick={() =>
-                  openFileAsync(f.name, () =>
-                    getFixedFileBlob(f.id).then((got) => got?.blob)
-                  )
-                }
+                onClick={() => openFileByIdAsync(f.id, f.name)}
               >
                 📄 {f.name}
               </button>
@@ -209,9 +201,7 @@ function FixedFilesSection({
       )}
 
       {canEdit && (
-        <p className={styles.addHint}>
-          1ファイル {Math.round(MAX_FIXED_FILE_BYTES / 1024 / 1024)}MB まで・形式自由
-        </p>
+        <p className={styles.addHint}>形式・容量の制限はありません</p>
       )}
     </section>
   );
@@ -451,13 +441,43 @@ function ReplacementNotifications() {
                 {new Date(n.request.requestedAt).toLocaleString("ja-JP")}
               </div>
             </div>
-            <button
-              type="button"
-              className={styles.miniBtn}
-              onClick={() => dismissNotifications(n.request.id)}
-            >
-              クリア
-            </button>
+            <div className={styles.notifActions}>
+              <button
+                type="button"
+                className={styles.approveBtn}
+                onClick={() => {
+                  if (
+                    confirm(
+                      "この差し替え申請を承認します。議案は「編集中」に戻り、担当者が修正できるようになります。よろしいですか？"
+                    )
+                  ) {
+                    decideReplacement(n.gianId, n.request.id, true);
+                    dismissNotifications(n.request.id);
+                  }
+                }}
+              >
+                承認（編集可に戻す）
+              </button>
+              <button
+                type="button"
+                className={styles.rejectBtn}
+                onClick={() => {
+                  if (confirm("この差し替え申請を却下します。よろしいですか？")) {
+                    decideReplacement(n.gianId, n.request.id, false);
+                    dismissNotifications(n.request.id);
+                  }
+                }}
+              >
+                却下
+              </button>
+              <button
+                type="button"
+                className={styles.miniBtn}
+                onClick={() => dismissNotifications(n.request.id)}
+              >
+                通知だけ消す
+              </button>
+            </div>
           </li>
         ))}
       </ul>

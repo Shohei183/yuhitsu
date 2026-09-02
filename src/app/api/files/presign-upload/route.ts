@@ -4,7 +4,7 @@ import { presignPut, buildKey, r2Configured } from "@/lib/r2";
 
 export const runtime = "nodejs";
 
-type Scope = "shared" | "gian" | "fixed" | "dist";
+type Scope = "shared" | "gian" | "fixed" | "dist" | "budget";
 
 /**
  * POST /api/files/presign-upload
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const mime = body.mime || "application/octet-stream";
   if (
     !scope ||
-    !["shared", "gian", "fixed", "dist"].includes(scope) ||
+    !["shared", "gian", "fixed", "dist", "budget"].includes(scope) ||
     !ownerId ||
     !name
   ) {

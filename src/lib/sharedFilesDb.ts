@@ -96,21 +96,11 @@ export function openFileAsync(
   name: string,
   fetchBlob: () => Promise<Blob | null | undefined>
 ): void {
+  // 表示できそうなファイルは、ポップアップブロック回避のためクリック直後に
+  // 空タブだけ開いておき（メッセージは出さない）、URL 準備後に差し替える。
   const holder = isViewableByName(name)
     ? window.open("about:blank", "_blank")
     : null;
-  if (holder) {
-    try {
-      holder.document.write(
-        '<!doctype html><meta charset="utf-8"><title>読み込み中…</title>' +
-          '<body style="font:14px/1.6 system-ui,sans-serif;padding:24px;color:#555">' +
-          "資料を読み込んでいます…</body>"
-      );
-      holder.document.close();
-    } catch {
-      /* noop */
-    }
-  }
 
   fetchBlob()
     .then((blob) => {

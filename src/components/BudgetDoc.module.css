@@ -149,3 +149,20 @@
     break-inside: avoid;
   }
 }
+
+.colNo {
+  width: 44px;
+}
+.noCell {
+  text-align: center;
+}
+.attachLink {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

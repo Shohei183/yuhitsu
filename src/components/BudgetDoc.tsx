@@ -11,20 +11,19 @@ import {
   balance,
 } from "@/lib/budgetStore";
 import { jpNum } from "@/lib/format";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import styles from "./BudgetDoc.module.css";
 
 function yen(n: number): string {
   return `¥${jpNum(n)}`;
 }
+function amountOf(s: string): number {
+  const n = Number(String(s).replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
 
 /** 様式1：科目ごとに1行（予算額＝明細合計） */
-function Form1Section({
-  label,
-  cats,
-}: {
-  label: string;
-  cats: BudgetCategory[];
-}) {
+function Form1Section({ label, cats }: { label: string; cats: BudgetCategory[] }) {
   return (
     <>
       <tr className={styles.sectionRow}>
@@ -62,7 +61,6 @@ export default function BudgetDoc({ budget }: { budget: TBudgetDoc }) {
         <div className={styles.unit}>（単位：円）</div>
       </header>
 
-      {/* 様式1 */}
       <h2 className={styles.h2}>［様式1］収支予算書</h2>
       <table className={styles.table}>
         <thead>
@@ -93,50 +91,68 @@ export default function BudgetDoc({ budget }: { budget: TBudgetDoc }) {
         </tbody>
       </table>
 
-      {/* 様式2・3 */}
-      <h2 className={styles.h2}>［様式2・3］収益・費用明細書</h2>
-      <BudgetDetail cats={budget.revenue} heading="収益明細書" />
-      <BudgetDetail cats={budget.expense} heading="費用明細書" />
+      <h2 className={styles.h2}>［様式2］収益明細書</h2>
+      <BudgetDetail cats={budget.revenue} />
+
+      <h2 className={styles.h2}>［様式3］費用明細書</h2>
+      <BudgetDetail cats={budget.expense} withAttachments />
     </article>
   );
 }
 
-/** 明細テーブル（金額を正しく描画する版） */
 function BudgetDetail({
   cats,
-  heading,
+  withAttachments,
 }: {
   cats: BudgetCategory[];
-  heading: string;
+  withAttachments?: boolean;
 }) {
   const used = cats.filter((c) => c.items.length > 0);
+
+  // 添付のある行に通し番号
+  const attachNo = new Map<string, number>();
+  if (withAttachments) {
+    let n = 0;
+    for (const c of used)
+      for (const it of c.items) if (it.attachmentId) attachNo.set(it.id, ++n);
+  }
+
+  if (used.length === 0) return <p className={styles.empty}>（明細なし）</p>;
+
   return (
-    <div className={styles.detailWrap}>
-      <h3 className={styles.h3}>{heading}</h3>
-      {used.length === 0 ? (
-        <p className={styles.empty}>（明細なし）</p>
-      ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.colCat}>科目</th>
-              <th className={styles.colSub}>細目</th>
-              <th>摘要（算出根拠）</th>
-              <th className={styles.colAmt}>金額</th>
-            </tr>
-          </thead>
-          <tbody>
-            {used.map((c) => (
-              <DetailRows key={c.name} cat={c} />
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          <th className={styles.colCat}>科目</th>
+          <th className={styles.colSub}>細目</th>
+          <th>摘要（算出根拠）</th>
+          <th className={styles.colAmt}>金額</th>
+          {withAttachments && <th className={styles.colNo}>資料</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {used.map((c) => (
+          <DetailRows
+            key={c.name}
+            cat={c}
+            withAttachments={!!withAttachments}
+            attachNo={attachNo}
+          />
+        ))}
+      </tbody>
+    </table>
   );
 }
 
-function DetailRows({ cat }: { cat: BudgetCategory }) {
+function DetailRows({
+  cat,
+  withAttachments,
+  attachNo,
+}: {
+  cat: BudgetCategory;
+  withAttachments: boolean;
+  attachNo: Map<string, number>;
+}) {
   return (
     <>
       {cat.items.map((it, idx) => (
@@ -149,17 +165,34 @@ function DetailRows({ cat }: { cat: BudgetCategory }) {
           <td>{it.subItem || "—"}</td>
           <td className={styles.note}>{it.note || "—"}</td>
           <td className={styles.amount}>{yen(amountOf(it.amount))}</td>
+          {withAttachments && (
+            <td className={styles.noCell}>
+              {it.attachmentId ? (
+                <button
+                  type="button"
+                  className={styles.attachLink}
+                  title={it.attachmentName ?? "資料を開く"}
+                  onClick={() =>
+                    openFileByIdAsync(
+                      it.attachmentId!,
+                      it.attachmentName ?? "資料"
+                    )
+                  }
+                >
+                  {attachNo.get(it.id)}
+                </button>
+              ) : (
+                ""
+              )}
+            </td>
+          )}
         </tr>
       ))}
       <tr className={styles.subtotalRow}>
         <td colSpan={2}>小計</td>
         <td className={styles.amount}>{yen(categoryTotal(cat))}</td>
+        {withAttachments && <td />}
       </tr>
     </>
   );
-}
-
-function amountOf(s: string): number {
-  const n = Number(String(s).replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(n) ? n : 0;
 }

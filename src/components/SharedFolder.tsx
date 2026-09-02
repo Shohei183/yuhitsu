@@ -2,14 +2,8 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import {
-  MAX_FILE_BYTES,
-  deleteFile,
-  getFileBlob,
-  putFile,
-  openFileAsync,
-} from "@/lib/sharedFilesDb";
-import { downloadFileAsync } from "@/lib/download";
+import { deleteFile, putFile } from "@/lib/sharedFilesDb";
+import { openFileByIdAsync, downloadFileByIdAsync } from "@/lib/backend/files";
 import { useCommittee } from "@/lib/useOrg";
 import { useSharedFiles } from "@/lib/useSharedStore";
 import styles from "./CommitteeFolder.module.css";
@@ -83,7 +77,7 @@ export default function SharedFolder({
   };
 
   const onOpen = (id: string, name: string) => {
-    openFileAsync(name, () => getFileBlob(id).then((got) => got?.blob));
+    openFileByIdAsync(id, name);
   };
 
   return (
@@ -95,8 +89,7 @@ export default function SharedFolder({
         <h1 className={styles.title}>{committee.name}｜共有用フォルダ</h1>
         <p className={styles.note}>
           出欠確認表・議案化前の下書きなどを自由に置ける場所です。議案システムとしての
-          管理（ID・タグ・スナップショット）の対象外。ファイルはこのブラウザ内（IndexedDB）に
-          保存されます（1ファイル {Math.round(MAX_FILE_BYTES / 1024 / 1024)}MB まで）。
+          管理（ID・タグ・スナップショット）の対象外。形式・容量の制限はありません。
         </p>
         <Link href={`/committee/${committeeId}`} className={styles.back}>
           ← 委員会フォルダ
@@ -167,11 +160,7 @@ export default function SharedFolder({
                 type="button"
                 className={styles.dlBtn}
                 title="このファイルを保存"
-                onClick={() =>
-                  downloadFileAsync(f.name, () =>
-                    getFileBlob(f.id).then((got) => got?.blob)
-                  )
-                }
+                onClick={() => downloadFileByIdAsync(f.id, f.name)}
               >
                 ダウンロード
               </button>

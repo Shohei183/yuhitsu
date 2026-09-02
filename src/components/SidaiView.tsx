@@ -5,8 +5,7 @@ import { useRef } from "react";
 import { useSidai } from "@/lib/useSidaiStore";
 import { useGianStore } from "@/lib/useGianStore";
 import { useFixedFiles } from "@/lib/useFixedFiles";
-import { getFixedFileBlob } from "@/lib/fixedFilesDb";
-import { openFileAsync } from "@/lib/sharedFilesDb";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
 import { useCan } from "@/lib/useOrg";
 import SidaiDoc from "./SidaiDoc";
@@ -74,11 +73,7 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
           fixedFileById={(id) =>
             fixedFiles.find((f) => f.id === id) ?? null
           }
-          onOpenFixedFile={(id, name) =>
-            openFileAsync(name, () =>
-              getFixedFileBlob(id).then((g) => g?.blob)
-            )
-          }
+          onOpenFixedFile={(id, name) => openFileByIdAsync(id, name)}
         />
       </article>
     </div>

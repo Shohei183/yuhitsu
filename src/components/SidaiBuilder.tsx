@@ -18,8 +18,7 @@ import {
   finalizeDistribution,
 } from "@/lib/distributionStore";
 import { GianFileMeta, listAllGianFiles } from "@/lib/gianFilesDb";
-import { getFixedFileBlob } from "@/lib/fixedFilesDb";
-import { openFileAsync } from "@/lib/sharedFilesDb";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import { toHalfWidth } from "@/lib/format";
 import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useSidai } from "@/lib/useSidaiStore";
@@ -1176,9 +1175,7 @@ function SidaiRowView({
                 className={styles.linkOpen}
                 onClick={(e) => {
                   e.stopPropagation();
-                  openFileAsync(linkedFixedFile.name, () =>
-                    getFixedFileBlob(linkedFixedFile.id).then((g) => g?.blob)
-                  );
+                  openFileByIdAsync(linkedFixedFile.id, linkedFixedFile.name);
                 }}
               >
                 開く ↗

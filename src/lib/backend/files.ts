@@ -9,7 +9,7 @@
 
 import { db, authedFetch, callApi } from "./client";
 
-export type FileScope = "shared" | "gian" | "fixed" | "dist";
+export type FileScope = "shared" | "gian" | "fixed" | "dist" | "budget";
 
 export interface FileObj {
   id: string;
@@ -80,7 +80,8 @@ export async function listFiles(
 }
 
 // ── アップロード ──
-export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+// サイズ上限は撤廃（表示用の目安値のみ残す）。R2 の単一 PUT は最大 5GB。
+export const MAX_FILE_BYTES = 5 * 1024 * 1024 * 1024;
 
 export async function uploadFile(
   scope: FileScope,
@@ -88,11 +89,6 @@ export async function uploadFile(
   file: File,
   opts: { category?: "review" | "reference"; gianId?: string } = {}
 ): Promise<FileObj> {
-  if (file.size > MAX_FILE_BYTES) {
-    throw new Error(
-      `ファイルが大きすぎます（上限 ${Math.round(MAX_FILE_BYTES / 1024 / 1024)}MB）`
-    );
-  }
   const mime = file.type || "application/octet-stream";
   const presign = await callApi<{ fileId: string; r2Key: string; uploadUrl: string }>(
     "/api/files/presign-upload",
@@ -157,4 +153,54 @@ export async function getFileBlobById(
   if (!r.ok) return undefined;
   const blob = await r.blob();
   return { blob, name: got.name, type: blob.type };
+}
+
+function isViewableName(name: string): boolean {
+  return /\.(pdf|png|jpe?g|gif|webp|svg|txt|md|csv)$/i.test(name);
+}
+
+/**
+ * ファイルを開く（R2 の署名付き URL に直接遷移。Blob 経由の二重転送なし）。
+ * PDF・画像・テキストは新タブでインライン表示、他はダウンロード。
+ * ポップアップブロック回避のため、クリック直後に空タブを開いておく。
+ */
+export function openFileByIdAsync(id: string, name: string): void {
+  const viewable = isViewableName(name);
+  const holder = viewable ? window.open("about:blank", "_blank") : null;
+
+  getFileUrl(id, { download: !viewable })
+    .then((got) => {
+      if (!got) {
+        if (holder && !holder.closed) holder.close();
+        return;
+      }
+      if (viewable) {
+        if (holder && !holder.closed) holder.location.replace(got.url);
+        else window.open(got.url, "_blank");
+      } else {
+        const a = document.createElement("a");
+        a.href = got.url;
+        a.download = name;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    })
+    .catch(() => {
+      if (holder && !holder.closed) holder.close();
+    });
+}
+
+/** ダウンロード（添付保存）専用 */
+export function downloadFileByIdAsync(id: string, name: string): void {
+  getFileUrl(id, { download: true }).then((got) => {
+    if (!got) return;
+    const a = document.createElement("a");
+    a.href = got.url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
 }

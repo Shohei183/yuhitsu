@@ -5,8 +5,7 @@ import { useRef } from "react";
 import { PERIOD_LABEL, getYear } from "@/lib/yearStore";
 import { useDistribution } from "@/lib/useDistributionStore";
 import { useFixedFiles } from "@/lib/useFixedFiles";
-import { getFixedFileBlob } from "@/lib/fixedFilesDb";
-import { openFileAsync } from "@/lib/sharedFilesDb";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
 import GianView from "./GianView";
 import SidaiDoc from "./SidaiDoc";
@@ -51,9 +50,7 @@ export default function DistributionView({ distId }: { distId: string }) {
       gianById={(id) => pkg.gians.find((g) => g.id === id) ?? null}
       linkGianTo={(id) => `/haishin/${distId}/gian/${id}`}
       fixedFileById={(id) => fixedFiles.find((f) => f.id === id) ?? null}
-      onOpenFixedFile={(id, name) =>
-        openFileAsync(name, () => getFixedFileBlob(id).then((g) => g?.blob))
-      }
+      onOpenFixedFile={(id, name) => openFileByIdAsync(id, name)}
     />
   );
 

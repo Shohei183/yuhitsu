@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { db } from "./backend/client";
+import { deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
 
 /** 収益の科目（様式1・固定） */
@@ -50,6 +51,10 @@ export interface BudgetLineItem {
   note: string;
   /** 金額（自由記入。¥や,は許容） */
   amount: string;
+  /** 見積書などの添付ファイル（file_objects scope=budget の id） */
+  attachmentId?: string | null;
+  /** 添付ファイル名（表示・オープン用） */
+  attachmentName?: string | null;
 }
 
 /** 科目（収益 or 費用）1件 */
@@ -242,9 +247,18 @@ export function saveBudget(id: string, doc: BudgetDoc): void {
 }
 
 export function deleteBudget(id: string): void {
+  const doc = cache[id];
   const next = { ...cache };
   delete next[id];
   cache = next;
   notify();
+  // 添付ファイル（見積書など）も片付ける
+  if (doc) {
+    const attachIds = [...doc.revenue, ...doc.expense]
+      .flatMap((c) => c.items)
+      .map((it) => it.attachmentId)
+      .filter((v): v is string => !!v);
+    for (const fid of attachIds) void deleteFileObj(fid);
+  }
   void db().from("budget_docs").delete().eq("id", id);
 }

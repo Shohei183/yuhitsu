@@ -560,3 +560,35 @@
   border-color: var(--accent-line);
   background: var(--accent-weak);
 }
+
+.notifActions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.approveBtn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.approveBtn:hover {
+  background: var(--accent-hover);
+}
+.rejectBtn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  color: var(--warn-fg);
+  background: #fff;
+  border: 1px solid #e6c9c9;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}

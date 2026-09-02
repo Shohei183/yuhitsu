@@ -89,7 +89,7 @@ export async function copyObject(srcKey: string, destKey: string): Promise<void>
 
 /** 決定論的なオブジェクトキー */
 export function buildKey(
-  scope: "shared" | "gian" | "fixed" | "dist",
+  scope: "shared" | "gian" | "fixed" | "dist" | "budget",
   ownerId: string,
   fileId: string,
   name: string

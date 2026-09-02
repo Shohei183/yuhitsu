@@ -222,3 +222,75 @@
     width: auto;
   }
 }
+
+/* タブ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 18px 0 14px;
+  border-bottom: 2px solid var(--border);
+  flex-wrap: wrap;
+}
+.tab {
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--muted-strong);
+  cursor: pointer;
+  margin-bottom: -2px;
+}
+.tab:hover {
+  color: var(--accent);
+}
+.tabActive {
+  color: var(--accent);
+  background: #fff;
+  border-color: var(--border);
+  border-bottom: 2px solid #fff;
+}
+
+/* 資料（見積書）添付セル */
+.atCol {
+  width: 46px;
+}
+.atCell {
+  text-align: center;
+}
+.attach {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.attachLink {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.attachX {
+  border: 0;
+  background: transparent;
+  color: var(--warn-fg);
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+.attachAdd {
+  border: 1px dashed var(--accent-line);
+  background: #fff;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 5px;
+  padding: 1px 7px;
+  cursor: pointer;
+}
