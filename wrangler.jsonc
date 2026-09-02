@@ -12,6 +12,11 @@
     "enabled": true
   },
 
+  // ダッシュボードで登録したシークレット（config に書かないもの）を
+  // `wrangler deploy` 時に削除しない。これが false（既定）だと毎デプロイで
+  // SUPABASE_SERVICE_ROLE_KEY / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY が消える。
+  "keep_vars": true,
+
   // 非機密の環境変数はここに置く（`wrangler deploy` はダッシュボードの平文変数を
   // この内容で上書きするため、ダッシュボード側だけに置くと消える）。
   // これらは公開されても問題ない値（Supabase URL・publishable キー・R2 アカウントID 等）。
