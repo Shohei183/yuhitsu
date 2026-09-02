@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "yuhitsu",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // 環境変数（NEXT_PUBLIC_* / SUPABASE_SERVICE_ROLE_KEY / R2_* / NEXT_PUBLIC_SITE_URL）は
+  // Cloudflare ダッシュボードの「Variables and Secrets」で設定する。
+  // NEXT_PUBLIC_* はビルド時に埋め込まれるため、ビルド設定側にも必要。
+}

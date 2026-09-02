@@ -3,6 +3,12 @@
 /out
 /build
 next-env.d.ts
+
+# Cloudflare (OpenNext) ビルド成果物・ローカル状態
+/.open-next
+/.wrangler
+.dev.vars
+cloudflare-env.d.ts
 .DS_Store
 *.pem
 npm-debug.log*
