@@ -66,7 +66,6 @@ export default function BudgetDoc({
 
   const Head = () => (
     <header className={styles.head}>
-      <div className={styles.lom}>{budget.lomName}</div>
       <h1 className={styles.title}>事業収支予算書</h1>
       {budget.title && <div className={styles.subject}>{budget.title}</div>}
       <div className={styles.unit}>（単位：円）</div>

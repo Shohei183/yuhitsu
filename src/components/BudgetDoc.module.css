@@ -22,20 +22,17 @@
   text-align: center;
   margin-bottom: 24px;
 }
-.lom {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
 .title {
   font-size: 20px;
   font-weight: 700;
-  margin: 8px 0 4px;
+  margin: 0 0 6px;
   letter-spacing: 0.15em;
 }
 .subject {
-  font-size: 14px;
-  color: var(--muted-strong);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
 }
 .unit {
   font-size: 12px;
