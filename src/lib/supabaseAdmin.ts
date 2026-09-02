@@ -18,13 +18,14 @@ function normalizeUrl(raw: string | undefined): string | undefined {
   }
 }
 
-const url = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
-const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
-
+// ⚠️ 環境変数は関数内で読む。Cloudflare Workers では env がリクエストごとに
+//    注入されるため、モジュール読み込み時点では未定義になる。
 let admin: SupabaseClient | null = null;
 
 export function getSupabaseAdmin(): SupabaseClient {
   if (admin) return admin;
+  const url = normalizeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   if (!url || !serviceKey) {
     throw new Error(
       "Supabase サーバー環境変数が未設定です（NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY）"
