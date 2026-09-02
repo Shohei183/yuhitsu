@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import { JoteiTodoke, listJoteiForYear } from "@/lib/joteiStore";
 import { useJoteiStore } from "@/lib/useJoteiStore";
 import { useActiveYear, useCan } from "@/lib/useOrg";
-import { downloadDocHtml } from "@/lib/download";
 import JoteiDoc from "./JoteiDoc";
 import styles from "./JoteiList.module.css";
 
@@ -15,7 +14,7 @@ export default function JoteiList() {
   const year = useActiveYear();
   useJoteiStore();
   const can = useCan();
-  const exportRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [selected, setSelected] = useState<string>("");
 
   const yearId = year?.id ?? "";
   const all = listJoteiForYear(yearId);
@@ -34,14 +33,14 @@ export default function JoteiList() {
     groups[index.get(m)!].items.push(j);
   }
 
-  const downloadMeeting = (meeting: string) => {
-    const el = exportRefs.current[meeting];
-    void downloadDocHtml(
-      el,
-      `上程届まとめ_${year?.label ?? ""}_${meeting}`,
-      `上程届（${meeting}）— ${groups.find((g) => g.meeting === meeting)?.items.length ?? 0}委員会`
-    ).catch((e) => console.error("[上程届] まとめDL失敗:", e));
-  };
+  const meetingKeys = groups.map((g) => g.meeting);
+  useEffect(() => {
+    if (meetingKeys.length > 0 && !meetingKeys.includes(selected)) {
+      setSelected(meetingKeys[0]);
+    }
+  }, [meetingKeys, selected]);
+
+  const active = groups.find((g) => g.meeting === selected) ?? groups[0];
 
   return (
     <main className={styles.wrap}>
@@ -49,7 +48,7 @@ export default function JoteiList() {
         <div className={styles.crumb}>{year?.label} ／ 上程届</div>
         <h1 className={styles.title}>上程届 一覧</h1>
         <p className={styles.note}>
-          提出された上程届を会議ごとにまとめています。会議単位で全委員会分を1ファイルに書き出せます。
+          会議を選ぶと、その会議に提出された各委員会の上程届を表示します。
         </p>
         <Link href="/" className={styles.back}>
           ← トップへ
@@ -59,62 +58,44 @@ export default function JoteiList() {
       {groups.length === 0 ? (
         <p className={styles.empty}>提出済みの上程届はまだありません。</p>
       ) : (
-        <div className={styles.groups}>
-          {groups.map((g) => (
-            <section key={g.meeting} className={styles.group}>
-              <div className={styles.groupHead}>
-                <h2 className={styles.groupTitle}>{g.meeting}</h2>
-                <span className={styles.groupCount}>{g.items.length} 委員会</span>
-                <button
-                  type="button"
-                  className={styles.groupDl}
-                  onClick={() => downloadMeeting(g.meeting)}
-                >
-                  この会議の上程届をまとめてダウンロード
-                </button>
-              </div>
+        <>
+          <div className={styles.tabs} role="tablist" aria-label="会議">
+            {groups.map((g) => (
+              <button
+                key={g.meeting}
+                type="button"
+                role="tab"
+                aria-selected={g.meeting === active?.meeting}
+                className={`${styles.tab} ${
+                  g.meeting === active?.meeting ? styles.tabActive : ""
+                }`}
+                onClick={() => setSelected(g.meeting)}
+              >
+                {g.meeting}
+                <span className={styles.tabCount}>{g.items.length}</span>
+              </button>
+            ))}
+          </div>
 
-              <div className={styles.docs}>
-                {g.items.map((j) => (
-                  <div key={j.id} className={styles.docCard}>
-                    <div className={styles.docCardHead}>
-                      <span className={styles.docCardName}>{j.committeeName}</span>
-                      <Link
-                        href={`/jotei/${j.id}/view`}
-                        className={styles.docCardLink}
-                      >
-                        単独表示・印刷 →
-                      </Link>
-                    </div>
-                    <JoteiDoc jotei={j} />
-                  </div>
-                ))}
-              </div>
-
-              {/* まとめDL用（非表示）：会議ごとに全委員会分を連結 */}
-              <div style={{ display: "none" }} aria-hidden="true">
-                <div
-                  ref={(el) => {
-                    exportRefs.current[g.meeting] = el;
-                  }}
-                >
-                  {g.items.map((j) => (
-                    <div
-                      key={j.id}
-                      data-export-gian
-                      style={{ marginBottom: 32 }}
+          {active && (
+            <div className={styles.docs}>
+              {active.items.map((j) => (
+                <div key={j.id} className={styles.docCard}>
+                  <div className={styles.docCardHead}>
+                    <span className={styles.docCardName}>{j.committeeName}</span>
+                    <Link
+                      href={`/jotei/${j.id}/view`}
+                      className={styles.docCardLink}
                     >
-                      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>
-                        {j.committeeName}
-                      </div>
-                      <JoteiDoc jotei={j} />
-                    </div>
-                  ))}
+                      単独表示・印刷 →
+                    </Link>
+                  </div>
+                  <JoteiDoc jotei={j} />
                 </div>
-              </div>
-            </section>
-          ))}
-        </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {can.editGian && drafts.length > 0 && (

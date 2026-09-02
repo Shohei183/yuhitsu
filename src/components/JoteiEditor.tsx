@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useRef } from "react";
+import { useId, useMemo } from "react";
 import {
   JoteiSection,
   JOTEI_SECTIONS,
@@ -19,8 +19,6 @@ import { useJotei, useJoteiStore } from "@/lib/useJoteiStore";
 import { listSidai } from "@/lib/sidaiStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
 import { useCommittee, useAuthMember, useCan } from "@/lib/useOrg";
-import { downloadDocHtml } from "@/lib/download";
-import JoteiDoc from "./JoteiDoc";
 import styles from "./JoteiEditor.module.css";
 
 export default function JoteiEditor({ joteiId }: { joteiId: string }) {
@@ -31,7 +29,6 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
   const found = useCommittee(jotei?.committeeId ?? "");
   const member = useAuthMember();
   const can = useCan();
-  const previewRef = useRef<HTMLDivElement>(null);
   const listId = useId();
 
   const meetingSuggestions = useMemo(() => {
@@ -72,14 +69,6 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
     fn: (items: ReturnType<typeof sectionItems>) => ReturnType<typeof sectionItems>
   ) => saveJotei(joteiId, withSection(jotei, s, fn(sectionItems(jotei, s))));
 
-  const onDownload = () => {
-    void downloadDocHtml(
-      previewRef.current,
-      `上程届_${jotei.committeeName}_${jotei.meetingName || "未設定"}`,
-      `上程届：${jotei.committeeName}／${jotei.meetingName}`
-    ).catch((e) => console.error("[上程届] ダウンロード失敗:", e));
-  };
-
   const onSubmit = () => {
     if (
       !window.confirm(
@@ -110,9 +99,6 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
         <Link href={`/jotei/${joteiId}/view`} className={styles.navLink}>
           閲覧・印刷
         </Link>
-        <button type="button" className={styles.ghostBtn} onClick={onDownload}>
-          ダウンロード
-        </button>
         {!readOnly && can.submitGian && (
           <button type="button" className={styles.primaryBtn} onClick={onSubmit}>
             提出する
@@ -293,12 +279,6 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
             </section>
           );
         })}
-      </div>
-
-      <div style={{ display: "none" }} aria-hidden="true">
-        <div ref={previewRef}>
-          <JoteiDoc jotei={jotei} />
-        </div>
       </div>
     </div>
   );

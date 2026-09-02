@@ -132,46 +132,51 @@
   margin-left: auto;
 }
 
-/* 会議ごとのグループ */
-.groups {
+/* 会議タブ */
+.tabs {
   display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-.group {
-  border-top: 2px solid var(--accent);
-  padding-top: 12px;
-}
-.groupHead {
-  display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 6px;
+  margin-bottom: 18px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
 }
-.groupTitle {
-  font-size: 16px;
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
   font-weight: 700;
-  margin: 0;
-}
-.groupCount {
-  font-size: 12px;
-  font-weight: 700;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
   color: var(--muted-strong);
+  cursor: pointer;
+  margin-bottom: -2px;
 }
-.groupDl {
-  margin-left: auto;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 7px;
+.tab:hover {
+  color: var(--accent);
+}
+.tabActive {
   color: var(--accent);
   background: #fff;
-  border: 1px solid var(--accent-line);
-  cursor: pointer;
+  border-color: var(--border);
+  border-bottom: 2px solid #fff;
 }
-.groupDl:hover {
+.tabCount {
+  font-size: 10.5px;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
   background: var(--accent-weak);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .docs {
