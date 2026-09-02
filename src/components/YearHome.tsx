@@ -9,20 +9,12 @@ import {
   renameCommittee,
   removeCommittee,
 } from "@/lib/yearStore";
-import { STATUS_LABEL } from "@/lib/mockData";
 import { decideReplacement } from "@/lib/gianStore";
 import { dismiss as dismissNotifications } from "@/lib/notificationStore";
 import { useReplacementNotifications } from "@/lib/useNotifications";
-import { listDistributionsFor } from "@/lib/distributionStore";
-import { listSidaiFor } from "@/lib/sidaiStore";
-import { listJoteiForYear, submittedMeetings } from "@/lib/joteiStore";
-import { useJoteiStore } from "@/lib/useJoteiStore";
 import { deleteFixedFile, putFixedFile } from "@/lib/fixedFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useFixedFiles } from "@/lib/useFixedFiles";
-import { useGianStore } from "@/lib/useGianStore";
-import { useDistributionStore } from "@/lib/useDistributionStore";
-import { useSidaiStore } from "@/lib/useSidaiStore";
 import { useTemplate } from "@/lib/useTemplateStore";
 import { useActiveYear, useCan } from "@/lib/useOrg";
 import { setPeriod } from "@/lib/activeViewStore";
@@ -72,19 +64,14 @@ export default function YearHome() {
         committees={year.committees}
         canEdit={can.editCommittees}
       />
-      <JoteiSection yearId={year.id} />
+      <JoteiSection />
       <PeriodsSection yearId={year.id} canCreate={can.createSidai} />
     </main>
   );
 }
 
 /* ── 上程届 ─────────────────────────────────────────── */
-function JoteiSection({ yearId }: { yearId: string }) {
-  useJoteiStore();
-  const list = listJoteiForYear(yearId);
-  const submitted = list.filter((j) => j.status === "submitted").length;
-  const meetings = submittedMeetings(yearId).length;
-
+function JoteiSection() {
   return (
     <section className={styles.section}>
       <div className={styles.sectionHead}>
@@ -97,9 +84,6 @@ function JoteiSection({ yearId }: { yearId: string }) {
           委員会が会議ごとに提出する上程届。作成は各委員会フォルダの「上程届作成」から。
         </span>
       </div>
-      <p className={styles.sub}>
-        上程届 {list.length} 件（提出済み {submitted}／会議 {meetings}）
-      </p>
     </section>
   );
 }
@@ -306,7 +290,6 @@ function CommitteesSection({
   committees: Committee[];
   canEdit: boolean;
 }) {
-  const gianStore = useGianStore();
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -328,9 +311,6 @@ function CommitteesSection({
       </div>
       <div className={styles.committeeGrid}>
         {committees.map((c) => {
-          const gians = c.gianIds
-            .map((gid) => gianStore[gid]?.gian)
-            .filter((g): g is NonNullable<typeof g> => !!g);
           return (
             <div key={c.id} className={styles.committeeCell}>
               <Link
@@ -338,11 +318,6 @@ function CommitteesSection({
                 className={styles.committeeCard}
               >
                 <div className={styles.committeeName}>📁 {c.name}</div>
-                <div className={styles.committeeMeta}>
-                  議案 {gians.length} 件
-                  {gians.length > 0 &&
-                    `（${gians.map((g) => `${g.kind}${STATUS_LABEL[g.status]}`).join("・")}）`}
-                </div>
                 <div className={styles.committeeSub}>
                   議案構築 ／ 上程届 ／ 共有用フォルダ →
                 </div>
@@ -520,8 +495,6 @@ function PeriodsSection({
   yearId: string;
   canCreate: boolean;
 }) {
-  useSidaiStore();
-  useDistributionStore();
   const router = useRouter();
 
   const goSidai = (p: Period) => {
@@ -540,8 +513,6 @@ function PeriodsSection({
       </div>
       <div className={styles.committeeGrid}>
         {PERIODS.map((p) => {
-          const sidais = listSidaiFor(yearId, p);
-          const dists = listDistributionsFor(yearId, p);
           return (
             <div key={p} className={styles.committeeCell}>
               <Link
@@ -551,9 +522,6 @@ function PeriodsSection({
               >
                 <div className={styles.committeeName}>
                   📦 {PERIOD_LABEL[p]}の次第・配信
-                </div>
-                <div className={styles.committeeMeta}>
-                  次第 {sidais.length} 件 ／ 配信データ {dists.length} 件
                 </div>
                 <div className={styles.committeeSub}>次第一覧・配信データ →</div>
               </Link>
