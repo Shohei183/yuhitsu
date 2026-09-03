@@ -19,6 +19,7 @@ import { useJotei, useJoteiStore } from "@/lib/useJoteiStore";
 import { listSidai } from "@/lib/sidaiStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
 import { useCommittee, useAuthMember, useCan } from "@/lib/useOrg";
+import { formatJaDateTime } from "@/lib/format";
 import styles from "./JoteiEditor.module.css";
 
 export default function JoteiEditor({ joteiId }: { joteiId: string }) {
@@ -132,7 +133,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
           <p className={styles.lockNote}>
             提出済みのため編集できません。
             {jotei.submittedAt &&
-              `（提出 ${new Date(jotei.submittedAt).toLocaleString("ja-JP")}）`}
+              `（提出 ${formatJaDateTime(jotei.submittedAt)}）`}
           </p>
         )}
 

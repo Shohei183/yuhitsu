@@ -14,6 +14,7 @@ import { dismiss as dismissNotifications } from "@/lib/notificationStore";
 import { useReplacementNotifications } from "@/lib/useNotifications";
 import { deleteFixedFile, putFixedFile } from "@/lib/fixedFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
+import { formatJaDateTime } from "@/lib/format";
 import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useTemplate } from "@/lib/useTemplateStore";
 import { useActiveYear, useCan } from "@/lib/useOrg";
@@ -439,7 +440,7 @@ function ReplacementNotifications() {
                 <div className={styles.notifNote}>{n.request.note}</div>
               )}
               <div className={styles.notifMeta}>
-                {new Date(n.request.requestedAt).toLocaleString("ja-JP")}
+                {formatJaDateTime(n.request.requestedAt)}
               </div>
             </div>
             <div className={styles.notifActions}>

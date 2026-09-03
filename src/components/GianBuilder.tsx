@@ -33,7 +33,7 @@ import { useGianEntry, useGianStore } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCan, useCommitteeOfGian } from "@/lib/useOrg";
-import { jpNum, sumAmounts } from "@/lib/format";
+import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import GianResourcePanel from "./GianResourcePanel";
 
 import styles from "./GianBuilder.module.css";
@@ -1673,15 +1673,7 @@ const REQ_LABEL: Record<ReplacementStatus, string> = {
   rejected: "却下",
 };
 
-function fmtDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+const fmtDateTime = formatJaDateTime;
 
 function FlowPanel({
   gian,

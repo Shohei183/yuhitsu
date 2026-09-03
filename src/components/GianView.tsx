@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Fragment, ReactNode, useRef } from "react";
 import { BudgetLine, Gian, STATUS_LABEL, getGian } from "@/lib/mockData";
-import { formatDocNumbers, jpNum, sumAmounts } from "@/lib/format";
+import { formatDocNumbers, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import {
   GianFileCategory,
@@ -468,15 +468,7 @@ export default function GianView({
   );
 }
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+const fmt = formatJaDateTime;
 
 function Kv({ label, value }: { label: string; value: string }) {
   return (

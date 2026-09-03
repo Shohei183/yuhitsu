@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createJotei, listJoteiForCommittee } from "@/lib/joteiStore";
 import { useJoteiStore } from "@/lib/useJoteiStore";
 import { useCommittee, useAuthMember, useCan } from "@/lib/useOrg";
+import { formatJaDate } from "@/lib/format";
 import styles from "./JoteiList.module.css";
 
 export default function JoteiCommitteeList({
@@ -106,8 +107,8 @@ export default function JoteiCommitteeList({
                 )}
                 <span className={styles.itemDate}>
                   {j.status === "submitted" && j.submittedAt
-                    ? `提出 ${new Date(j.submittedAt).toLocaleDateString("ja-JP")}`
-                    : `更新 ${new Date(j.updatedAt).toLocaleDateString("ja-JP")}`}
+                    ? `提出 ${formatJaDate(j.submittedAt)}`
+                    : `更新 ${formatJaDate(j.updatedAt)}`}
                 </span>
               </div>
             </li>

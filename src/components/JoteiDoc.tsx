@@ -3,7 +3,7 @@
 // 上程届を1枚のドキュメントとして描画する共通コンポーネント（閲覧・印刷・DL 共用）
 
 import { JoteiTodoke, JOTEI_SECTIONS, sectionItems } from "@/lib/joteiStore";
-import { toHalfWidth } from "@/lib/format";
+import { formatJaDate } from "@/lib/format";
 import styles from "./JoteiDoc.module.css";
 
 const LOM_NAME = "一般社団法人　小牧青年会議所";
@@ -22,7 +22,7 @@ export default function JoteiDoc({ jotei }: { jotei: JoteiTodoke }) {
 
       <div className={styles.meta}>
         <div className={styles.date}>
-          {jotei.submissionDate ? toHalfWidth(jotei.submissionDate) : "　"}
+          {jotei.submissionDate ? formatJaDate(jotei.submissionDate) : "　"}
         </div>
         <div className={styles.submitter}>
           {jotei.committeeName}　{jotei.submitterRole}　{jotei.submitterName}

@@ -10,6 +10,7 @@
 
 import { Gian, GianKind } from "./mockData";
 import { getGianTemplate } from "./templateStore";
+import { formatJaDate } from "./format";
 import {
   findCommittee,
   addGianToCommittee,
@@ -405,7 +406,7 @@ export function createGian(opts: {
 }): string {
   const id = newId("gian");
   const tpl = getGianTemplate(opts.yearId, opts.kind);
-  const today = new Date().toISOString().slice(0, 10).replace(/-/g, "年") + "日";
+  const today = formatJaDate(new Date());
 
   const gian: Gian = {
     id,
@@ -474,7 +475,7 @@ export function duplicateGian(
       ? src.topic.replace(/（.*?）$/, "") + `（${kind}）`
       : `${src.topic}（複製）`,
     priorFeedback: showsPriorFeedback(kind) ? clone(src.priorFeedback) : [],
-    createdAt: new Date().toISOString().slice(0, 10).replace(/-/g, "年") + "日",
+    createdAt: formatJaDate(new Date()),
   };
 
   setEntry(id, { gian: copy, snapshots: [], requests: [] });

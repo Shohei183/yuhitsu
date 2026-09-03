@@ -9,19 +9,12 @@ import { setPeriod } from "@/lib/activeViewStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
 import { useDistributionStore } from "@/lib/useDistributionStore";
 import { useActiveView, useActiveYear, useCan } from "@/lib/useOrg";
+import { formatJaDateTime } from "@/lib/format";
 import styles from "@/app/page.module.css";
 
 const PERIODS: Period[] = ["planned", "live"];
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+const fmt = formatJaDateTime;
 
 export default function SidaiList() {
   useSidaiStore(); // ストア変更で再描画

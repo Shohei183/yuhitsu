@@ -7,20 +7,13 @@ import { useDistribution } from "@/lib/useDistributionStore";
 import { useFixedFiles } from "@/lib/useFixedFiles";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
+import { formatJaDateTime } from "@/lib/format";
 import GianView from "./GianView";
 import SidaiDoc from "./SidaiDoc";
 import MyReviewNotes from "./MyReviewNotes";
 import styles from "./DistributionView.module.css";
 
-function fmt(iso: string): string {
-  return new Date(iso).toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+const fmt = formatJaDateTime;
 
 export default function DistributionView({ distId }: { distId: string }) {
   const pkg = useDistribution(distId);
