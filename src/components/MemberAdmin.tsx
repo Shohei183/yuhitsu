@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   issueAccount,
   listMembers,
+  setMemberMaster,
   setMemberStatus,
   updateMember,
 } from "@/lib/memberStore";
@@ -231,25 +232,61 @@ export default function MemberAdmin() {
                     )}
                   </td>
                   <td>
-                    {!canManageMembers || m.isMaster ? (
-                      <span className={styles.dim}>—</span>
-                    ) : m.status === "active" ? (
-                      <button
-                        type="button"
-                        className={styles.rowBtn}
-                        onClick={() => setMemberStatus(m.id, "retired")}
-                      >
-                        無効化
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.rowBtn}
-                        onClick={() => setMemberStatus(m.id, "active")}
-                      >
-                        有効化
-                      </button>
-                    )}
+                    <div className={styles.acctCell}>
+                      {canManageMembers && !m.isMaster && (
+                        m.status === "active" ? (
+                          <button
+                            type="button"
+                            className={styles.rowBtn}
+                            onClick={() => setMemberStatus(m.id, "retired")}
+                          >
+                            無効化
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.rowBtn}
+                            onClick={() => setMemberStatus(m.id, "active")}
+                          >
+                            有効化
+                          </button>
+                        )
+                      )}
+
+                      {me.isMaster && m.id !== me.id && (
+                        m.isMaster ? (
+                          <button
+                            type="button"
+                            className={styles.rowBtn}
+                            onClick={async () => {
+                              if (!window.confirm(`${m.name} のマスター権限を解除します。よろしいですか？`)) return;
+                              const res = await setMemberMaster(m.id, false);
+                              setFlash(res.ok ? `${m.name} のマスター権限を解除しました` : (res.error ?? "変更できませんでした"));
+                              window.setTimeout(() => setFlash(null), 3500);
+                            }}
+                          >
+                            マスター解除
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.rowBtn}
+                            onClick={async () => {
+                              if (!window.confirm(`${m.name} にマスター権限を付与します。マスターは全機能・全年度を操作できます。よろしいですか？`)) return;
+                              const res = await setMemberMaster(m.id, true);
+                              setFlash(res.ok ? `${m.name} をマスターにしました` : (res.error ?? "変更できませんでした"));
+                              window.setTimeout(() => setFlash(null), 3500);
+                            }}
+                          >
+                            マスターにする
+                          </button>
+                        )
+                      )}
+
+                      {(!canManageMembers && !me.isMaster) && (
+                        <span className={styles.dim}>—</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

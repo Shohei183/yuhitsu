@@ -153,6 +153,13 @@
   padding: 4px 12px;
 }
 
+.acctCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
 .roleSelect {
   width: auto;
   font-size: 12px;
