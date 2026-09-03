@@ -9,6 +9,7 @@ import { hydrate as hydrateMembers } from "@/lib/memberStore";
 import { hydrate as hydrateYears } from "@/lib/yearStore";
 import { hydrate as hydrateRolePerms } from "@/lib/rolePermStore";
 import { hydrate as hydrateTemplates } from "@/lib/templateStore";
+import { hydrate as hydrateSettings } from "@/lib/settingsStore";
 import { hydrate as hydrateGians } from "@/lib/gianStore";
 import { hydrate as hydrateSidais } from "@/lib/sidaiStore";
 import { hydrate as hydrateDistributions } from "@/lib/distributionStore";
@@ -27,6 +28,7 @@ export async function hydrateAll(): Promise<void> {
       hydrateYears(),
       hydrateRolePerms(),
       hydrateTemplates(),
+      hydrateSettings(),
     ]);
     // 続いてドキュメント類
     await Promise.all([

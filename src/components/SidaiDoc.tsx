@@ -3,7 +3,7 @@
 import { Gian } from "@/lib/mockData";
 import { Sidai } from "@/lib/sidaiStore";
 import { toHalfWidth } from "@/lib/format";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./SidaiView.module.css";
 
 /**
@@ -27,10 +27,11 @@ export default function SidaiDoc({
   /** 固定ファイルチップのクリック時（開く）。無ければただのテキスト */
   onOpenFixedFile?: (fileId: string, name: string) => void;
 }) {
+  const lom = useLomName();
   return (
     <>
       <header className={styles.head}>
-        <div className={styles.lom}>{LOM_NAME}</div>
+        <div className={styles.lom}>{lom}</div>
         <div className={styles.title}>{sidai.meetingName}　次第</div>
         <div className={styles.meta}>
           {sidai.datetime && (

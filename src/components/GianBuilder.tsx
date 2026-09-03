@@ -34,7 +34,7 @@ import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCan, useCommitteeOfGian } from "@/lib/useOrg";
 import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import GianResourcePanel from "./GianResourcePanel";
 
 import styles from "./GianBuilder.module.css";
@@ -721,9 +721,10 @@ function ProposalHeader({
   onRemoveMember: (id: string) => void;
 }) {
   const members = gian.assignedMembers ?? [];
+  const lom = useLomName();
   return (
     <section className={styles.card}>
-      <div className={styles.lom}>{gian.lomName || LOM_NAME}</div>
+      <div className={styles.lom}>{gian.lomName || lom}</div>
       {!kihon && (
         <div className={styles.meeting}>
           <input

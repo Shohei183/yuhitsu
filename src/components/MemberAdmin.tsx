@@ -24,7 +24,48 @@ import {
   useMemberStore,
   useYearStore,
 } from "@/lib/useOrg";
+import { setSetting } from "@/lib/settingsStore";
+import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./MemberAdmin.module.css";
+
+function LomNameSettings() {
+  const current = useLomName();
+  const [val, setVal] = useState(current);
+  const [msg, setMsg] = useState<string | null>(null);
+  const dirty = val.trim() !== current;
+
+  return (
+    <div className={styles.issue}>
+      <div className={styles.issueTitle}>団体名（LOM名）</div>
+      <div className={styles.issueRow}>
+        <input
+          className={styles.issueInput}
+          value={val}
+          onChange={(e) => {
+            setVal(e.target.value);
+            setMsg(null);
+          }}
+          placeholder="一般社団法人〇〇青年会議所"
+        />
+        <button
+          type="button"
+          className={styles.issueBtn}
+          disabled={!dirty || !val.trim()}
+          onClick={() => {
+            setSetting("lom_name", val.trim());
+            setMsg("保存しました（表示に反映されます）");
+          }}
+        >
+          保存
+        </button>
+      </div>
+      <p className={styles.note}>
+        ログイン画面・上部バー・議案書・次第・上程届のヘッダーに表示されます。
+        {msg && <strong>　{msg}</strong>}
+      </p>
+    </div>
+  );
+}
 
 export default function MemberAdmin() {
   useMemberStore(); // 変更で再描画
@@ -102,6 +143,8 @@ export default function MemberAdmin() {
       </div>
 
       {flash && <div className={styles.flash}>{flash}</div>}
+
+      {me.isMaster && <LomNameSettings />}
 
       {canManageMembers && (
         <form className={styles.issue} onSubmit={onIssue}>

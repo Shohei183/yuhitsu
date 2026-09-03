@@ -9,6 +9,8 @@
 //  （NEXT_PUBLIC_* はビルド時に埋め込まれる）
 // ─────────────────────────────────────────────────────────────
 
-export const LOM_NAME =
+// 既定値（env 未設定なら小牧JC）。実際の表示名は app_settings.lom_name が
+// あればそちらが優先される（settingsStore の lomName() / useLomName()）。
+export const LOM_NAME_DEFAULT =
   (process.env.NEXT_PUBLIC_LOM_NAME ?? "").trim() ||
   "一般社団法人小牧青年会議所";

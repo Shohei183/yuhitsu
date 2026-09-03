@@ -98,7 +98,7 @@ Cloudflare 側の環境変数も更新すること。
 
 1. **Supabase**：新規プロジェクトを作り、`supabase/` の SQL を順に流す
    （`schema.sql` → `rls.sql` → `budget.sql` → `budget-attachments.sql` →
-   `jotei.sql` → `review-notes.sql`）
+   `jotei.sql` → `review-notes.sql` → `settings.sql`）
 2. **R2**：新しいバケット（または同バケットで別接頭辞）
 3. **Cloudflare Worker**：新規プロジェクト（別サブドメイン）。同じ GitHub リポジトリを
    接続してよい（ブランチを分けても、fork でも可）
@@ -113,5 +113,10 @@ Cloudflare 側の環境変数も更新すること。
 6. **R2 CORS** に その Worker のオリジンを追加（`scripts/r2-cors.mjs`）
 7. **Resend** の送信元アドレスをその LOM 用に
 
-団体名だけは `NEXT_PUBLIC_LOM_NAME`（→ `src/lib/lom.ts`）で切り替わる。
-表示のLOM名はここ一箇所に集約済み（ログイン画面・上部バー・議案書・次第・上程届）。
+団体名は 2 段構え：
+- **既定値** … `NEXT_PUBLIC_LOM_NAME`（env・ビルド時）→ 無ければ小牧JC（`src/lib/lom.ts`）
+- **上書き** … `app_settings.lom_name`（DB）。各 LOM のマスターが
+  「メンバー管理」画面の「団体名（LOM名）」から変更できる（`settingsStore` / `useLomName()`）
+
+新 LOM は env を入れておけば初期表示は正しく、あとはマスターが画面から微調整できる。
+表示箇所（ログイン・上部バー・議案書・次第・上程届）は `useLomName()` に集約済み。

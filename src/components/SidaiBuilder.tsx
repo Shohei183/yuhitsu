@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { ASSIGNEES, MEMBERS, STATUS_LABEL } from "@/lib/mockData";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import {
   DeadlineEntry,
   Sidai,
@@ -94,6 +94,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const distStore = useDistributionStore();
   const can = useCan();
   const router = useRouter();
+  const lom = useLomName();
 
   const [toast, setToast] = useState<string | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -401,7 +402,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
             </div>
           )}
           <div className={styles.sidaiHeadCard}>
-            <div className={styles.sidaiLom}>{LOM_NAME}</div>
+            <div className={styles.sidaiLom}>{lom}</div>
             <div className={styles.sidaiMeeting}>{sidai.meetingName} 次第</div>
             <div className={styles.sidaiMeta}>
               {sidai.datetime && (

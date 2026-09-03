@@ -12,7 +12,7 @@ import {
   useEffectiveRole,
   useYears,
 } from "@/lib/useOrg";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./TopBar.module.css";
 
 const ROLE_CLASS: Record<Role, string> = {
@@ -34,6 +34,7 @@ export default function TopBar() {
   const view = useActiveView();
   const effectiveRole = useEffectiveRole();
   const can = useCan();
+  const lom = useLomName();
 
   if (!member) return null;
 
@@ -53,7 +54,7 @@ export default function TopBar() {
         </Link>
         <span className={styles.lomDivider} aria-hidden="true" />
         <Link href="/" className={styles.lom}>
-          {LOM_NAME}
+          {lom}
         </Link>
         {member.isMaster && <span className={styles.masterTag}>マスター</span>}
       </div>

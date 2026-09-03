@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Fragment, ReactNode, useRef } from "react";
 import { BudgetLine, Gian, STATUS_LABEL, getGian } from "@/lib/mockData";
 import { formatDocNumbers, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import { downloadDocHtml } from "@/lib/download";
 import {
   GianFileCategory,
@@ -60,6 +60,7 @@ export default function GianView({
   const committeeInfo = useCommitteeOfGian(gianId ?? "");
   const docRef = useRef<HTMLElement>(null);
   useBudgetStore();
+  const lom = useLomName();
   const linkedBudget = gianId ? budgetForGian(gianId) : undefined;
 
   const snap =
@@ -99,7 +100,7 @@ export default function GianView({
       className={`${styles.doc} ${embedded ? styles.docEmbedded : ""}`}
     >
         <header className={styles.docHead}>
-          <div className={styles.lom}>{gian.lomName || LOM_NAME}</div>
+          <div className={styles.lom}>{gian.lomName || lom}</div>
           {!kihon && (
             <div className={styles.meeting}>
               {gian.submissionMeeting}提案議題

@@ -11,7 +11,7 @@
 import { Gian, GianKind } from "./mockData";
 import { getGianTemplate } from "./templateStore";
 import { formatJaDate } from "./format";
-import { LOM_NAME } from "./lom";
+import { lomName } from "./settingsStore";
 import {
   findCommittee,
   addGianToCommittee,
@@ -414,7 +414,7 @@ export function createGian(opts: {
     yearId: opts.yearId,
     kind: opts.kind,
     status: "editing",
-    lomName: LOM_NAME,
+    lomName: lomName(),
     submissionMeeting: "",
     topic:
       opts.kind === "基本方針" ? "（新規）事業計画（案）" : `（新規）${opts.kind}議案`,

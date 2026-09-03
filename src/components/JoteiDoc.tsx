@@ -4,13 +4,14 @@
 
 import { JoteiTodoke, JOTEI_SECTIONS, sectionItems } from "@/lib/joteiStore";
 import { formatJaDate } from "@/lib/format";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./JoteiDoc.module.css";
 
 export default function JoteiDoc({ jotei }: { jotei: JoteiTodoke }) {
+  const lom = useLomName();
   return (
     <article className={styles.doc}>
-      <div className={styles.lom}>{LOM_NAME}</div>
+      <div className={styles.lom}>{lom}</div>
       <h1 className={styles.title}>上　程　届</h1>
 
       <p className={styles.lead}>

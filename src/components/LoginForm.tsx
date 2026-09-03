@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login, sendPasswordReset } from "@/lib/authStore";
 import { useAuthState } from "@/lib/useOrg";
-import { LOM_NAME } from "@/lib/lom";
+import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./LoginForm.module.css";
 
 type Mode = "login" | "reset-request";
@@ -12,6 +12,7 @@ type Mode = "login" | "reset-request";
 export default function LoginForm() {
   const router = useRouter();
   const { userId, ready } = useAuthState();
+  const lom = useLomName();
 
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -53,7 +54,7 @@ export default function LoginForm() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.brand}>{LOM_NAME}</div>
+        <div className={styles.brand}>{lom}</div>
         <h1 className={styles.title}>JC議案管理システム</h1>
 
         {error && <div className={styles.error}>{error}</div>}

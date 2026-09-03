@@ -10,7 +10,7 @@
 import { db, fire } from "./backend/client";
 import { deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
-import { LOM_NAME } from "./lom";
+import { lomName } from "./settingsStore";
 
 /** 収益の科目（様式1・固定） */
 export const REVENUE_CATEGORIES = [
@@ -115,7 +115,7 @@ function blankDoc(yearId: string, gianId: string | null, title: string): BudgetD
     yearId,
     gianId,
     title,
-    lomName: LOM_NAME,
+    lomName: lomName(),
     revenue: REVENUE_CATEGORIES.map((name) => ({ name, items: [] })),
     expense: EXPENSE_CATEGORIES.map((name) => ({ name, items: [] })),
     attachments: [],
@@ -170,7 +170,7 @@ function normalize(raw: BudgetDoc): BudgetDoc {
 
   return {
     ...raw,
-    lomName: raw.lomName || LOM_NAME,
+    lomName: raw.lomName || lomName(),
     revenue,
     expense,
     attachments,
