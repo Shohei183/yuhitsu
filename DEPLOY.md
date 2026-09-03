@@ -88,3 +88,30 @@ npm run cf:preview # Cloudflare Worker としてローカル実行（.dev.vars �
 チャットで共有した `sb_secret` キー・R2 シークレット・Supabase アクセストークンは、
 落ち着いたら各ダッシュボードで**再発行（ローテーション）**してください。
 Cloudflare 側の環境変数も更新すること。
+
+---
+
+## 別の LOM で使う（マルチデプロイ）
+
+このシステムは **1 LOM 専用**（DB・コードにテナントの概念なし）。別の LOM で使う
+場合は、この deploy 一式をその LOM 用にもう1セット用意する。
+
+1. **Supabase**：新規プロジェクトを作り、`supabase/` の SQL を順に流す
+   （`schema.sql` → `rls.sql` → `budget.sql` → `budget-attachments.sql` →
+   `jotei.sql` → `review-notes.sql`）
+2. **R2**：新しいバケット（または同バケットで別接頭辞）
+3. **Cloudflare Worker**：新規プロジェクト（別サブドメイン）。同じ GitHub リポジトリを
+   接続してよい（ブランチを分けても、fork でも可）
+4. **環境変数**（ビルド設定＋ `wrangler.jsonc` の `vars`）をその LOM の値に:
+   - `NEXT_PUBLIC_LOM_NAME` … その団体名（未設定なら「一般社団法人小牧青年会議所」）
+   - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - `NEXT_PUBLIC_SITE_URL` … その Worker の URL
+   - `R2_ACCOUNT_ID` / `R2_BUCKET`
+   - シークレット（ダッシュボード）：`SUPABASE_SERVICE_ROLE_KEY` /
+     `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY`
+5. **Supabase Auth** の URL Configuration をその Worker の URL に
+6. **R2 CORS** に その Worker のオリジンを追加（`scripts/r2-cors.mjs`）
+7. **Resend** の送信元アドレスをその LOM 用に
+
+団体名だけは `NEXT_PUBLIC_LOM_NAME`（→ `src/lib/lom.ts`）で切り替わる。
+表示のLOM名はここ一箇所に集約済み（ログイン画面・上部バー・議案書・次第・上程届）。

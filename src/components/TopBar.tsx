@@ -12,9 +12,8 @@ import {
   useEffectiveRole,
   useYears,
 } from "@/lib/useOrg";
+import { LOM_NAME } from "@/lib/lom";
 import styles from "./TopBar.module.css";
-
-const LOM_NAME = "一般社団法人小牧青年会議所";
 
 const ROLE_CLASS: Record<Role, string> = {
   master: styles.roleMaster,

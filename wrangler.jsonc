@@ -20,7 +20,12 @@
   // 非機密の環境変数はここに置く（`wrangler deploy` はダッシュボードの平文変数を
   // この内容で上書きするため、ダッシュボード側だけに置くと消える）。
   // これらは公開されても問題ない値（Supabase URL・publishable キー・R2 アカウントID 等）。
+  // 別 LOM で使う場合はこの deploy を丸ごと複製し、
+  //   NEXT_PUBLIC_LOM_NAME … その団体名
+  //   NEXT_PUBLIC_SUPABASE_* / R2_* / NEXT_PUBLIC_SITE_URL … その LOM 用の値
+  // に差し替える（NEXT_PUBLIC_* はビルド時に埋め込まれるのでビルド設定側にも必要）。
   "vars": {
+    "NEXT_PUBLIC_LOM_NAME": "一般社団法人小牧青年会議所",
     "NEXT_PUBLIC_SUPABASE_URL": "https://oxrlfveljtwzdeuyjrkp.supabase.co",
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_okAGXj4uZ4ibqYWOguqrow_LNm_YWwc",
     "NEXT_PUBLIC_SITE_URL": "https://yuhitsu.yoroizuka.workers.dev",

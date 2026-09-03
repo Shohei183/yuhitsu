@@ -11,6 +11,7 @@
 import { Gian, GianKind } from "./mockData";
 import { getGianTemplate } from "./templateStore";
 import { formatJaDate } from "./format";
+import { LOM_NAME } from "./lom";
 import {
   findCommittee,
   addGianToCommittee,
@@ -387,8 +388,6 @@ export function lockGian(id: string): void {
   });
   void persistGian(id).then(() => persistSnapshot(id, snapshot));
 }
-
-const LOM_NAME = "一般社団法人小牧青年会議所";
 
 const KIND_TYPE: Record<GianKind, string> = {
   協議: "協議事項",

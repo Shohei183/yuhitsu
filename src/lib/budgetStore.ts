@@ -10,6 +10,7 @@
 import { db, fire } from "./backend/client";
 import { deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
+import { LOM_NAME } from "./lom";
 
 /** 収益の科目（様式1・固定） */
 export const REVENUE_CATEGORIES = [
@@ -96,8 +97,6 @@ export interface BudgetDoc {
 }
 
 export type BudgetStore = Record<string, BudgetDoc>;
-
-const LOM_NAME = "一般社団法人小牧青年会議所";
 
 let seq = 0;
 function newId(prefix: string): string {

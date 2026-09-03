@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { ASSIGNEES, MEMBERS, STATUS_LABEL } from "@/lib/mockData";
+import { LOM_NAME } from "@/lib/lom";
 import {
   DeadlineEntry,
   Sidai,
@@ -400,7 +401,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
             </div>
           )}
           <div className={styles.sidaiHeadCard}>
-            <div className={styles.sidaiLom}>一般社団法人小牧青年会議所</div>
+            <div className={styles.sidaiLom}>{LOM_NAME}</div>
             <div className={styles.sidaiMeeting}>{sidai.meetingName} 次第</div>
             <div className={styles.sidaiMeta}>
               {sidai.datetime && (

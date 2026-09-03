@@ -4,9 +4,8 @@
 
 import { JoteiTodoke, JOTEI_SECTIONS, sectionItems } from "@/lib/joteiStore";
 import { formatJaDate } from "@/lib/format";
+import { LOM_NAME } from "@/lib/lom";
 import styles from "./JoteiDoc.module.css";
-
-const LOM_NAME = "一般社団法人　小牧青年会議所";
 
 export default function JoteiDoc({ jotei }: { jotei: JoteiTodoke }) {
   return (

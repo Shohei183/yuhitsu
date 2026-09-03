@@ -3,9 +3,8 @@
 import { Gian } from "@/lib/mockData";
 import { Sidai } from "@/lib/sidaiStore";
 import { toHalfWidth } from "@/lib/format";
+import { LOM_NAME } from "@/lib/lom";
 import styles from "./SidaiView.module.css";
-
-const LOM_NAME = "一般社団法人小牧青年会議所";
 
 /**
  * 次第を1枚のドキュメントとして描画する共通コンポーネント。

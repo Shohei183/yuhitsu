@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updatePassword } from "@/lib/authStore";
 import { useAuthState } from "@/lib/useOrg";
+import { LOM_NAME } from "@/lib/lom";
 import styles from "./LoginForm.module.css";
 
 /**
@@ -50,7 +51,7 @@ export default function SetPasswordForm() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.brand}>一般社団法人小牧青年会議所</div>
+        <div className={styles.brand}>{LOM_NAME}</div>
         <h1 className={styles.title}>パスワードの設定</h1>
 
         {error && <div className={styles.error}>{error}</div>}
