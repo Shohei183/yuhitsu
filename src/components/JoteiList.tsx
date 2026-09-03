@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { JoteiTodoke, listJoteiForYear } from "@/lib/joteiStore";
 import { useJoteiStore } from "@/lib/useJoteiStore";
-import { useActiveYear, useCan } from "@/lib/useOrg";
+import { useActiveYear } from "@/lib/useOrg";
 import JoteiDoc from "./JoteiDoc";
 import styles from "./JoteiList.module.css";
 
@@ -13,12 +13,10 @@ const NO_MEETING = "（会議名未設定）";
 export default function JoteiList() {
   const year = useActiveYear();
   useJoteiStore();
-  const can = useCan();
   const [selected, setSelected] = useState<string>("");
 
   const yearId = year?.id ?? "";
   const all = listJoteiForYear(yearId);
-  const drafts = all.filter((j) => j.status !== "submitted");
 
   // 提出済みを会議ごとにグループ化（会議の初出順）
   const groups: { meeting: string; items: JoteiTodoke[] }[] = [];
@@ -96,30 +94,6 @@ export default function JoteiList() {
             </div>
           )}
         </>
-      )}
-
-      {can.editGian && drafts.length > 0 && (
-        <div className={styles.draftBlock}>
-          <h2 className={styles.draftTitle}>下書き（未提出）</h2>
-          <ul className={styles.list}>
-            {drafts.map((j) => (
-              <li key={j.id} className={styles.item}>
-                <Link href={`/jotei/${j.id}`} className={styles.itemMain}>
-                  <span className={`${styles.statusTag} ${styles.draft}`}>
-                    下書き
-                  </span>
-                  <span className={styles.itemTitle}>
-                    {j.committeeName}／{j.meetingName || "（会議名未設定）"}
-                  </span>
-                  <span className={styles.itemCount}>
-                    協議{j.kyogi.length}／審議{j.shingi.length}／報告
-                    {j.houkoku.length}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
       )}
     </main>
   );
