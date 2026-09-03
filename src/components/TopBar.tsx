@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { logout } from "@/lib/authStore";
-import { setRoleOverride, setYear } from "@/lib/activeViewStore";
-import { ROLE_LABEL, Role, SELECTABLE_ROLES } from "@/lib/yearStore";
+import { setYear } from "@/lib/activeViewStore";
+import { ROLE_LABEL, Role } from "@/lib/yearStore";
 import {
   useActiveView,
   useAuthMember,
@@ -82,27 +82,6 @@ export default function TopBar() {
         <span className={`${styles.roleBadge} ${ROLE_CLASS[effectiveRole]}`}>
           {ROLE_LABEL[effectiveRole]}
         </span>
-
-        {!member.isMaster && (
-          <label className={styles.demo} title="再ログインせずロール別の表示を確認">
-            <select
-              className={styles.demoSelect}
-              value={view.roleOverride ?? ""}
-              onChange={(e) =>
-                setRoleOverride(
-                  e.target.value ? (e.target.value as Role) : null
-                )
-              }
-            >
-              <option value="">実ロール</option>
-              {SELECTABLE_ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABEL[r]}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
 
         {can.editTemplates && (
           <Link href="/templates" className={styles.navLink}>
