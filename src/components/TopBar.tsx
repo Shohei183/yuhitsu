@@ -84,8 +84,7 @@ export default function TopBar() {
         </span>
 
         {!member.isMaster && (
-          <label className={styles.demo} title="再ログインせずロール別の表示を確認（デモ）">
-            <span className={styles.demoLabel}>デモ表示</span>
+          <label className={styles.demo} title="再ログインせずロール別の表示を確認">
             <select
               className={styles.demoSelect}
               value={view.roleOverride ?? ""}
@@ -122,7 +121,6 @@ export default function TopBar() {
           </>
         )}
 
-        <span className={styles.user}>{member.name}</span>
         <button type="button" className={styles.logout} onClick={onLogout}>
           ログアウト
         </button>
