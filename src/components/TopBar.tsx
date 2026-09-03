@@ -88,17 +88,17 @@ export default function TopBar() {
             テンプレート
           </Link>
         )}
-        {member.isMaster && (
-          <>
-            <Link href="/members" className={styles.navLink}>
-              メンバー管理
-            </Link>
-            <Link href="/roles" className={styles.navLink}>
-              ロール権限
-            </Link>
-            {/* 同期機能は後回し。/sync-lab のルートは残すがナビからは隠す */}
-          </>
+        {(member.isMaster || can.manageMembers || can.editRoles) && (
+          <Link href="/members" className={styles.navLink}>
+            メンバー管理
+          </Link>
         )}
+        {(member.isMaster || can.editRoles) && (
+          <Link href="/roles" className={styles.navLink}>
+            ロール権限
+          </Link>
+        )}
+        {/* 同期機能は後回し。/sync-lab のルートは残すがナビからは隠す */}
 
         <button type="button" className={styles.logout} onClick={onLogout}>
           ログアウト

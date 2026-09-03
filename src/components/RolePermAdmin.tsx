@@ -15,7 +15,9 @@ import {
   setPerm,
 } from "@/lib/rolePermStore";
 import {
+  useActiveYear,
   useAuthMember,
+  useCan,
   useEffectiveRole,
   useRolePermStore,
 } from "@/lib/useOrg";
@@ -25,16 +27,19 @@ export default function RolePermAdmin() {
   useRolePermStore(); // 変更で再描画
   const me = useAuthMember();
   const myRole = useEffectiveRole();
+  const can = useCan();
+  const year = useActiveYear();
   const [role, setRole] = useState<Role>("committee_chair");
 
   if (!me) return null;
 
-  if (!me.isMaster) {
+  if (!me.isMaster && !can.editRoles) {
     return (
       <main className={styles.wrap}>
         <h1 className={styles.title}>ロール権限の設定</h1>
         <p className={styles.denied}>
-          この画面はマスターアカウントのみが利用できます。
+          この画面の権限がありません（{year?.label ?? ""}）。マスター、または
+          「ロール権限」の権限を持つ役職で、その年度を選択して開いてください。
         </p>
         <Link href="/" className={styles.back}>
           ← トップへ
@@ -52,12 +57,16 @@ export default function RolePermAdmin() {
         <div className={styles.crumb}>LOM ／ ロール権限の設定</div>
         <h1 className={styles.title}>ロール権限の設定</h1>
         <p className={styles.note}>
-          ロールを選び、そのロールでできる操作をチェックで切り替えます。変更は即座に反映され、
-          該当ロールのユーザー（および上部バーの「デモ表示」で切り替えたロール）で挙動が変わります。
+          ロールを選び、そのロールでできる操作をチェックで切り替えます。変更は即座に反映されます。
         </p>
         <p className={styles.note}>
           いまログイン中のあなたの実効ロール：
           <strong>{ROLE_LABEL[myRole]}</strong>
+          {!me.isMaster && (
+            <span className={styles.note}>
+              　※「メンバー管理」「ロール権限」「年度の作成」はマスターのみ変更できます。
+            </span>
+          )}
         </p>
         <Link href="/" className={styles.back}>
           ← トップへ
@@ -102,6 +111,11 @@ export default function RolePermAdmin() {
         <ul className={styles.capList}>
           {CAPABILITIES.map((c) => {
             const checked = perms[c.key as Capability];
+            const locked =
+              !me.isMaster &&
+              (["manageMembers", "editRoles", "createYear"] as string[]).includes(
+                c.key
+              );
             return (
               <li key={c.key} className={styles.capItem}>
                 <label className={styles.capLabel}>
@@ -109,12 +123,18 @@ export default function RolePermAdmin() {
                     type="checkbox"
                     className={styles.capCheck}
                     checked={checked}
+                    disabled={locked}
                     onChange={(e) => setPerm(role, c.key, e.target.checked)}
                   />
                   <span className={styles.capText}>
                     <span className={styles.capName}>
                       {c.label}
-                      {!c.enforced && (
+                      {locked && (
+                        <span className={styles.defOnly} title="マスターのみ変更可">
+                          マスターのみ
+                        </span>
+                      )}
+                      {!c.enforced && !locked && (
                         <span className={styles.defOnly} title="定義のみ（画面での制御は次ステップ）">
                           定義のみ
                         </span>

@@ -45,12 +45,16 @@ export default function MemberAdmin() {
 
   if (!me) return null;
 
-  if (!me.isMaster) {
+  const canManageMembers = me.isMaster || can.manageMembers;
+  const canEditRoles = me.isMaster || can.editRoles;
+
+  if (!canManageMembers && !canEditRoles) {
     return (
       <main className={styles.wrap}>
         <h1 className={styles.title}>メンバー管理</h1>
         <p className={styles.denied}>
-          この画面はマスターアカウントのみが利用できます。
+          この画面の権限がありません（{year?.label ?? yearId}）。マスター、または
+          「メンバー管理」「ロール権限」の権限を持つ役職で、その年度を選択して開いてください。
         </p>
         <Link href="/" className={styles.back}>
           ← トップへ
@@ -60,7 +64,6 @@ export default function MemberAdmin() {
   }
 
   const members = listMembers();
-  const canEditRoles = can.editRoles;
 
   const onIssue = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +89,9 @@ export default function MemberAdmin() {
         <div className={styles.crumb}>LOM ／ メンバー管理</div>
         <h1 className={styles.title}>メンバー管理</h1>
         <p className={styles.note}>
-          アカウントの発行・退会（LOM 全体・年度非依存）と、
+          {canManageMembers
+            ? "アカウントの発行・退会（LOM 全体・年度非依存）と、"
+            : ""}
           <strong>{year?.label ?? yearId}</strong> のロール割当を行います。
           年度は上部バーの年度タブで切り替えます。
         </p>
@@ -97,29 +102,31 @@ export default function MemberAdmin() {
 
       {flash && <div className={styles.flash}>{flash}</div>}
 
-      <form className={styles.issue} onSubmit={onIssue}>
-        <div className={styles.issueTitle}>＋ アカウント発行</div>
-        <div className={styles.issueRow}>
-          <input
-            className={styles.issueInput}
-            value={name}
-            placeholder="氏名（例：田中 太郎）"
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            className={styles.issueInput}
-            type="email"
-            value={email}
-            placeholder="メール（例：tanaka@komaki-jc.example）"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <button type="submit" className={styles.issueBtn}>
-            発行
-          </button>
-        </div>
-      </form>
+      {canManageMembers && (
+        <form className={styles.issue} onSubmit={onIssue}>
+          <div className={styles.issueTitle}>＋ アカウント発行</div>
+          <div className={styles.issueRow}>
+            <input
+              className={styles.issueInput}
+              value={name}
+              placeholder="氏名（例：田中 太郎）"
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+            <input
+              className={styles.issueInput}
+              type="email"
+              value={email}
+              placeholder="メール（例：tanaka@komaki-jc.example）"
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button type="submit" className={styles.issueBtn}>
+              発行
+            </button>
+          </div>
+        </form>
+      )}
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -204,23 +211,27 @@ export default function MemberAdmin() {
                     )}
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      className={styles.rowBtn}
-                      onClick={() =>
-                        setEditing({
-                          id: m.id,
-                          name: m.name,
-                          email: m.email,
-                          err: null,
-                        })
-                      }
-                    >
-                      変更
-                    </button>
+                    {canManageMembers ? (
+                      <button
+                        type="button"
+                        className={styles.rowBtn}
+                        onClick={() =>
+                          setEditing({
+                            id: m.id,
+                            name: m.name,
+                            email: m.email,
+                            err: null,
+                          })
+                        }
+                      >
+                        変更
+                      </button>
+                    ) : (
+                      <span className={styles.dim}>—</span>
+                    )}
                   </td>
                   <td>
-                    {m.isMaster ? (
+                    {!canManageMembers || m.isMaster ? (
                       <span className={styles.dim}>—</span>
                     ) : m.status === "active" ? (
                       <button
