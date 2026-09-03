@@ -98,7 +98,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
           ← 上程届一覧
         </Link>
         <Link href={`/jotei/${joteiId}/view`} className={styles.navLink}>
-          閲覧・印刷
+          閲覧
         </Link>
         {!readOnly && can.submitGian && (
           <button type="button" className={styles.primaryBtn} onClick={onSubmit}>

@@ -38,13 +38,6 @@ export default function JoteiView({ joteiId }: { joteiId: string }) {
             編集画面へ →
           </Link>
         )}
-        <button
-          type="button"
-          className={styles.downloadBtn}
-          onClick={() => window.print()}
-        >
-          印刷（A4）
-        </button>
         {jotei.status === "submitted" && (
           <span className={styles.lockTag}>提出済み</span>
         )}

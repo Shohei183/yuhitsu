@@ -87,7 +87,7 @@ export default function JoteiList() {
                       href={`/jotei/${j.id}/view`}
                       className={styles.docCardLink}
                     >
-                      単独表示・印刷 →
+                      単独表示 →
                     </Link>
                   </div>
                   <JoteiDoc jotei={j} />
