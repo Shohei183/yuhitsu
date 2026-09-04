@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { ASSIGNEES, MEMBERS, STATUS_LABEL } from "@/lib/mockData";
+import { STATUS_LABEL } from "@/lib/mockData";
 import { useLomName } from "@/lib/useSettingsStore";
 import {
   DeadlineEntry,
@@ -25,7 +25,7 @@ import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useSidai } from "@/lib/useSidaiStore";
 import { useGianStore } from "@/lib/useGianStore";
 import { useDistributionStore } from "@/lib/useDistributionStore";
-import { useCan } from "@/lib/useOrg";
+import { useAssigneeOptions, useCan } from "@/lib/useOrg";
 import { useRouter } from "next/navigation";
 import styles from "./SidaiBuilder.module.css";
 
@@ -95,6 +95,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const can = useCan();
   const router = useRouter();
   const lom = useLomName();
+  const { assignees } = useAssigneeOptions();
 
   const [toast, setToast] = useState<string | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -379,7 +380,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
             className={styles.mb}
           >
             <option value="">（未選択）</option>
-            {ASSIGNEES.map((a) => (
+            {assignees.map((a) => (
               <option key={a} value={a}>
                 {a}
               </option>
@@ -743,6 +744,7 @@ function MemberSelect({
   placeholder: string;
   onChange: (v: string) => void;
 }) {
+  const { members } = useAssigneeOptions();
   return (
     <select
       className={styles.minutesSelect}
@@ -751,7 +753,7 @@ function MemberSelect({
       onChange={(e) => onChange(e.target.value)}
     >
       <option value="">{placeholder}</option>
-      {MEMBERS.map((m) => (
+      {members.map((m) => (
         <option key={m} value={m}>
           {m}
         </option>
@@ -1001,6 +1003,7 @@ function SidaiRowView({
 }) {
   const [dragOver, setDragOver] = useState(false);
   const isLink = row.type === "filelink";
+  const { assignees } = useAssigneeOptions();
 
   const controls = (
     <span className={styles.rowControls}>
@@ -1101,7 +1104,7 @@ function SidaiRowView({
             onChange={(e) => onChange({ assignee: e.target.value })}
           >
             <option value="">担当者（未選択）</option>
-            {ASSIGNEES.map((a) => (
+            {assignees.map((a) => (
               <option key={a} value={a}>
                 {a}
               </option>

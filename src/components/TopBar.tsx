@@ -70,7 +70,10 @@ export default function TopBar() {
               className={`${styles.yearTab} ${
                 y.id === view.yearId ? styles.yearTabActive : ""
               }`}
-              onClick={() => setYear(y.id)}
+              onClick={() => {
+                setYear(y.id);
+                router.push("/");
+              }}
             >
               {y.label}
             </button>
