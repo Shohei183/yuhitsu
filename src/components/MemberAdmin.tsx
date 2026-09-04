@@ -26,6 +26,7 @@ import {
 } from "@/lib/useOrg";
 import { setSetting } from "@/lib/settingsStore";
 import { useLomName } from "@/lib/useSettingsStore";
+import MemberCsvImport from "./MemberCsvImport";
 import styles from "./MemberAdmin.module.css";
 
 function LomNameSettings() {
@@ -171,6 +172,8 @@ export default function MemberAdmin() {
           </div>
         </form>
       )}
+
+      {canManageMembers && <MemberCsvImport />}
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>

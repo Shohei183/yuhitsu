@@ -103,17 +103,29 @@ export function listMembers(): Member[] {
 
 // ── 変更操作（master のみ・API route 経由）──
 
-/** アカウント発行＝招待メール送信 */
+/** 招待メールを1通送る（hydrate はしない）。作成された auth ユーザー id を返す。 */
+export async function inviteOne(input: {
+  name: string;
+  email: string;
+}): Promise<{ ok: boolean; error?: string; userId?: string | null }> {
+  const name = input.name.trim();
+  const email = input.email.trim();
+  if (!name || !email) return { ok: false, error: "氏名とメールを入力してください" };
+  const res = await callApi<{ userId?: string | null }>(
+    "/api/members/invite",
+    { email, fullName: name }
+  );
+  return { ok: res.ok, error: res.error, userId: res.data?.userId ?? null };
+}
+
+/** アカウント発行＝招待メール送信（単発。送信後にメンバー一覧を再取得） */
 export async function issueAccount(input: {
   name: string;
   email: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const name = input.name.trim();
-  const email = input.email.trim();
-  if (!name || !email) return { ok: false, error: "氏名とメールを入力してください" };
-  const res = await callApi("/api/members/invite", { email, fullName: name });
+  const res = await inviteOne(input);
   if (res.ok) await hydrate();
-  return res;
+  return { ok: res.ok, error: res.error };
 }
 
 /** 氏名の変更（master が編集） */
