@@ -25,7 +25,7 @@ returns boolean language sql immutable as $$
                 'manageFixedFiles','editRoles')
     when p_role = 'vice_president' then
       p_cap in ('editGian','submitGian','requestReplacement','approveReplacement')
-    when p_role in ('committee_chair','director') then
+    when p_role in ('committee_chair','director','past_president') then
       p_cap in ('editGian','submitGian','requestReplacement')
     when p_role in ('auditor','committee_member') then
       p_cap = 'editGian'

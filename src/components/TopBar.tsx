@@ -18,6 +18,7 @@ import styles from "./TopBar.module.css";
 const ROLE_CLASS: Record<Role, string> = {
   master: styles.roleMaster,
   president: styles.roleOfficer,
+  past_president: styles.roleBoard,
   executive_director: styles.roleOfficer,
   secretary_general: styles.roleOfficer,
   vice_president: styles.roleBoard,

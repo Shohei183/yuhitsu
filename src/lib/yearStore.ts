@@ -21,6 +21,7 @@ export const PERIOD_LABEL: Record<Period, string> = {
 export type Role =
   | "master"
   | "president"
+  | "past_president"
   | "executive_director"
   | "vice_president"
   | "auditor"
@@ -32,6 +33,7 @@ export type Role =
 export const ROLE_LABEL: Record<Role, string> = {
   master: "マスター",
   president: "理事長",
+  past_president: "直前理事長",
   executive_director: "専務",
   vice_president: "副理事長",
   auditor: "監事",
@@ -43,6 +45,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 export const SELECTABLE_ROLES: Role[] = [
   "president",
+  "past_president",
   "executive_director",
   "vice_president",
   "auditor",

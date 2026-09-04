@@ -135,6 +135,7 @@ const OFFICER_CAPS: Capability[] = [
 export const DEFAULT_PERMS: Record<Role, Record<Capability, boolean>> = {
   master: caps(CAPABILITY_KEYS), // すべて許可（編集不可）
   president: caps(OFFICER_CAPS),
+  past_president: caps(["editGian", "submitGian", "requestReplacement"]),
   executive_director: caps(OFFICER_CAPS),
   secretary_general: caps(OFFICER_CAPS),
   vice_president: caps([

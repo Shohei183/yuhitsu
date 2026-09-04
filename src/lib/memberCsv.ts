@@ -3,6 +3,7 @@ import { Role, ROLE_LABEL } from "./yearStore";
 // 役職ラベル → Role。表記ゆれを吸収する。
 const ROLE_ALIASES: Record<string, Role> = {
   理事長: "president",
+  直前理事長: "past_president",
   専務: "executive_director",
   専務理事: "executive_director",
   副理事長: "vice_president",
