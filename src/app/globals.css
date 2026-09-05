@@ -54,6 +54,13 @@
   --role-member-fg: #4a5568;
 }
 
+/* スマホは上部バーが2段（1段目：団体名・管理・ログアウト／2段目：年度タブ） */
+@media (max-width: 700px) {
+  :root {
+    --topbar-h: 100px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

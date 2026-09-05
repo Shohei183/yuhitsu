@@ -292,14 +292,36 @@
   }
 }
 
-/* スマホ：横スクロールを出さない */
+/* スマホ：2段バー（1段目＝団体名・管理・ログアウト／2段目＝年度タブ） */
 @media (max-width: 700px) {
   .bar {
-    gap: 8px;
-    padding: 0 10px;
+    height: var(--topbar-h);
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 6px 8px;
+    padding: 6px 10px;
   }
   .left {
+    order: 1;
+    flex: 1 1 auto;
     flex-shrink: 1;
+    min-width: 0;
+  }
+  .right {
+    order: 2;
+    flex: 0 0 auto;
+    margin-left: auto;
+    gap: 8px;
+  }
+  .center {
+    order: 3;
+    flex: 1 1 100%;
+    width: 100%;
+    gap: 8px;
+    overflow-x: auto;
+  }
+  .years {
+    width: max-content;
   }
   .lom {
     font-size: 13px;
@@ -307,11 +329,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .center {
-    gap: 8px;
-  }
-  .right {
-    gap: 8px;
+  .masterTag {
+    display: none;
   }
   .roleBadge {
     display: none;
@@ -324,7 +343,7 @@
   }
   .yearTab {
     font-size: 13px;
-    padding: 5px 10px;
+    padding: 5px 12px;
   }
   .navLink,
   .logout {
