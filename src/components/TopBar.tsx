@@ -44,6 +44,14 @@ export default function TopBar() {
     router.replace("/login");
   };
 
+  const adminLinks: { href: string; label: string }[] = [];
+  if (can.editTemplates)
+    adminLinks.push({ href: "/templates", label: "テンプレート" });
+  if (member.isMaster || can.manageMembers || can.editRoles)
+    adminLinks.push({ href: "/members", label: "メンバー管理" });
+  if (member.isMaster || can.editRoles)
+    adminLinks.push({ href: "/roles", label: "ロール権限" });
+
   return (
     <header className={styles.bar}>
       <div className={styles.left}>
@@ -87,20 +95,28 @@ export default function TopBar() {
           {ROLE_LABEL[effectiveRole]}
         </span>
 
-        {can.editTemplates && (
-          <Link href="/templates" className={styles.navLink}>
-            テンプレート
-          </Link>
-        )}
-        {(member.isMaster || can.manageMembers || can.editRoles) && (
-          <Link href="/members" className={styles.navLink}>
-            メンバー管理
-          </Link>
-        )}
-        {(member.isMaster || can.editRoles) && (
-          <Link href="/roles" className={styles.navLink}>
-            ロール権限
-          </Link>
+        {adminLinks.length > 0 && (
+          <>
+            {/* PC：横並びリンク */}
+            <span className={styles.adminInline}>
+              {adminLinks.map((l) => (
+                <Link key={l.href} href={l.href} className={styles.navLink}>
+                  {l.label}
+                </Link>
+              ))}
+            </span>
+            {/* スマホ：まとめて「管理 ▾」メニュー */}
+            <details className={styles.adminMenu}>
+              <summary className={styles.navLink}>管理 ▾</summary>
+              <div className={styles.adminMenuList}>
+                {adminLinks.map((l) => (
+                  <Link key={l.href} href={l.href} className={styles.adminMenuItem}>
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          </>
         )}
         {/* 同期機能は後回し。/sync-lab のルートは残すがナビからは隠す */}
 

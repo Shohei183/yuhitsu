@@ -64,6 +64,15 @@ body {
   margin: 0;
 }
 
+/* 横スクロールを出さない安全策（scroll コンテナは作らないので sticky は維持） */
+html {
+  overflow-x: clip;
+}
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
     "Yu Gothic", Meiryo, sans-serif;
