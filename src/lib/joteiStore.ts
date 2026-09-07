@@ -37,9 +37,9 @@ export interface JoteiTodoke {
   meetingName: string;
   /** 提出日 */
   submissionDate: string;
-  /** 提出者の役職「委員長」 */
+  /** 作成者の役職「委員長」（表示ラベルは「作成者」） */
   submitterRole: string;
-  /** 提出者の氏名 */
+  /** 作成者の氏名 */
   submitterName: string;
   kyogi: JoteiItem[];
   shingi: JoteiItem[];

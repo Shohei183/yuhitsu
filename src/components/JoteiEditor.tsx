@@ -165,7 +165,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
             />
           </label>
           <label className={styles.field}>
-            <span className={styles.fieldLabel}>提出者 役職</span>
+            <span className={styles.fieldLabel}>作成者 役職</span>
             <input
               className={styles.input}
               value={jotei.submitterRole}
@@ -175,7 +175,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
             />
           </label>
           <label className={styles.field}>
-            <span className={styles.fieldLabel}>提出者 氏名</span>
+            <span className={styles.fieldLabel}>作成者 氏名</span>
             <input
               className={styles.input}
               value={jotei.submitterName}
