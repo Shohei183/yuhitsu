@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  deleteMember,
   issueAccount,
   listMembers,
   setMemberMaster,
   setMemberStatus,
   updateMember,
 } from "@/lib/memberStore";
+import { sendPasswordReset } from "@/lib/authStore";
 import {
   ROLE_LABEL,
   Role,
@@ -329,7 +331,52 @@ export default function MemberAdmin() {
                         )
                       )}
 
-                      {(!canManageMembers && !me.isMaster) && (
+                      {canManageMembers && !m.isMaster && (
+                        <button
+                          type="button"
+                          className={styles.rowBtn}
+                          onClick={async () => {
+                            const res = await sendPasswordReset(m.email);
+                            setFlash(
+                              res.ok
+                                ? `${m.name} にパスワード設定メールを送りました`
+                                : (res.error ?? "送信できませんでした")
+                            );
+                            window.setTimeout(() => setFlash(null), 3500);
+                          }}
+                          title="初回パスワード設定／再設定のメールを送る（招待リンクの期限切れ時にも使える）"
+                        >
+                          パスワード再送
+                        </button>
+                      )}
+
+                      {canManageMembers && !m.isMaster && m.id !== me.id && (
+                        <button
+                          type="button"
+                          className={styles.deleteBtn}
+                          onClick={async () => {
+                            if (
+                              !window.confirm(
+                                `${m.name}（${m.email}）のアカウントを完全に削除します。\n` +
+                                  `ログインできなくなり、ロール割当・レビューメモも消えます。\n` +
+                                  `議案・次第などに残る氏名の記録は消えません。\n\n削除しますか？`
+                              )
+                            )
+                              return;
+                            const res = await deleteMember(m.id);
+                            setFlash(
+                              res.ok
+                                ? `${m.name} を削除しました`
+                                : (res.error ?? "削除できませんでした")
+                            );
+                            window.setTimeout(() => setFlash(null), 3500);
+                          }}
+                        >
+                          削除
+                        </button>
+                      )}
+
+                      {!canManageMembers && !me.isMaster && (
                         <span className={styles.dim}>—</span>
                       )}
                     </div>

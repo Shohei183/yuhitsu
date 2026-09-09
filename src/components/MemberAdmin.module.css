@@ -153,6 +153,18 @@
   padding: 4px 12px;
 }
 
+.deleteBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  color: var(--warn-fg);
+  border: 1px solid #e6c9c9;
+  background: #fff;
+}
+.deleteBtn:hover {
+  background: var(--warn-bg, #fbeaea);
+}
+
 .acctCell {
   display: flex;
   flex-wrap: wrap;

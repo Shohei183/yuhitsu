@@ -124,3 +124,50 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true });
 }
+
+/**
+ * DELETE /api/members/:id   （manageMembers 権限）
+ * アカウントを完全削除する。auth.users を消すと members / role_assignments /
+ * review_notes は on delete cascade で連鎖削除される。
+ * 議案・次第などの作成者名は文字列で保持されるため残る。
+ */
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requireUser(req);
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  if (!(await hasCapability(auth.userId, "manageMembers"))) {
+    return NextResponse.json({ error: "権限がありません" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  if (id === auth.userId) {
+    return NextResponse.json(
+      { error: "自分自身のアカウントは削除できません" },
+      { status: 400 }
+    );
+  }
+
+  const admin = getSupabaseAdmin();
+  const { data: m } = await admin
+    .from("members")
+    .select("is_master")
+    .eq("id", id)
+    .maybeSingle();
+  if (!m) {
+    return NextResponse.json({ error: "メンバーが見つかりません" }, { status: 404 });
+  }
+  if (m.is_master) {
+    return NextResponse.json(
+      { error: "マスター権限を外してから削除してください" },
+      { status: 400 }
+    );
+  }
+
+  const { error } = await admin.auth.admin.deleteUser(id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+  return NextResponse.json({ ok: true });
+}

@@ -158,3 +158,12 @@ export async function setMemberMaster(
   if (res.ok) await hydrate();
   return res;
 }
+
+/** アカウントを完全削除（auth.users を消し、members 等は連鎖削除） */
+export async function deleteMember(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const res = await callApi(`/api/members/${id}`, undefined, "DELETE");
+  if (res.ok) await hydrate();
+  return res;
+}
