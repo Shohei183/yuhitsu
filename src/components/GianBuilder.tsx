@@ -99,6 +99,8 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
       const map = new Map<string, { id: string; label: string }[]>();
       for (const e of Object.values(gianStore)) {
         if (e.gian.id === gianId) continue;
+        // 同じ年度の議案だけを候補にする
+        if (e.gian.yearId !== gian.yearId) continue;
         const c = e.gian.committee || "（委員会未設定）";
         const kl = e.gian.kind === "基本方針" ? "基本方針" : `${e.gian.kind}議案`;
         if (!map.has(c)) map.set(c, []);
