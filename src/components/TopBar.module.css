@@ -15,6 +15,12 @@
   overflow: hidden;
 }
 
+@media print {
+  .bar {
+    display: none;
+  }
+}
+
 .left,
 .right {
   display: flex;

@@ -167,9 +167,11 @@
 }
 
 @media print {
+  /* margin: 0 でブラウザのヘッダー／フッターを消す。
+     様式ごとに改ページするので、余白は .formSection の padding で各ページに付ける。 */
   @page {
     size: A4 portrait;
-    margin: 14mm 12mm;
+    margin: 0;
   }
   .doc {
     box-shadow: none;
@@ -193,6 +195,8 @@
   }
   .formSection {
     break-before: page;
+    padding: 14mm 12mm;
+    box-sizing: border-box;
   }
   .formSection:first-child {
     break-before: auto;

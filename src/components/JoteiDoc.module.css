@@ -90,12 +90,14 @@
 }
 
 @media print {
+  /* margin: 0 でブラウザのヘッダー／フッターを消す（余白は .doc の padding） */
   @page {
     size: A4 portrait;
-    margin: 18mm 16mm;
+    margin: 0;
   }
   .doc {
     font-size: 11pt;
+    padding: 18mm 16mm;
   }
   .title {
     break-after: avoid;

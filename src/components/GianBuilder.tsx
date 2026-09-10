@@ -649,7 +649,24 @@ function GianNav({
 }) {
   const router = useRouter();
   useBudgetStore();
+  const gianStore = useGianStore();
   const cid = committeeInfo?.committee.id;
+
+  // 他の議案（委員会ごとにまとめる）
+  const otherByCommittee = new Map<string, { id: string; label: string }[]>();
+  for (const e of Object.values(gianStore)) {
+    if (e.gian.id === gianId) continue;
+    const cname = e.gian.committee || "（委員会未設定）";
+    const kindLabel =
+      e.gian.kind === "基本方針" ? "基本方針" : `${e.gian.kind}議案`;
+    if (!otherByCommittee.has(cname)) otherByCommittee.set(cname, []);
+    otherByCommittee
+      .get(cname)!
+      .push({ id: e.gian.id, label: `${kindLabel}：${e.gian.topic}` });
+  }
+  const otherCommittees = [...otherByCommittee.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0], "ja")
+  );
 
   const linkedBudget = budgetForGian(gianId);
   const onBudget = () => {
@@ -689,6 +706,30 @@ function GianNav({
           <Link href={`/committee/${cid}/shared`} className={styles.navItem}>
             📁 共有用フォルダ
           </Link>
+        </div>
+      )}
+
+      {otherCommittees.length > 0 && (
+        <div className={styles.navGroup}>
+          <div className={styles.navGroupTitle}>他の議案へ</div>
+          <select
+            className={styles.navSelect}
+            value=""
+            onChange={(e) => {
+              if (e.target.value) router.push(`/gian/${e.target.value}`);
+            }}
+          >
+            <option value="">議案を選んで開く…</option>
+            {otherCommittees.map(([cname, items]) => (
+              <optgroup key={cname} label={cname}>
+                {items.map((it) => (
+                  <option key={it.id} value={it.id}>
+                    {it.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </div>
       )}
     </nav>

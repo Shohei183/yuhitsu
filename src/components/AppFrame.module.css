@@ -28,3 +28,10 @@
   padding-top: var(--topbar-h);
   min-width: 0;
 }
+
+/* 印刷／PDF：上部バーと下げ分を消す（ドキュメントだけ出す） */
+@media print {
+  .body {
+    padding-top: 0;
+  }
+}

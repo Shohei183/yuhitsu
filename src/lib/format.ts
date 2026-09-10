@@ -62,16 +62,9 @@ export function toHalfWidth(s: string): string {
 }
 
 /**
- * 本文テキスト中の数字を 3 桁区切りにする。
- * - 4 桁以上の連続数字が対象（3 桁以下はそのまま）
- * - 直後が「年」の場合は西暦とみなしてそのまま（例：2026年）
- * - すでにカンマや数字に隣接している箇所は対象外（"1,200,000" を壊さない）
+ * 本文テキストはそのまま返す（旧：数字の3桁区切り自動挿入。ユーザー指示で廃止）。
+ * 呼び出し側の互換のため関数は残す。
  */
 export function formatDocNumbers(text: string): string {
-  if (!text) return text;
-  return text.replace(/(?<![\d,.])\d{4,}(?![\d,])/g, (m, offset: number, full: string) => {
-    const after = full.slice(offset + m.length, offset + m.length + 2);
-    if (after.startsWith("年")) return m; // 西暦
-    return Number(m).toLocaleString("en-US");
-  });
+  return text;
 }

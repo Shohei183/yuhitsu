@@ -388,9 +388,11 @@
 }
 
 @media print {
+  /* margin: 0 でブラウザのヘッダー／フッター（URL・日付・ページ番号）を消す。
+     余白は .doc 側の padding で確保する。 */
   @page {
     size: A4 portrait;
-    margin: 14mm 12mm;
+    margin: 0;
   }
 
   .page {
@@ -409,7 +411,7 @@
     max-width: none;
     width: 100%;
     margin: 0;
-    padding: 0;
+    padding: 14mm 12mm;
     /* A4 の刷り上がり幅に合わせて本文を少し詰める */
     font-size: 10.5pt;
     line-height: 1.5;

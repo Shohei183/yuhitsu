@@ -231,6 +231,15 @@
   color: var(--text);
   border: 1px solid transparent;
 }
+
+.navSelect {
+  width: 100%;
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: #fff;
+}
 .navItem:hover {
   text-decoration: none;
   background: var(--panel);
