@@ -219,6 +219,32 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.amtCell {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.amtCell .amtInput {
+  flex: 1;
+  min-width: 0;
+}
+.amtColorBtn {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 3px 4px;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.amtColorBtnOn {
+  color: #fff;
+  background: #d21f1f;
+  border-color: #d21f1f;
+}
 
 .addBtn {
   font-size: 12px;
@@ -310,7 +336,7 @@
 
 /* 明細テーブル：金額は狭く（最大8桁）、資料は広く */
 .itemAmtCol {
-  width: 92px;
+  width: 116px;
 }
 .atCol {
   width: 124px;

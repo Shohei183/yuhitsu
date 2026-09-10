@@ -12,7 +12,7 @@ import {
   balance,
 } from "@/lib/budgetStore";
 import { jpNum } from "@/lib/format";
-import { richToPlain, sanitizeRichHtml } from "@/lib/richText";
+import { RICH_RED, richToPlain, sanitizeRichHtml } from "@/lib/richText";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import styles from "./BudgetDoc.module.css";
 
@@ -229,7 +229,12 @@ function DetailRows({
           <td className={styles.note}>
             <RichCell html={it.note} />
           </td>
-          <td className={styles.amount}>{yen(amountOf(it.amount))}</td>
+          <td
+            className={styles.amount}
+            style={it.amountRed ? { color: RICH_RED } : undefined}
+          >
+            {yen(amountOf(it.amount))}
+          </td>
           {withAttachments && (
             <td className={styles.noCell}>
               {(() => {

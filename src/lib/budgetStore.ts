@@ -66,6 +66,8 @@ export interface BudgetLineItem {
   note: string;
   /** 金額（自由記入。¥や,は許容） */
   amount: string;
+  /** 金額を赤字で表示する */
+  amountRed?: boolean;
   /** 参照する資料（BudgetAttachment.id）。null で添付なし */
   attachmentRef?: string | null;
   /** 旧形式（1行1ファイル）。normalize でプールへ移行 */

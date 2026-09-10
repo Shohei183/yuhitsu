@@ -23,6 +23,7 @@ import { jpNum } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import { uploadFile, deleteFileObj, openFileByIdAsync } from "@/lib/backend/files";
 import BudgetDocView from "./BudgetDoc";
+import { RICH_RED } from "@/lib/richText";
 import RichText from "./RichText";
 import styles from "./BudgetEditor.module.css";
 
@@ -398,14 +399,29 @@ function ItemRow({
         />
       </td>
       <td>
-        <input
-          className={styles.amtInput}
-          inputMode="numeric"
-          maxLength={12}
-          value={item.amount}
-          readOnly={readOnly}
-          onChange={(e) => patchItem({ amount: e.target.value })}
-        />
+        <div className={styles.amtCell}>
+          <input
+            className={styles.amtInput}
+            inputMode="numeric"
+            maxLength={12}
+            value={item.amount}
+            readOnly={readOnly}
+            style={item.amountRed ? { color: RICH_RED } : undefined}
+            onChange={(e) => patchItem({ amount: e.target.value })}
+          />
+          {!readOnly && (
+            <button
+              type="button"
+              className={`${styles.amtColorBtn} ${
+                item.amountRed ? styles.amtColorBtnOn : ""
+              }`}
+              title={item.amountRed ? "黒字に戻す" : "赤字にする"}
+              onClick={() => patchItem({ amountRed: !item.amountRed })}
+            >
+              赤
+            </button>
+          )}
+        </div>
       </td>
       {showAttachment && (
         <td className={styles.atCell}>
