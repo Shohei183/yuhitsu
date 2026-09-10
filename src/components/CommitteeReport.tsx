@@ -93,13 +93,12 @@ export default function CommitteeReport({
         <Link href={`/committee/${committeeId}`} className={styles.navLink}>
           ← {committee.name}
         </Link>
-        <button
-          type="button"
-          className={styles.ghostBtn}
-          onClick={() => window.print()}
+        <Link
+          href={`/committee/${committeeId}/report/view`}
+          className={styles.navLink}
         >
-          印刷（A4）
-        </button>
+          閲覧・PDF出力 →
+        </Link>
         {member?.isMaster && (
           <button
             type="button"

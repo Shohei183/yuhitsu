@@ -1,0 +1,131 @@
+.doc {
+  background: #fff;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.lom {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.14em;
+  margin: 0 0 16px;
+}
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted-strong);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+.empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.meetings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.meeting {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  break-inside: avoid;
+}
+.mHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.mNo {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mDateLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+.mDate {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+}
+.rLabel {
+  flex-shrink: 0;
+  width: 4.5em;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+.rValue {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rValueAtt {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 640px) {
+  .meta {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .row {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  .doc {
+    padding: 14mm 12mm;
+    font-size: 11pt;
+  }
+  .title {
+    break-after: avoid;
+  }
+  .meeting {
+    background: #fff;
+  }
+}
