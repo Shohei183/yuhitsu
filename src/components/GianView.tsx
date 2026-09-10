@@ -9,7 +9,8 @@ import {
   STATUS_LABEL,
   getGian,
 } from "@/lib/mockData";
-import { formatDocNumbers, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
+import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
+import { sanitizeRichHtml } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
 import { downloadDocHtml } from "@/lib/download";
 import {
@@ -255,7 +256,15 @@ export default function GianView({
                             <tr key={e.id}>
                               <td>{e.date || "—"}</td>
                               <td>
-                                {e.content ? formatDocNumbers(e.content) : "—"}
+                                {sanitizeRichHtml(e.content) ? (
+                                  <span
+                                    dangerouslySetInnerHTML={{
+                                      __html: sanitizeRichHtml(e.content),
+                                    }}
+                                  />
+                                ) : (
+                                  "—"
+                                )}
                               </td>
                             </tr>
                           ))
@@ -304,7 +313,17 @@ export default function GianView({
                     gian.implementationSchedule.map((e) => (
                       <tr key={e.id}>
                         <td>{e.date || "—"}</td>
-                        <td>{e.content ? formatDocNumbers(e.content) : "—"}</td>
+                        <td>
+                          {sanitizeRichHtml(e.content) ? (
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: sanitizeRichHtml(e.content),
+                              }}
+                            />
+                          ) : (
+                            "—"
+                          )}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -508,13 +527,15 @@ function Kv({ label, value }: { label: string; value: string }) {
 }
 
 function Body({ text, inline }: { text: string; inline?: boolean }) {
-  if (text.trim() === "") {
+  const html = sanitizeRichHtml(text);
+  if (!html) {
     return <span className={styles.empty}>（未記入）</span>;
   }
   return (
-    <div className={inline ? styles.bodyInline : styles.itemBody}>
-      {formatDocNumbers(text)}
-    </div>
+    <div
+      className={inline ? styles.bodyInline : styles.itemBody}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }
 

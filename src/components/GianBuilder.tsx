@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AssignedMember,
   BudgetLine,
@@ -34,7 +34,9 @@ import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCan, useCommitteeOfGian } from "@/lib/useOrg";
 import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
+import { isRichEmpty } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
+import RichText from "./RichText";
 import GianResourcePanel from "./GianResourcePanel";
 
 import styles from "./GianBuilder.module.css";
@@ -43,10 +45,6 @@ import styles from "./GianBuilder.module.css";
 const SCHEDULE_ITEM_LABEL = "実施までのスケジュール";
 /** 事業概要の中で、事業収支予算書へのリンクを出す項目のラベル */
 const BUDGET_ITEM_LABEL = "予算総額";
-
-/** SSR で useLayoutEffect の警告を出さないための切り替え */
-const useIsoLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 type TemplateListKey = "outline" | "overview";
 
@@ -1336,15 +1334,16 @@ function PriorFeedbackSection({
                 <div key={ex.id} className={styles.fbExchange}>
                   <div className={styles.fbLine}>
                     <span className={styles.fbLineLabel}>意見 {i + 1}：</span>
-                    <AutoGrowTextarea
-                      className={styles.fbLineInput}
-                      value={ex.opinion}
-                      readOnly={readOnly}
-                      placeholder="出された意見"
-                      onChange={(v) =>
-                        onUpdateExchange(r.id, ex.id, { opinion: v })
-                      }
-                    />
+                    <div className={styles.fbLineInput}>
+                      <RichText
+                        value={ex.opinion}
+                        readOnly={readOnly}
+                        placeholder="出された意見"
+                        onChange={(html) =>
+                          onUpdateExchange(r.id, ex.id, { opinion: html })
+                        }
+                      />
+                    </div>
                     {!readOnly && (
                       <button
                         type="button"
@@ -1358,15 +1357,16 @@ function PriorFeedbackSection({
                   </div>
                   <div className={styles.fbLine}>
                     <span className={styles.fbLineLabel}>対応 {i + 1}：</span>
-                    <AutoGrowTextarea
-                      className={styles.fbLineInput}
-                      value={ex.response}
-                      readOnly={readOnly}
-                      placeholder="対応内容"
-                      onChange={(v) =>
-                        onUpdateExchange(r.id, ex.id, { response: v })
-                      }
-                    />
+                    <div className={styles.fbLineInput}>
+                      <RichText
+                        value={ex.response}
+                        readOnly={readOnly}
+                        placeholder="対応内容"
+                        onChange={(html) =>
+                          onUpdateExchange(r.id, ex.id, { response: html })
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1582,55 +1582,6 @@ function PlanItemsSection({
   );
 }
 
-/**
- * 内容量に合わせて高さが自動で伸縮する textarea。
- * 手動リサイズ（ドラッグ）は無効（globals.css で resize:none）。
- */
-function AutoGrowTextarea({
-  value,
-  readOnly,
-  placeholder,
-  onChange,
-  className,
-  minRows = 1,
-}: {
-  value: string;
-  readOnly: boolean;
-  placeholder?: string;
-  onChange: (v: string) => void;
-  className?: string;
-  minRows?: number;
-}) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-
-  const fit = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, []);
-
-  useIsoLayoutEffect(fit, [value, fit]);
-
-  useEffect(() => {
-    window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
-  }, [fit]);
-
-  return (
-    <textarea
-      ref={ref}
-      className={className}
-      value={value}
-      readOnly={readOnly}
-      rows={minRows}
-      placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      onInput={fit}
-    />
-  );
-}
-
 function TemplateCard({
   item,
   readOnly,
@@ -1645,7 +1596,7 @@ function TemplateCard({
   bare?: boolean;
   footer?: React.ReactNode;
 }) {
-  const empty = item.body.trim() === "";
+  const empty = isRichEmpty(item.body);
   const inner = (
     <>
       <div className={styles.tplHead}>
@@ -1653,11 +1604,9 @@ function TemplateCard({
         <span className={styles.tplLabel}>{item.label}</span>
         {empty && <span className={styles.unfilled}>未記入</span>}
       </div>
-      <AutoGrowTextarea
-        className={styles.tplTextarea}
+      <RichText
         value={item.body}
         readOnly={readOnly}
-        minRows={2}
         placeholder="ここに内容を記入します"
         onChange={onChange}
       />
@@ -1713,14 +1662,11 @@ function ScheduleTable({
                   />
                 </td>
                 <td>
-                  <input
-                    className={styles.schedInput}
+                  <RichText
                     value={e.content}
                     readOnly={readOnly}
                     placeholder="内容"
-                    onChange={(ev) =>
-                      onChange?.(e.id, { content: ev.target.value })
-                    }
+                    onChange={(html) => onChange?.(e.id, { content: html })}
                   />
                 </td>
                 {!readOnly && (

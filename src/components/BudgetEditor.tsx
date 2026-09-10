@@ -23,6 +23,7 @@ import { jpNum } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import { uploadFile, deleteFileObj, openFileByIdAsync } from "@/lib/backend/files";
 import BudgetDocView from "./BudgetDoc";
+import RichText from "./RichText";
 import styles from "./BudgetEditor.module.css";
 
 function yen(n: number): string {
@@ -381,21 +382,19 @@ function ItemRow({
   return (
     <tr>
       <td>
-        <textarea
-          className={styles.cellInput}
-          rows={1}
+        <RichText
           value={item.subItem}
           readOnly={readOnly}
-          onChange={(e) => patchItem({ subItem: e.target.value })}
+          placeholder="細目"
+          onChange={(html) => patchItem({ subItem: html })}
         />
       </td>
       <td>
-        <textarea
-          className={styles.cellInput}
-          rows={1}
+        <RichText
           value={item.note}
           readOnly={readOnly}
-          onChange={(e) => patchItem({ note: e.target.value })}
+          placeholder="摘要（算出根拠）"
+          onChange={(html) => patchItem({ note: html })}
         />
       </td>
       <td>

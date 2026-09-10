@@ -12,8 +12,15 @@ import {
   balance,
 } from "@/lib/budgetStore";
 import { jpNum } from "@/lib/format";
+import { richToPlain, sanitizeRichHtml } from "@/lib/richText";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import styles from "./BudgetDoc.module.css";
+
+function RichCell({ html }: { html: string }) {
+  const safe = sanitizeRichHtml(html);
+  if (!safe) return <>—</>;
+  return <span dangerouslySetInnerHTML={{ __html: safe }} />;
+}
 
 function yen(n: number): string {
   return `¥${jpNum(n)}`;
@@ -38,7 +45,7 @@ function Form1Section({ label, cats }: { label: string; cats: BudgetCategory[] }
           <td className={styles.amount}>{yen(categoryTotal(c))}</td>
           <td className={styles.note}>
             {c.items
-              .map((it) => it.subItem || it.note)
+              .map((it) => richToPlain(it.subItem) || richToPlain(it.note))
               .filter(Boolean)
               .join("、")}
           </td>
@@ -216,8 +223,12 @@ function DetailRows({
               {cat.name}
             </td>
           )}
-          <td>{it.subItem || "—"}</td>
-          <td className={styles.note}>{it.note || "—"}</td>
+          <td>
+            <RichCell html={it.subItem} />
+          </td>
+          <td className={styles.note}>
+            <RichCell html={it.note} />
+          </td>
           <td className={styles.amount}>{yen(amountOf(it.amount))}</td>
           {withAttachments && (
             <td className={styles.noCell}>
