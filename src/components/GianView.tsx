@@ -6,6 +6,7 @@ import {
   AssignedMember,
   BudgetLine,
   Gian,
+  ItemLink,
   STATUS_LABEL,
   getGian,
 } from "@/lib/mockData";
@@ -192,6 +193,7 @@ export default function GianView({
                 {it.no}. {it.label}
               </div>
               <Body text={it.body} />
+              <ItemLinkChips links={it.attachments} />
             </li>
           ))}
         </ol>
@@ -221,6 +223,7 @@ export default function GianView({
                     <span className={styles.empty}>（なし）</span>
                   )}
                 </div>
+                <ItemLinkChips links={it.attachments} />
               </li>
             ))}
           </ol>
@@ -286,6 +289,7 @@ export default function GianView({
                     {jpNum(sectionTotal(linkedBudget.expense))}） ↗
                   </a>
                 )}
+                <ItemLinkChips links={it.attachments} />
               </li>
             ))}
           </ol>
@@ -536,6 +540,41 @@ function Body({ text, inline }: { text: string; inline?: boolean }) {
       className={inline ? styles.bodyInline : styles.itemBody}
       dangerouslySetInnerHTML={{ __html: html }}
     />
+  );
+}
+
+/** 項目に添付されたリンク（他の議案・資料）。次第の議案リンクのように表示する。 */
+function ItemLinkChips({ links }: { links: ItemLink[] | undefined }) {
+  if (!links || links.length === 0) return null;
+  return (
+    <div className={styles.attachChips}>
+      {links.map((l) =>
+        l.kind === "gian" ? (
+          <a
+            key={l.id}
+            href={`/gian/${l.gianId}/view`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.attachChip}
+            data-doc-anchor={l.gianId}
+          >
+            📄 {l.label} ↗
+          </a>
+        ) : (
+          <button
+            key={l.id}
+            type="button"
+            className={styles.attachChip}
+            data-file-id={l.fileId}
+            data-file-name={l.label}
+            onClick={() => l.fileId && openFileByIdAsync(l.fileId, l.label)}
+          >
+            📎 {l.label}
+            <span className={styles.fileLinkMark}> ↓</span>
+          </button>
+        )
+      )}
+    </div>
   );
 }
 

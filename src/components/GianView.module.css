@@ -458,3 +458,35 @@
   border-radius: 7px;
   padding: 4px 11px;
 }
+
+/* 項目の添付リンク（他の議案・資料） */
+.attachChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.attachChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-weak);
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  cursor: pointer;
+  max-width: 100%;
+}
+.attachChip:hover {
+  background: #fff;
+}
+
+@media print {
+  .attachChip {
+    border-color: var(--border);
+    background: transparent;
+  }
+}

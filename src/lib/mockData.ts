@@ -15,6 +15,18 @@ export type GianKind =
   | "決算審議"
   | "基本方針";
 
+/** 項目に添付するリンク（他の議案 or この議案の資料） */
+export interface ItemLink {
+  id: string;
+  kind: "gian" | "file";
+  /** kind === "gian" */
+  gianId?: string;
+  /** kind === "file"（この議案にアップされた資料の file_objects id） */
+  fileId?: string;
+  /** 表示用ラベル（作成時スナップショット） */
+  label: string;
+}
+
 /** 事業要綱 / 事業概要の 1 項目（テンプレートで定義された枠。番号とラベルは固定） */
 export interface TemplateItem {
   /** 項目番号（テンプレート由来） */
@@ -28,6 +40,8 @@ export interface TemplateItem {
    * 基本方針以外の議案では未使用。
    */
   linkedGianId?: string;
+  /** この項目に添付したリンク（他の議案・資料）。次第の議案リンクのように表示する。 */
+  attachments?: ItemLink[];
 }
 
 /** 議案上程スケジュール表の 1 行 */

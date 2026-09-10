@@ -1671,3 +1671,122 @@
 .budgetLinkBtn:hover {
   background: #fff;
 }
+
+/* ── 項目の添付リンク（他の議案・資料） ── */
+.attachWrap {
+  margin-top: 10px;
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.attachChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.attachChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  background: var(--accent-weak);
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  max-width: 100%;
+}
+.attachChipIcon {
+  font-size: 11px;
+}
+.attachChipLink {
+  color: var(--accent);
+  font-weight: 600;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 22em;
+}
+.attachChipLink:hover {
+  text-decoration: underline;
+}
+.attachChipX {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+.attachChipX:hover {
+  color: var(--warn-fg);
+}
+.attachTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.attachAddBtn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--accent-line);
+  border-radius: 7px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.attachAddBtn:hover {
+  background: var(--accent-weak);
+}
+.attachPickTabs {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.attachPickTab {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+  color: var(--muted);
+}
+.attachPickTab + .attachPickTab {
+  border-left: 1px solid var(--border-strong);
+}
+.attachPickTabOn {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.attachSelect {
+  font-size: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  background: #fff;
+  max-width: 100%;
+  flex: 1 1 12em;
+  min-width: 12em;
+}
+.attachCancel {
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.attachCancel:hover {
+  color: var(--text);
+}

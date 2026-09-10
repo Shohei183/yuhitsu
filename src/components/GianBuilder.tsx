@@ -9,11 +9,15 @@ import {
   FeedbackExchange,
   FeedbackRound,
   Gian,
+  ItemLink,
   ScheduleEntry,
   ScheduleRow,
   STATUS_LABEL,
   TemplateItem,
 } from "@/lib/mockData";
+import { GianFileMeta } from "@/lib/gianFilesDb";
+import { useGianFiles } from "@/lib/useGianFiles";
+import { openFileByIdAsync } from "@/lib/backend/files";
 import {
   AUTOSAVE_LIMIT,
   ReplacementRequest,
@@ -86,6 +90,25 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
         .map((g) => ({ id: g.id, topic: g.topic, kind: g.kind }))
     : [];
 
+  // ── 項目の添付リンク（他の議案 / この議案の資料）の候補 ──
+  const { files: reviewFiles } = useGianFiles(gianId, "review");
+  const { files: referenceFiles } = useGianFiles(gianId, "reference");
+  const attachFiles: GianFileMeta[] = [...reviewFiles, ...referenceFiles];
+  const attachGianGroups: { committee: string; gians: { id: string; label: string }[] }[] =
+    (() => {
+      const map = new Map<string, { id: string; label: string }[]>();
+      for (const e of Object.values(gianStore)) {
+        if (e.gian.id === gianId) continue;
+        const c = e.gian.committee || "（委員会未設定）";
+        const kl = e.gian.kind === "基本方針" ? "基本方針" : `${e.gian.kind}議案`;
+        if (!map.has(c)) map.set(c, []);
+        map.get(c)!.push({ id: e.gian.id, label: `${kl}：${e.gian.topic}` });
+      }
+      return [...map.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0], "ja"))
+        .map(([committee, gians]) => ({ committee, gians }));
+    })();
+
   const [toast, setToast] = useState<string | null>(null);
 
   const readOnly = gian.status !== "editing";
@@ -140,6 +163,20 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
       overview: g.overview
         .filter((o) => o.no !== no)
         .map((o, i) => ({ ...o, no: i + 1 })),
+    }));
+  }
+
+  /** 項目に添付したリンク（他の議案・資料）の更新 */
+  function updateItemAttachments(
+    list: TemplateListKey,
+    no: number,
+    attachments: ItemLink[]
+  ) {
+    setGian((g) => ({
+      ...g,
+      [list]: g[list].map((o) =>
+        o.no === no ? { ...o, attachments } : o
+      ),
     }));
   }
 
@@ -555,6 +592,11 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
             items={gian.outline}
             readOnly={readOnly}
             onChange={(no, body) => updateTemplateItem("outline", no, body)}
+            attach={{
+              gianGroups: attachGianGroups,
+              files: attachFiles,
+              onChange: (no, a) => updateItemAttachments("outline", no, a),
+            }}
           />
           {kihon ? (
             <PlanItemsSection
@@ -572,6 +614,11 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
               items={gian.overview}
               readOnly={readOnly}
               onChange={(no, body) => updateTemplateItem("overview", no, body)}
+              attach={{
+                gianGroups: attachGianGroups,
+                files: attachFiles,
+                onChange: (no, a) => updateItemAttachments("overview", no, a),
+              }}
               schedule={gian.implementationSchedule}
               onScheduleChange={updateScheduleEntry}
               onScheduleAdd={addScheduleEntry}
@@ -675,24 +722,7 @@ function GianNav({
 }) {
   const router = useRouter();
   useBudgetStore();
-  const gianStore = useGianStore();
   const cid = committeeInfo?.committee.id;
-
-  // 他の議案（委員会ごとにまとめる）
-  const otherByCommittee = new Map<string, { id: string; label: string }[]>();
-  for (const e of Object.values(gianStore)) {
-    if (e.gian.id === gianId) continue;
-    const cname = e.gian.committee || "（委員会未設定）";
-    const kindLabel =
-      e.gian.kind === "基本方針" ? "基本方針" : `${e.gian.kind}議案`;
-    if (!otherByCommittee.has(cname)) otherByCommittee.set(cname, []);
-    otherByCommittee
-      .get(cname)!
-      .push({ id: e.gian.id, label: `${kindLabel}：${e.gian.topic}` });
-  }
-  const otherCommittees = [...otherByCommittee.entries()].sort((a, b) =>
-    a[0].localeCompare(b[0], "ja")
-  );
 
   const linkedBudget = budgetForGian(gianId);
   const onBudget = () => {
@@ -735,30 +765,6 @@ function GianNav({
           <Link href={`/committee/${cid}/shared`} className={styles.navItem}>
             📁 共有用フォルダ
           </Link>
-        </div>
-      )}
-
-      {otherCommittees.length > 0 && (
-        <div className={styles.navGroup}>
-          <div className={styles.navGroupTitle}>他の議案へ</div>
-          <select
-            className={styles.navSelect}
-            value=""
-            onChange={(e) => {
-              if (e.target.value) router.push(`/gian/${e.target.value}`);
-            }}
-          >
-            <option value="">議案を選んで開く…</option>
-            {otherCommittees.map(([cname, items]) => (
-              <optgroup key={cname} label={cname}>
-                {items.map((it) => (
-                  <option key={it.id} value={it.id}>
-                    {it.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
         </div>
       )}
     </nav>
@@ -1401,6 +1407,188 @@ interface LinkOption {
   kind: string;
 }
 
+/** 項目の「添付追加」で使う候補（他の議案・この議案の資料）＋更新ハンドラ */
+export interface AttachContext {
+  gianGroups: { committee: string; gians: { id: string; label: string }[] }[];
+  files: GianFileMeta[];
+  onChange: (no: number, attachments: ItemLink[]) => void;
+}
+
+function genLinkId(): string {
+  return `il-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/** 項目に添付したリンク（他の議案・資料）の表示＋編集 */
+function ItemAttachments({
+  item,
+  readOnly,
+  attach,
+}: {
+  item: TemplateItem;
+  readOnly: boolean;
+  attach: AttachContext;
+}) {
+  const [picking, setPicking] = useState<null | "gian" | "file">(null);
+  const list = item.attachments ?? [];
+
+  const add = (link: ItemLink) => {
+    attach.onChange(item.no, [...list, link]);
+    setPicking(null);
+  };
+  const remove = (id: string) =>
+    attach.onChange(
+      item.no,
+      list.filter((l) => l.id !== id)
+    );
+
+  return (
+    <div className={styles.attachWrap}>
+      {list.length > 0 && (
+        <div className={styles.attachChips}>
+          {list.map((l) => (
+            <span key={l.id} className={styles.attachChip}>
+              <span className={styles.attachChipIcon}>
+                {l.kind === "gian" ? "📄" : "📎"}
+              </span>
+              {l.kind === "gian" ? (
+                <a
+                  href={`/gian/${l.gianId}/view`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.attachChipLink}
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.attachChipLink}
+                  onClick={() =>
+                    l.fileId && openFileByIdAsync(l.fileId, l.label)
+                  }
+                >
+                  {l.label}
+                </button>
+              )}
+              {!readOnly && (
+                <button
+                  type="button"
+                  className={styles.attachChipX}
+                  title="この添付を外す"
+                  onClick={() => remove(l.id)}
+                >
+                  ×
+                </button>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {!readOnly && (
+        <div className={styles.attachTools}>
+          {picking === null ? (
+            <button
+              type="button"
+              className={styles.attachAddBtn}
+              onClick={() => setPicking("gian")}
+            >
+              ＋ 添付追加
+            </button>
+          ) : (
+            <>
+              <div className={styles.attachPickTabs}>
+                <button
+                  type="button"
+                  className={`${styles.attachPickTab} ${
+                    picking === "gian" ? styles.attachPickTabOn : ""
+                  }`}
+                  onClick={() => setPicking("gian")}
+                >
+                  議案
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.attachPickTab} ${
+                    picking === "file" ? styles.attachPickTabOn : ""
+                  }`}
+                  onClick={() => setPicking("file")}
+                >
+                  資料
+                </button>
+              </div>
+              {picking === "gian" ? (
+                <select
+                  className={styles.attachSelect}
+                  value=""
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (!id) return;
+                    let label = id;
+                    for (const g of attach.gianGroups) {
+                      const hit = g.gians.find((x) => x.id === id);
+                      if (hit) {
+                        label = hit.label;
+                        break;
+                      }
+                    }
+                    add({ id: genLinkId(), kind: "gian", gianId: id, label });
+                  }}
+                >
+                  <option value="">議案を選ぶ…</option>
+                  {attach.gianGroups.map((g) => (
+                    <optgroup key={g.committee} label={g.committee}>
+                      {g.gians.map((x) => (
+                        <option key={x.id} value={x.id}>
+                          {x.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  className={styles.attachSelect}
+                  value=""
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (!id) return;
+                    const f = attach.files.find((x) => x.id === id);
+                    add({
+                      id: genLinkId(),
+                      kind: "file",
+                      fileId: id,
+                      label: f?.name ?? "資料",
+                    });
+                  }}
+                >
+                  <option value="">
+                    {attach.files.length === 0
+                      ? "この議案に資料がありません"
+                      : "資料を選ぶ…"}
+                  </option>
+                  {attach.files.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                type="button"
+                className={styles.attachCancel}
+                onClick={() => setPicking(null)}
+              >
+                閉じる
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TemplateSection({
   title,
   items,
@@ -1411,6 +1599,7 @@ function TemplateSection({
   onScheduleAdd,
   onScheduleRemove,
   budgetLink,
+  attach,
 }: {
   title: string;
   items: TemplateItem[];
@@ -1427,6 +1616,8 @@ function TemplateSection({
     total: number | null;
     onOpen: () => void;
   };
+  /** 各項目に「添付追加」（他の議案・資料へのリンク）を出す */
+  attach?: AttachContext;
 }) {
   return (
     <section className={styles.card}>
@@ -1457,6 +1648,15 @@ function TemplateSection({
                 readOnly={readOnly}
                 onChange={(body) => onChange(item.no, body)}
                 bare
+                footer={
+                  attach ? (
+                    <ItemAttachments
+                      item={item}
+                      readOnly={readOnly}
+                      attach={attach}
+                    />
+                  ) : undefined
+                }
               />
               {budgetLink && item.label === BUDGET_ITEM_LABEL && (
                 <button
