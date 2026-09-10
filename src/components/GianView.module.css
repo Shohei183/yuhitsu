@@ -331,10 +331,10 @@
   margin: 4px 0 12px;
 }
 .resGroupTitle {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--muted-strong);
-  margin-bottom: 4px;
+  color: var(--text);
+  margin-bottom: 6px;
 }
 .resList {
   list-style: none;
@@ -424,6 +424,9 @@
   .doc h2 {
     font-size: 12pt;
     break-after: avoid;
+  }
+  .resGroupTitle {
+    font-size: 12pt;
   }
 
   /* 表・資料グループ・前回までの流れの各回はページ跨ぎを避ける */
