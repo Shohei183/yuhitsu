@@ -1088,11 +1088,10 @@ function ProposalHeader({
         </button>
       )}
 
-      <div className={styles.fieldGrid}>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>● 確認日</span>
-          <span className={styles.fieldColon}>：</span>
-          <span className={styles.confirmInputs}>
+      <div className={styles.confirmRow}>
+        <span className={styles.fieldLabel}>● 確認日</span>
+        <span className={styles.fieldColon}>：</span>
+        <span className={styles.confirmInputs}>
             <input
               className={styles.fieldInput}
               value={gian.confirmerRole ?? ""}
@@ -1115,7 +1114,6 @@ function ProposalHeader({
               onChange={(e) => onField("vpConfirmDate", e.target.value)}
             />
           </span>
-        </div>
       </div>
         </>
       )}
