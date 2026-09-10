@@ -116,12 +116,6 @@ textarea::placeholder {
   color: #9aa5b6;
 }
 
-/* 入力できる文字は赤字（下書き＝赤字の慣習）。読み取り専用・無効は除く */
-input:not([readonly]):not([disabled]):not([type="checkbox"]):not([type="radio"]),
-textarea:not([readonly]):not([disabled]) {
-  color: #d21f1f;
-}
-
 textarea {
   resize: none;
   overflow: hidden;
