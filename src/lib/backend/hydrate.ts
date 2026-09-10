@@ -16,6 +16,7 @@ import { hydrate as hydrateDistributions } from "@/lib/distributionStore";
 import { hydrate as hydrateBudgets } from "@/lib/budgetStore";
 import { hydrate as hydrateJotei } from "@/lib/joteiStore";
 import { hydrate as hydrateReviewNotes } from "@/lib/reviewNoteStore";
+import { hydrate as hydrateCommitteeReports } from "@/lib/committeeReportStore";
 
 let inflight: Promise<void> | null = null;
 
@@ -38,6 +39,7 @@ export async function hydrateAll(): Promise<void> {
       hydrateBudgets(),
       hydrateJotei(),
       hydrateReviewNotes(),
+      hydrateCommitteeReports(),
     ]);
   })();
   try {

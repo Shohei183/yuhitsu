@@ -729,6 +729,9 @@ function GianNav({
           <Link href={`/committee/${cid}/gian`} className={styles.navItem}>
             📁 議案構築（一覧）
           </Link>
+          <Link href={`/committee/${cid}/report`} className={styles.navItem}>
+            📁 委員会報告
+          </Link>
           <Link href={`/committee/${cid}/shared`} className={styles.navItem}>
             📁 共有用フォルダ
           </Link>

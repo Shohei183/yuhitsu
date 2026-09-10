@@ -6,6 +6,8 @@ import { useCommittee } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
 import { useJoteiStore } from "@/lib/useJoteiStore";
 import { listJoteiForCommittee } from "@/lib/joteiStore";
+import { useCommitteeReportStore } from "@/lib/useCommitteeReportStore";
+import { reportForCommittee } from "@/lib/committeeReportStore";
 import { useSharedFiles } from "@/lib/useSharedStore";
 import styles from "./CommitteeFolder.module.css";
 
@@ -17,6 +19,7 @@ export default function CommitteeFolder({
   const found = useCommittee(committeeId);
   const gianStore = useGianStore();
   useJoteiStore();
+  useCommitteeReportStore();
   const { files: sharedFiles } = useSharedFiles(committeeId);
 
   if (!found) {
@@ -41,6 +44,7 @@ export default function CommitteeFolder({
   };
   const joteiList = listJoteiForCommittee(committeeId);
   const joteiSubmitted = joteiList.filter((j) => j.status === "submitted").length;
+  const report = reportForCommittee(committeeId);
 
   return (
     <main className={styles.wrap}>
@@ -92,6 +96,23 @@ export default function CommitteeFolder({
             <div className={styles.folderMeta}>
               上程届 {joteiList.length} 件
               {joteiList.length > 0 && <>（提出済み {joteiSubmitted}）</>}
+            </div>
+          </div>
+          <div className={styles.folderArrow}>→</div>
+        </Link>
+
+        <Link
+          href={`/committee/${committeeId}/report`}
+          className={styles.folderCard}
+        >
+          <div className={styles.folderIcon}>📁</div>
+          <div className={styles.folderBody}>
+            <div className={styles.folderName}>委員会報告</div>
+            <div className={styles.folderDesc}>
+              開催日・出席者・内容を、会議のたびに1つのデータへ追記していく記録。
+            </div>
+            <div className={styles.folderMeta}>
+              {report ? `会議 ${report.meetings.length} 件` : "未作成"}
             </div>
           </div>
           <div className={styles.folderArrow}>→</div>
