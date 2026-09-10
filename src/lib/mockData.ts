@@ -142,8 +142,10 @@ export interface Gian {
   mediaRequest: string;
   /** 議案上程スケジュール */
   submissionSchedule: ScheduleRow[];
-  /** 担当副理事長 確認日 */
+  /** 確認日（役職名・氏名・日付。担当副理事長以外が確認する場合もあるため自由入力） */
   vpConfirmDate: string;
+  confirmerRole?: string;
+  confirmerName?: string;
 
   // ── 本文 ──
   /** 前回までの流れ（意見と対応）。会議（回）ごとにまとめる */
@@ -156,6 +158,8 @@ export interface Gian {
   implementationSchedule: ScheduleEntry[];
 
   // ── 基本方針（"基本方針" 種別のみ使用）──
+  /** 担当（配属メンバーの上に表示。役職名・氏名は配属メンバーと同じルール） */
+  assignedLeads?: AssignedMember[];
   /** 配属メンバー（提案議題ブロックの代わり） */
   assignedMembers?: AssignedMember[];
   /** 委員会予算（収入の部・支出の部）。事業予定の次に表示 */

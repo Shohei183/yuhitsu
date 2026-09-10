@@ -218,6 +218,31 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     }));
   }
 
+  // ── 基本方針：担当 ──
+  function updateAssignedLead(id: string, patch: Partial<AssignedMember>) {
+    setGian((g) => ({
+      ...g,
+      assignedLeads: (g.assignedLeads ?? []).map((m) =>
+        m.id === id ? { ...m, ...patch } : m
+      ),
+    }));
+  }
+  function addAssignedLead() {
+    setGian((g) => ({
+      ...g,
+      assignedLeads: [
+        ...(g.assignedLeads ?? []),
+        { id: `al-${Date.now()}`, role: "", name: "" },
+      ],
+    }));
+  }
+  function removeAssignedLead(id: string) {
+    setGian((g) => ({
+      ...g,
+      assignedLeads: (g.assignedLeads ?? []).filter((m) => m.id !== id),
+    }));
+  }
+
   // ── 基本方針：委員会予算 ──
   function updateBudgetLine(
     part: "income" | "expense",
@@ -522,6 +547,9 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
             onUpdateMember={updateAssignedMember}
             onAddMember={addAssignedMember}
             onRemoveMember={removeAssignedMember}
+            onUpdateLead={updateAssignedLead}
+            onAddLead={addAssignedLead}
+            onRemoveLead={removeAssignedLead}
           />
 
           <TemplateSection
@@ -738,6 +766,88 @@ function GianNav({
 
 /* ───────────────────────── 中央カラム ───────────────────────── */
 
+function PersonTable({
+  rows,
+  readOnly,
+  onUpdate,
+  onAdd,
+  onRemove,
+  addLabel,
+  rolePlaceholder,
+}: {
+  rows: AssignedMember[];
+  readOnly: boolean;
+  onUpdate: (id: string, patch: Partial<AssignedMember>) => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+  addLabel: string;
+  rolePlaceholder?: string;
+}) {
+  return (
+    <>
+      <div className={styles.scheduleWrap}>
+        <table className={styles.schedule}>
+          <thead>
+            <tr>
+              <th style={{ width: "38%" }}>役職</th>
+              <th>氏名</th>
+              {!readOnly && <th style={{ width: 40 }} aria-label="操作" />}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr>
+                <td colSpan={readOnly ? 2 : 3} className={styles.schedEmpty}>
+                  （未記入）
+                </td>
+              </tr>
+            )}
+            {rows.map((m) => (
+              <tr key={m.id}>
+                <td>
+                  <input
+                    className={styles.schedCell}
+                    value={m.role}
+                    readOnly={readOnly}
+                    placeholder={rolePlaceholder ?? "役職"}
+                    onChange={(e) => onUpdate(m.id, { role: e.target.value })}
+                  />
+                </td>
+                <td>
+                  <input
+                    className={styles.schedCell}
+                    value={m.name}
+                    readOnly={readOnly}
+                    placeholder="氏名"
+                    onChange={(e) => onUpdate(m.id, { name: e.target.value })}
+                  />
+                </td>
+                {!readOnly && (
+                  <td>
+                    <button
+                      type="button"
+                      className={styles.schedDel}
+                      title="この行を削除"
+                      onClick={() => onRemove(m.id)}
+                    >
+                      ×
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!readOnly && (
+        <button type="button" className={styles.dashed} onClick={onAdd}>
+          {addLabel}
+        </button>
+      )}
+    </>
+  );
+}
+
 function ProposalHeader({
   gian,
   readOnly,
@@ -749,6 +859,9 @@ function ProposalHeader({
   onUpdateMember,
   onAddMember,
   onRemoveMember,
+  onUpdateLead,
+  onAddLead,
+  onRemoveLead,
 }: {
   gian: Gian;
   readOnly: boolean;
@@ -760,8 +873,12 @@ function ProposalHeader({
   onUpdateMember: (id: string, patch: Partial<AssignedMember>) => void;
   onAddMember: () => void;
   onRemoveMember: (id: string) => void;
+  onUpdateLead: (id: string, patch: Partial<AssignedMember>) => void;
+  onAddLead: () => void;
+  onRemoveLead: (id: string) => void;
 }) {
   const members = gian.assignedMembers ?? [];
+  const leads = gian.assignedLeads ?? [];
   const lom = useLomName();
   return (
     <section className={styles.card}>
@@ -791,74 +908,28 @@ function ProposalHeader({
 
       {kihon ? (
         <>
-          <div className={styles.bullet}>● 配属メンバー</div>
-          <div className={styles.scheduleWrap}>
-            <table className={styles.schedule}>
-              <thead>
-                <tr>
-                  <th style={{ width: "38%" }}>役職</th>
-                  <th>氏名</th>
-                  {!readOnly && <th style={{ width: 40 }} aria-label="操作" />}
-                </tr>
-              </thead>
-              <tbody>
-                {members.length === 0 && (
-                  <tr>
-                    <td colSpan={readOnly ? 2 : 3} className={styles.schedEmpty}>
-                      （未記入）
-                    </td>
-                  </tr>
-                )}
-                {members.map((m) => (
-                  <tr key={m.id}>
-                    <td>
-                      <input
-                        className={styles.schedCell}
-                        value={m.role}
-                        readOnly={readOnly}
-                        placeholder="事務局長"
-                        onChange={(e) =>
-                          onUpdateMember(m.id, { role: e.target.value })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className={styles.schedCell}
-                        value={m.name}
-                        readOnly={readOnly}
-                        placeholder="氏名"
-                        onChange={(e) =>
-                          onUpdateMember(m.id, { name: e.target.value })
-                        }
-                      />
-                    </td>
-                    {!readOnly && (
-                      <td>
-                        <button
-                          type="button"
-                          className={styles.schedDel}
-                          title="この行を削除"
-                          onClick={() => onRemoveMember(m.id)}
-                        >
-                          ×
-                        </button>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className={styles.bullet}>● 担当</div>
+          <PersonTable
+            rows={leads}
+            readOnly={readOnly}
+            onUpdate={onUpdateLead}
+            onAdd={onAddLead}
+            onRemove={onRemoveLead}
+            addLabel="＋ 担当を追加"
+            rolePlaceholder="担当副理事長"
+          />
+          <div className={styles.bullet} style={{ marginTop: 14 }}>
+            ● 配属メンバー
           </div>
-          {!readOnly && (
-            <button
-              type="button"
-              className={styles.dashed}
-              onClick={onAddMember}
-            >
-              ＋ メンバーを追加
-            </button>
-          )}
+          <PersonTable
+            rows={members}
+            readOnly={readOnly}
+            onUpdate={onUpdateMember}
+            onAdd={onAddMember}
+            onRemove={onRemoveMember}
+            addLabel="＋ メンバーを追加"
+            rolePlaceholder="事務局長"
+          />
         </>
       ) : (
         <>
@@ -1020,13 +1091,33 @@ function ProposalHeader({
       )}
 
       <div className={styles.fieldGrid}>
-        <FieldRow
-          label="担当副理事長　確認日"
-          value={gian.vpConfirmDate}
-          placeholder="未確認"
-          readOnly={readOnly}
-          onChange={(v) => onField("vpConfirmDate", v)}
-        />
+        <div className={styles.fieldRow}>
+          <span className={styles.fieldLabel}>● 確認日</span>
+          <span className={styles.fieldColon}>：</span>
+          <span className={styles.confirmInputs}>
+            <input
+              className={styles.fieldInput}
+              value={gian.confirmerRole ?? ""}
+              placeholder="役職名"
+              readOnly={readOnly}
+              onChange={(e) => onField("confirmerRole", e.target.value)}
+            />
+            <input
+              className={styles.fieldInput}
+              value={gian.confirmerName ?? ""}
+              placeholder="名前"
+              readOnly={readOnly}
+              onChange={(e) => onField("confirmerName", e.target.value)}
+            />
+            <input
+              className={styles.fieldInput}
+              value={gian.vpConfirmDate}
+              placeholder="日付"
+              readOnly={readOnly}
+              onChange={(e) => onField("vpConfirmDate", e.target.value)}
+            />
+          </span>
+        </div>
       </div>
         </>
       )}

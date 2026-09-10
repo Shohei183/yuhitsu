@@ -570,6 +570,17 @@
   gap: 4px 24px;
 }
 
+.confirmInputs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+}
+.confirmInputs .fieldInput {
+  border-color: var(--border);
+  background: #fff;
+}
+
 .fieldRow {
   display: flex;
   align-items: center;

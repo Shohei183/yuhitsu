@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { Fragment, ReactNode, useRef } from "react";
-import { BudgetLine, Gian, STATUS_LABEL, getGian } from "@/lib/mockData";
+import {
+  AssignedMember,
+  BudgetLine,
+  Gian,
+  STATUS_LABEL,
+  getGian,
+} from "@/lib/mockData";
 import { formatDocNumbers, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { useLomName } from "@/lib/useSettingsStore";
 import { downloadDocHtml } from "@/lib/download";
@@ -112,33 +118,8 @@ export default function GianView({
 
         {kihon ? (
           <>
-            <div className={styles.subLabel}>● 配属メンバー</div>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th className={styles.dateCol}>役職</th>
-                    <th>氏名</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(gian.assignedMembers ?? []).length === 0 ? (
-                    <tr>
-                      <td colSpan={2} className={styles.empty}>
-                        （未記入）
-                      </td>
-                    </tr>
-                  ) : (
-                    (gian.assignedMembers ?? []).map((m) => (
-                      <tr key={m.id}>
-                        <td>{m.role || "—"}</td>
-                        <td>{m.name || "—"}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <PersonRows label="● 担当" rows={gian.assignedLeads ?? []} />
+            <PersonRows label="● 配属メンバー" rows={gian.assignedMembers ?? []} />
           </>
         ) : (
           <>
@@ -158,8 +139,13 @@ export default function GianView({
               <Kv label="礼状の発送" value={gian.courtesyLetter} />
               <Kv label="メディア依頼書" value={gian.mediaRequest} />
               <Kv
-                label="担当副理事長 確認日"
-                value={gian.vpConfirmDate || "未確認"}
+                label="確認日"
+                value={
+                  [gian.confirmerRole, gian.confirmerName, gian.vpConfirmDate]
+                    .map((s) => (s ?? "").trim())
+                    .filter(Boolean)
+                    .join("　") || "未確認"
+                }
               />
             </dl>
           </>
@@ -471,6 +457,46 @@ export default function GianView({
 }
 
 const fmt = formatJaDateTime;
+
+function PersonRows({
+  label,
+  rows,
+}: {
+  label: string;
+  rows: AssignedMember[];
+}) {
+  return (
+    <>
+      <div className={styles.subLabel}>{label}</div>
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.dateCol}>役職</th>
+              <th>氏名</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={2} className={styles.empty}>
+                  （未記入）
+                </td>
+              </tr>
+            ) : (
+              rows.map((m) => (
+                <tr key={m.id}>
+                  <td>{m.role || "—"}</td>
+                  <td>{m.name || "—"}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
 
 function Kv({ label, value }: { label: string; value: string }) {
   return (

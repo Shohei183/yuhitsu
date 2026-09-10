@@ -428,6 +428,8 @@ export function createGian(opts: {
     mediaRequest: "",
     submissionSchedule: [],
     vpConfirmDate: "",
+    confirmerRole: "",
+    confirmerName: "",
     priorFeedback: [],
     outline: tpl.outline.map((it, i) => ({ no: i + 1, label: it.label, body: "" })),
     overview: tpl.overview.map((it, i) => ({ no: i + 1, label: it.label, body: "" })),
@@ -437,10 +439,8 @@ export function createGian(opts: {
   };
 
   if (opts.kind === "基本方針") {
-    gian.assignedMembers = [
-      { id: newId("am"), role: "事務局長", name: "" },
-      { id: newId("am"), role: "担当副理事長", name: "" },
-    ];
+    gian.assignedLeads = [{ id: newId("al"), role: "担当副理事長", name: "" }];
+    gian.assignedMembers = [{ id: newId("am"), role: "事務局長", name: "" }];
     gian.committeeBudget = {
       income: [{ id: newId("bi"), label: "", amount: "" }],
       expense: [{ id: newId("be"), label: "", amount: "" }],
