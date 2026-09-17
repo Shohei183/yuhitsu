@@ -167,3 +167,16 @@
   font-size: 13px;
   color: var(--muted);
 }
+
+.delBtn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--warn-fg);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.delBtn:hover {
+  text-decoration: underline;
+}

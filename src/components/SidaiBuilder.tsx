@@ -9,6 +9,7 @@ import {
   Sidai,
   SidaiRow,
   SidaiRowType,
+  deleteSidai,
   duplicateSidai,
   getSidai,
   saveSidai,
@@ -238,6 +239,17 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
     }
   };
 
+  const onDelete = () => {
+    if (
+      !window.confirm(
+        `この次第「${sidai.meetingName}」を削除します。元に戻せません。よろしいですか？`
+      )
+    )
+      return;
+    deleteSidai(sidaiId);
+    router.push("/sidai");
+  };
+
   const openFinalize = () => {
     if (latestDist) {
       // 再確定：前回と同じ会議体・回・名称で（版数が +1 される）
@@ -321,6 +333,21 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
           >
             この次第を複製して新規作成
           </button>
+          {!latestDist && (
+            <button
+              type="button"
+              className={styles.delBtn}
+              onClick={onDelete}
+              disabled={!can.createSidai}
+              title={
+                can.createSidai
+                  ? "配信確定前の次第を削除します"
+                  : "次第の作成・複製の権限がありません（マスターが /roles で設定）"
+              }
+            >
+              削除
+            </button>
+          )}
           {can.finalizeDistribution ? (
             <button
               type="button"

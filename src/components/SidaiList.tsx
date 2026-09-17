@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createSidai, duplicateSidai, listSidaiFor } from "@/lib/sidaiStore";
+import {
+  createSidai,
+  deleteSidai,
+  duplicateSidai,
+  listSidaiFor,
+} from "@/lib/sidaiStore";
 import { listDistributionsFor } from "@/lib/distributionStore";
 import { PERIOD_LABEL, Period } from "@/lib/yearStore";
 import { setPeriod } from "@/lib/activeViewStore";
@@ -102,6 +107,16 @@ export default function SidaiList() {
   const items = listSidaiFor(yearId, period);
   const newest = items[0];
 
+  const onDelete = (s: (typeof items)[number]) => {
+    if (
+      !window.confirm(
+        `この次第「${s.meetingName}」を削除します。元に戻せません。よろしいですか？`
+      )
+    )
+      return;
+    deleteSidai(s.id);
+  };
+
   return (
     <>
       <div className={styles.head}>
@@ -165,6 +180,15 @@ export default function SidaiList() {
                 <Link href={`/sidai/${s.id}`} className={styles.navLink}>
                   編集
                 </Link>
+                {!s.distributionId && (
+                  <button
+                    type="button"
+                    className={styles.delBtn}
+                    onClick={() => onDelete(s)}
+                  >
+                    削除
+                  </button>
+                )}
               </div>
             </li>
           ))}
