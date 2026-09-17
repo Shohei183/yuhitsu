@@ -118,18 +118,10 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
     if (!can.createSidai) router.replace(`/sidai/${sidaiId}/view`);
   }, [can.createSidai, router, sidaiId]);
 
-  // 上程済み（未配信）のみ。配信確定済み（locked）は次回以降の次第では出さない。
-  // ただし、この次第に既に紐づいている議案は locked でも表示に残す。
-  const linkedHere = new Set(
-    (sidai?.rows ?? [])
-      .map((r) => r.linkedGianId)
-      .filter((v): v is string => !!v)
-  );
+  // 同じ年度・上程済み（未配信）の議案のみ。配信確定済み（locked）は候補に出さない。
   const submittedGians = Object.values(gianStore)
     .filter(
-      (e) =>
-        e.gian.status === "submitted" ||
-        (e.gian.status === "locked" && linkedHere.has(e.gian.id))
+      (e) => e.gian.yearId === sidai?.yearId && e.gian.status === "submitted"
     )
     .map((e) => e.gian);
 
