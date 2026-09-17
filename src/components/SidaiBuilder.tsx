@@ -119,11 +119,19 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
     if (!can.createSidai) router.replace(`/sidai/${sidaiId}/view`);
   }, [can.createSidai, router, sidaiId]);
 
-  // 同じ年度・上程済み（未配信）の議案のみ。配信確定済み（locked）は候補に出さない。
+  // 同じ年度・期間で最後に配信確定した日時。それ以降に上程された議案だけを候補にする
+  // （配信のたびに候補がリセットされ、前回配信より前に上程されたまま残っている
+  //   議案は候補から外れる）。まだ一度も配信していなければ全上程済みが候補。
+  const lastDistAt = Object.values(distStore)
+    .filter((p) => p.yearId === sidai?.yearId && p.period === sidai?.period)
+    .reduce((max, p) => (p.finalizedAt > max ? p.finalizedAt : max), "");
   const submittedGians = Object.values(gianStore)
-    .filter(
-      (e) => e.gian.yearId === sidai?.yearId && e.gian.status === "submitted"
-    )
+    .filter((e) => {
+      if (e.gian.yearId !== sidai?.yearId) return false;
+      if (e.gian.status !== "submitted") return false;
+      if (!lastDistAt) return true;
+      return !!e.gian.submittedAt && e.gian.submittedAt > lastDistAt;
+    })
     .map((e) => e.gian);
 
   const update = useCallback(

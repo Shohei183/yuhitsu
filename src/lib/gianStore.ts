@@ -302,16 +302,17 @@ export function saveDraftSnapshot(id: string, reason: string): Snapshot | null {
 export function submitGian(id: string): Snapshot | null {
   const entry = cache[id];
   if (!entry || entry.gian.status !== "editing") return null;
+  const now = new Date().toISOString();
   const snapshot: Snapshot = {
     id: newId("snap"),
-    takenAt: new Date().toISOString(),
+    takenAt: now,
     kind: "submission",
     reason: `会議へ上程〔${entry.gian.submissionMeeting}〕`,
     gian: clone({ ...entry.gian, status: "submitted" as const }),
   };
   setEntry(id, {
     ...entry,
-    gian: { ...entry.gian, status: "submitted" },
+    gian: { ...entry.gian, status: "submitted", submittedAt: now },
     snapshots: [...entry.snapshots, snapshot],
   });
   void persistGian(id).then(() => persistSnapshot(id, snapshot));

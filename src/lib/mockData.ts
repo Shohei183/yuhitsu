@@ -126,6 +126,8 @@ export interface Gian {
   committee: string;
   kind: GianKind;
   status: GianStatus;
+  /** 直近「会議へ上程」した日時（次第の議案候補一覧の絞り込みに使用） */
+  submittedAt?: string | null;
   /** 所属年度（本番DB: gians.fiscal_year_id） */
   yearId?: string;
   /** 所属委員会id（本番DB: gians.committee_id） */
