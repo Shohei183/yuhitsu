@@ -163,10 +163,8 @@ export default function SidaiDoc({
                     <span className={styles.muted}>（項目名なし）</span>
                   )}
                 </span>
-                {row.type === "blank" && (
-                  <span className={styles.note}>
-                    ：{row.note || "＿＿＿＿＿＿"}
-                  </span>
+                {row.type === "blank" && row.note && (
+                  <span className={styles.note}>：{row.note}</span>
                 )}
                 {row.type === "filelink" &&
                   (g ? (
