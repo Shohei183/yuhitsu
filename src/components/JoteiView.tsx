@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useJotei } from "@/lib/useJoteiStore";
-import { useCan } from "@/lib/useOrg";
+import { useCanIn } from "@/lib/useOrg";
 import JoteiDoc from "./JoteiDoc";
 import styles from "./JoteiView.module.css";
 
 export default function JoteiView({ joteiId }: { joteiId: string }) {
   const jotei = useJotei(joteiId);
-  const can = useCan();
+  const can = useCanIn(jotei?.yearId, jotei?.committeeId);
 
   if (!jotei) {
     return (

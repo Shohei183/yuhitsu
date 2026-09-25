@@ -18,7 +18,7 @@ import {
   addOrReuseAttachment,
   pruneAttachments,
 } from "@/lib/budgetStore";
-import { useCan } from "@/lib/useOrg";
+import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import { jpNum } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import { uploadFile, deleteFileObj, openFileByIdAsync } from "@/lib/backend/files";
@@ -40,7 +40,8 @@ const TABS: { key: Tab; label: string }[] = [
 
 export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   const budget = useBudget(budgetId);
-  const can = useCan();
+  const cInfo = useCommitteeOfGian(budget?.gianId ?? "");
+  const can = useCanIn(cInfo?.year.id, cInfo?.committee.id);
   const router = useRouter();
   const previewRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<Tab>("form1");

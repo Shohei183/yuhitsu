@@ -119,10 +119,13 @@ export default function GianView({
         <h1 className={styles.topic}>{gian.topic}</h1>
 
         {kihon ? (
-          <>
+          <div
+            data-note-item="members"
+            data-note-label="担当・配属メンバー"
+          >
             <PersonRows label="● 担当" rows={gian.assignedLeads ?? []} />
             <PersonRows label="● 配属メンバー" rows={gian.assignedMembers ?? []} />
-          </>
+          </div>
         ) : (
           <>
             <p className={styles.proposalLine}>
@@ -296,7 +299,7 @@ export default function GianView({
         )}
 
         {kihon && (
-          <>
+          <div data-note-item="schedule" data-note-label="事業予定">
             <h2 className={styles.h2}>事業予定</h2>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
@@ -334,11 +337,11 @@ export default function GianView({
                 </tbody>
               </table>
             </div>
-          </>
+          </div>
         )}
 
         {kihon && gian.committeeBudget && (
-          <>
+          <div data-note-item="cbudget" data-note-label="委員会予算">
             <h2 className={styles.h2}>委員会予算</h2>
             <div className={styles.budgetGrid}>
               <BudgetColumn
@@ -350,7 +353,7 @@ export default function GianView({
                 lines={gian.committeeBudget.expense}
               />
             </div>
-          </>
+          </div>
         )}
 
         {showPriorFeedback && (

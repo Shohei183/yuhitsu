@@ -36,7 +36,7 @@ import {
 import { useGianEntry, useGianStore } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
-import { useCan, useCommitteeOfGian } from "@/lib/useOrg";
+import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { isRichEmpty } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
@@ -59,8 +59,12 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   const snapshots = entry?.snapshots ?? [];
   const requests = entry?.requests ?? [];
   const pendingRequest = requests.find((r) => r.status === "pending") ?? null;
-  const can = useCan();
   const committeeInfo = useCommitteeOfGian(gianId);
+  // 所属委員会以外の議案は編集できない（委員長・委員）
+  const can = useCanIn(
+    gian.yearId ?? committeeInfo?.year.id,
+    committeeInfo?.committee.id ?? gian.committeeId
+  );
   const gianStore = useGianStore();
   const router = useRouter();
   useBudgetStore();
@@ -113,7 +117,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
 
   const [toast, setToast] = useState<string | null>(null);
 
-  const readOnly = gian.status !== "editing";
+  const readOnly = gian.status !== "editing" || !can.editGian;
 
   /** 議案本体の更新（localStorage ストアへ保存） */
   const setGian = useCallback(
@@ -511,7 +515,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
           <span className={`${styles.badge} ${styles[gian.status]}`}>
             {STATUS_LABEL[gian.status]}
           </span>
-          {gian.status === "editing" && (
+          {gian.status === "editing" && can.editGian && (
             <>
               <button type="button" className={styles.ghostBtn} onClick={saveDraft}>
                 下書き保存

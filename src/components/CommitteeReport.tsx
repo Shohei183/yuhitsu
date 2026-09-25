@@ -10,7 +10,7 @@ import {
   saveReport,
 } from "@/lib/committeeReportStore";
 import { useCommitteeReportStore } from "@/lib/useCommitteeReportStore";
-import { useCommittee, useAuthMember, useCan } from "@/lib/useOrg";
+import { useCommittee, useAuthMember, useCanIn } from "@/lib/useOrg";
 import { formatJaDate } from "@/lib/format";
 import RichText from "./RichText";
 import { useLomName } from "@/lib/useSettingsStore";
@@ -25,7 +25,7 @@ export default function CommitteeReport({
   const found = useCommittee(committeeId);
   useCommitteeReportStore();
   const member = useAuthMember();
-  const can = useCan();
+  const can = useCanIn(found?.year.id, committeeId);
   const lom = useLomName();
 
   if (!found) {

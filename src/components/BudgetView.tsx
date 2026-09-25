@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useBudget } from "@/lib/useBudgetStore";
 import { downloadDocHtml } from "@/lib/download";
-import { useCan } from "@/lib/useOrg";
+import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import BudgetDoc, { BudgetForm } from "./BudgetDoc";
 import styles from "./BudgetView.module.css";
 
@@ -16,7 +16,8 @@ const TABS: { key: BudgetForm; label: string }[] = [
 
 export default function BudgetView({ budgetId }: { budgetId: string }) {
   const budget = useBudget(budgetId);
-  const can = useCan();
+  const cInfo = useCommitteeOfGian(budget?.gianId ?? "");
+  const can = useCanIn(cInfo?.year.id, cInfo?.committee.id);
   const docRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<BudgetForm>("form1");
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GianKind, MOCK_GIANS, STATUS_LABEL } from "@/lib/mockData";
 import { createGian, deleteGian, duplicateGian } from "@/lib/gianStore";
-import { useCommittee, useCan } from "@/lib/useOrg";
+import { useCommittee, useCanIn } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
 import styles from "./CommitteeFolder.module.css";
 
@@ -25,7 +25,7 @@ export default function CommitteeGianList({
 }) {
   const found = useCommittee(committeeId);
   const gianStore = useGianStore();
-  const can = useCan();
+  const can = useCanIn(found?.year.id, committeeId);
   const router = useRouter();
 
   if (!found) {

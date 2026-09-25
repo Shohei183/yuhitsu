@@ -18,7 +18,7 @@ import {
 import { useJotei, useJoteiStore } from "@/lib/useJoteiStore";
 import { listSidai } from "@/lib/sidaiStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
-import { useCommittee, useAuthMember, useCan } from "@/lib/useOrg";
+import { useCommittee, useAuthMember, useCanIn } from "@/lib/useOrg";
 import { formatJaDateTime } from "@/lib/format";
 import styles from "./JoteiEditor.module.css";
 
@@ -29,7 +29,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
   useSidaiStore();
   const found = useCommittee(jotei?.committeeId ?? "");
   const member = useAuthMember();
-  const can = useCan();
+  const can = useCanIn(jotei?.yearId, jotei?.committeeId);
   const listId = useId();
 
   const meetingSuggestions = useMemo(() => {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { reportForCommittee } from "@/lib/committeeReportStore";
 import { useCommitteeReportStore } from "@/lib/useCommitteeReportStore";
-import { useCommittee, useCan } from "@/lib/useOrg";
+import { useCommittee, useCanIn } from "@/lib/useOrg";
 import CommitteeReportDoc from "./CommitteeReportDoc";
 import styles from "./CommitteeReportView.module.css";
 
@@ -14,7 +14,7 @@ export default function CommitteeReportView({
 }) {
   const found = useCommittee(committeeId);
   useCommitteeReportStore();
-  const can = useCan();
+  const can = useCanIn(found?.year.id, committeeId);
 
   if (!found) {
     return (
