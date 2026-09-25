@@ -131,8 +131,8 @@ export function useEffectiveRole(): Role {
 
 export type CanMap = Record<Capability, boolean>;
 
-/** 所属委員会に縛られるロール（自分の委員会の議案などだけ編集できる） */
-const COMMITTEE_BOUND_ROLES: Role[] = ["committee_chair", "committee_member"];
+/** 委員会に縛られないロール（マスターは別扱い）。専務のみ全委員会を編集できる */
+const COMMITTEE_FREE_ROLES: Role[] = ["master", "executive_director"];
 /** 委員会単位で制限する権限 */
 const COMMITTEE_SCOPED_CAPS: Capability[] = [
   "editGian",
@@ -142,8 +142,7 @@ const COMMITTEE_SCOPED_CAPS: Capability[] = [
 
 /**
  * 特定の委員会の中身（議案・委員会報告・上程届など）に対する権限。
- * 委員長・委員は「自分の所属委員会」以外では編集系の権限を持たない。
- * マスター・三役など委員会に縛られないロールは通常の権限どおり。
+ * マスター・専務以外は「自分の所属委員会」以外では編集系の権限を持たない。
  */
 export function useCanIn(
   yearId: string | undefined,
@@ -153,7 +152,7 @@ export function useCanIn(
   const member = useAuthMember();
   const role = useEffectiveRole();
   useYearStore();
-  if (member?.isMaster || !COMMITTEE_BOUND_ROLES.includes(role)) return base;
+  if (member?.isMaster || COMMITTEE_FREE_ROLES.includes(role)) return base;
   const own = yearId ? committeeOf(yearId, member?.id ?? null) : undefined;
   if (own && committeeId && own.id === committeeId) return base;
   const out = { ...base };
