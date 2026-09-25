@@ -6,6 +6,7 @@ import { GianKind, MOCK_GIANS, STATUS_LABEL } from "@/lib/mockData";
 import { createGian, deleteGian, duplicateGian } from "@/lib/gianStore";
 import { useCommittee, useCanIn } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
+import { gianMetaLine } from "@/lib/gianMeta";
 import styles from "./CommitteeFolder.module.css";
 
 const KINDS: GianKind[] = ["協議", "審議", "決算協議", "決算審議", "基本方針"];
@@ -110,7 +111,10 @@ export default function CommitteeGianList({
                 <span className={`${styles.kindTag} ${KIND_CLASS[g.kind]}`}>
                   {g.kind === "基本方針" ? "基本方針" : `${g.kind}議案`}
                 </span>
-                <span className={styles.gianTopic}>{g.topic}</span>
+                <span className={styles.gianTopicWrap}>
+                  <span className={styles.gianTopic}>{g.topic}</span>
+                  <span className={styles.gianSub}>{gianMetaLine(g)}</span>
+                </span>
                 <span className={`${styles.statusTag} ${styles[g.status]}`}>
                   {STATUS_LABEL[g.status]}
                 </span>

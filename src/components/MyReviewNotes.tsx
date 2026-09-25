@@ -9,9 +9,12 @@ import styles from "./MyReviewNotes.module.css";
 export default function MyReviewNotes({
   distId,
   gianTitle,
+  gianHref,
 }: {
   distId: string;
   gianTitle: (gianId: string) => string;
+  /** 議案を開くリンク先（省略時は収録議案のページ） */
+  gianHref?: (gianId: string) => string;
 }) {
   useReviewNoteStore();
   const notes = notesForDist(distId);
@@ -56,7 +59,7 @@ export default function MyReviewNotes({
               <div className={styles.groupHead}>
                 <span className={styles.groupTitle}>{gianTitle(g.gianId)}</span>
                 <Link
-                  href={`/haishin/${distId}/gian/${g.gianId}`}
+                  href={gianHref ? gianHref(g.gianId) : `/haishin/${distId}/gian/${g.gianId}`}
                   className={styles.groupLink}
                 >
                   議案を開く →

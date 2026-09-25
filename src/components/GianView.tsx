@@ -51,6 +51,7 @@ export default function GianView({
   anchorId,
   frozenFiles,
   toolbar,
+  distId,
 }: {
   gianId?: string;
   /** 議案を直接渡す場合（配信データの凍結コピーなど） */
@@ -63,6 +64,8 @@ export default function GianView({
   frozenFiles?: FrozenGianFiles;
   /** 標準ツールバーの代わりに表示するツールバー（フル doc 表示のまま差し替え） */
   toolbar?: ReactNode;
+  /** 配信データ経由で開いているとき、その配信データid（リンク先でもコメントできるよう引き継ぐ） */
+  distId?: string;
 }) {
   const entry = useGianEntry(gianId ?? "");
   const committeeInfo = useCommitteeOfGian(gianId ?? "");
@@ -221,7 +224,7 @@ export default function GianView({
                 <div className={styles.planViewLink}>
                   関連議案（協議）：
                   {it.linkedGianId ? (
-                    <PlanLink gianId={it.linkedGianId} />
+                    <PlanLink gianId={it.linkedGianId} distId={distId} />
                   ) : (
                     <span className={styles.empty}>（なし）</span>
                   )}
@@ -628,12 +631,12 @@ function BudgetColumn({
 }
 
 /** 基本方針「事業計画」項目からリンクされた議案への遷移チップ（別タブ） */
-function PlanLink({ gianId }: { gianId: string }) {
+function PlanLink({ gianId, distId }: { gianId: string; distId?: string }) {
   const entry = useGianEntry(gianId);
   const g = entry?.gian ?? getGian(gianId);
   return (
     <a
-      href={`/gian/${gianId}/view`}
+      href={`/gian/${gianId}/view${distId ? `?dist=${encodeURIComponent(distId)}` : ""}`}
       target="_blank"
       rel="noopener noreferrer"
       className={styles.planLink}

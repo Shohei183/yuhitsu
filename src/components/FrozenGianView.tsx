@@ -41,6 +41,7 @@ export default function FrozenGianView({
     <ReviewLayer distId={distId} gianId={gianId}>
       <GianView
         gian={gian}
+        distId={distId}
         frozenFiles={pkg.gianFiles[gianId] ?? { review: [], reference: [] }}
         toolbar={
           <>

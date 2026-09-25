@@ -8,6 +8,7 @@ import { useFixedFiles } from "@/lib/useFixedFiles";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
 import { formatJaDateTime } from "@/lib/format";
+import { getEntry } from "@/lib/gianStore";
 import GianView from "./GianView";
 import SidaiDoc from "./SidaiDoc";
 import MyReviewNotes from "./MyReviewNotes";
@@ -127,9 +128,19 @@ export default function DistributionView({ distId }: { distId: string }) {
 
       <MyReviewNotes
         distId={distId}
+        gianHref={(gid) =>
+          pkg.gians.some((x) => x.id === gid)
+            ? `/haishin/${distId}/gian/${gid}`
+            : `/gian/${gid}/view?dist=${encodeURIComponent(distId)}`
+        }
         gianTitle={(gid) => {
           const g = pkg.gians.find((x) => x.id === gid);
-          if (!g) return "（収録外の議案）";
+          if (!g) {
+            const live = getEntry(gid)?.gian;
+            return live
+              ? `${live.kind === "基本方針" ? "基本方針" : `${live.kind}議案`}：${live.topic}`
+              : "（収録外の議案）";
+          }
           return `${g.kind === "基本方針" ? "基本方針" : `${g.kind}議案`}：${g.topic}`;
         }}
       />

@@ -25,6 +25,7 @@ import { toHalfWidth } from "@/lib/format";
 import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useSidai } from "@/lib/useSidaiStore";
 import { useGianStore } from "@/lib/useGianStore";
+import { gianMetaLine } from "@/lib/gianMeta";
 import { useDistributionStore } from "@/lib/useDistributionStore";
 import { useAssigneeOptions, useCan } from "@/lib/useOrg";
 import { useRouter } from "next/navigation";
@@ -599,6 +600,9 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                     <span className={styles.palMeta}>
                       {g.committee} ・ {STATUS_LABEL[g.status]}
                     </span>
+                    {gianMetaLine(g) && (
+                      <span className={styles.palMeta}>{gianMetaLine(g)}</span>
+                    )}
                   </button>
                 ))}
               </div>
