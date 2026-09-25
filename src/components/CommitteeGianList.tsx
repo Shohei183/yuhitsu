@@ -6,7 +6,7 @@ import { GianKind, MOCK_GIANS, STATUS_LABEL } from "@/lib/mockData";
 import { createGian, deleteGian, duplicateGian } from "@/lib/gianStore";
 import { useCommittee, useCanIn } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
-import { gianMetaLine } from "@/lib/gianMeta";
+import { gianCreatedMs, gianMetaLine } from "@/lib/gianMeta";
 import styles from "./CommitteeFolder.module.css";
 
 const KINDS: GianKind[] = ["協議", "審議", "決算協議", "決算審議", "基本方針"];
@@ -44,6 +44,8 @@ export default function CommitteeGianList({
   const gians = committee.gianIds
     .map((id) => gianStore[id]?.gian)
     .filter((g): g is NonNullable<typeof g> => !!g);
+  // 作成が新しい順（最新の議案が一番上）
+  gians.sort((x, y) => gianCreatedMs(y) - gianCreatedMs(x));
 
   const onCreate = (kind: GianKind) => {
     const id = createGian({

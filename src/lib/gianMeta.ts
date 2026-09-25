@@ -15,3 +15,14 @@ export function gianMetaLine(g: Gian): string {
   }
   return parts.join(" ／ ");
 }
+
+/** 議案の作成時刻（ms）。id に埋め込まれた採番時刻を使い、読めなければ作成日文字列から。 */
+export function gianCreatedMs(g: Gian): number {
+  const m = /^gian-([0-9a-z]+)-/.exec(g.id);
+  if (m) {
+    const t = parseInt(m[1], 36);
+    if (Number.isFinite(t) && t > 1e12) return t;
+  }
+  const d = (g.createdAt ?? "").match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  return d ? new Date(+d[1], +d[2] - 1, +d[3]).getTime() : 0;
+}
