@@ -128,6 +128,8 @@ export interface Gian {
   status: GianStatus;
   /** 直近「会議へ上程」した日時（次第の議案候補一覧の絞り込みに使用） */
   submittedAt?: string | null;
+  /** 最終更新日時（本番DB: gians.updated_at）。委員会の議案一覧などの表示用 */
+  updatedAt?: string;
   /** 所属年度（本番DB: gians.fiscal_year_id） */
   yearId?: string;
   /** 所属委員会id（本番DB: gians.committee_id） */

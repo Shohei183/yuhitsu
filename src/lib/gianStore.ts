@@ -148,6 +148,7 @@ type GianRow = {
   kind: string;
   status: string;
   doc: Gian;
+  updated_at: string;
 };
 type SnapRow = {
   id: string;
@@ -174,6 +175,7 @@ function normalizeGian(r: GianRow): Gian {
     committeeId: r.committee_id ?? r.doc.committeeId,
     kind: r.kind as GianKind,
     status: r.doc.status,
+    updatedAt: r.updated_at ?? r.doc.updatedAt,
   };
 }
 
@@ -270,7 +272,12 @@ export function saveGian(id: string, gian: Gian): void {
   if (!entry) return;
   setEntry(id, {
     ...entry,
-    gian: { ...gian, yearId: entry.gian.yearId, committeeId: entry.gian.committeeId },
+    gian: {
+      ...gian,
+      yearId: entry.gian.yearId,
+      committeeId: entry.gian.committeeId,
+      updatedAt: new Date().toISOString(),
+    },
   });
   void persistGian(id);
 }
@@ -312,7 +319,7 @@ export function submitGian(id: string): Snapshot | null {
   };
   setEntry(id, {
     ...entry,
-    gian: { ...entry.gian, status: "submitted", submittedAt: now },
+    gian: { ...entry.gian, status: "submitted", submittedAt: now, updatedAt: now },
     snapshots: [...entry.snapshots, snapshot],
   });
   void persistGian(id).then(() => persistSnapshot(id, snapshot));
@@ -350,7 +357,9 @@ export function decideReplacement(
   const entry = cache[id];
   if (!entry) return;
   const now = new Date().toISOString();
-  const gian = approve ? { ...entry.gian, status: "editing" as const } : entry.gian;
+  const gian = approve
+    ? { ...entry.gian, status: "editing" as const, updatedAt: now }
+    : entry.gian;
   setEntry(id, {
     ...entry,
     gian,
@@ -384,7 +393,7 @@ export function lockGian(id: string): void {
   };
   setEntry(id, {
     ...entry,
-    gian: { ...entry.gian, status: "locked" },
+    gian: { ...entry.gian, status: "locked", updatedAt: snapshot.takenAt },
     snapshots: [...entry.snapshots, snapshot],
   });
   void persistGian(id).then(() => persistSnapshot(id, snapshot));
