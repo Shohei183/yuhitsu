@@ -37,7 +37,7 @@ import { useGianEntry, useGianStore } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
-import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
+import { formatJaDate, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { isRichEmpty } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
 import RichText from "./RichText";
@@ -81,17 +81,27 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   };
 
   const kihon = isKihon(gian.kind);
-  /** 基本方針「事業計画」のリンク先候補（自分以外の協議議案のみ） */
-  const linkOptions = kihon
+  /** 基本方針「事業計画」のリンク先候補（同じ年度・自分以外の協議議案のみ） */
+  const linkOptions: LinkOption[] = kihon
     ? Object.values(gianStore)
         .map((e) => e.gian)
         .filter(
           (g, i, arr) =>
             g.id !== gianId &&
             g.kind === "協議" &&
+            g.yearId === gian.yearId &&
             arr.findIndex((x) => x.id === g.id) === i
         )
-        .map((g) => ({ id: g.id, topic: g.topic, kind: g.kind }))
+        .map((g) => ({
+          id: g.id,
+          topic: g.topic,
+          kind: g.kind,
+          committee: g.committee || "（委員会未設定）",
+          updatedAt: g.updatedAt,
+        }))
+        .sort(
+          (a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
+        )
     : [];
 
   // ── 項目の添付リンク（他の議案 / この議案の資料）の候補 ──
@@ -1411,6 +1421,22 @@ interface LinkOption {
   id: string;
   topic: string;
   kind: string;
+  committee: string;
+  updatedAt?: string;
+}
+
+/** LinkOption を委員会ごとにまとめる（委員会名の五十音順） */
+function groupLinkOptionsByCommittee(
+  options: LinkOption[]
+): { committee: string; options: LinkOption[] }[] {
+  const map = new Map<string, LinkOption[]>();
+  for (const o of options) {
+    if (!map.has(o.committee)) map.set(o.committee, []);
+    map.get(o.committee)!.push(o);
+  }
+  return [...map.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0], "ja"))
+    .map(([committee, opts]) => ({ committee, options: opts }));
 }
 
 /** 項目の「添付追加」で使う候補（他の議案・この議案の資料）＋更新ハンドラ */
@@ -1748,7 +1774,15 @@ function PlanItemsSection({
               <div className={styles.planLinkRow}>
                 <span className={styles.planLinkLabel}>関連議案（協議）</span>
                 {readOnly ? (
-                  <span>{linked ? `協議議案：${linked.topic}` : "（なし）"}</span>
+                  <span>
+                    {linked
+                      ? `${linked.committee}｜${linked.topic}${
+                          linked.updatedAt
+                            ? `（最終更新 ${formatJaDate(linked.updatedAt)}）`
+                            : ""
+                        }`
+                      : "（なし）"}
+                  </span>
                 ) : (
                   <select
                     className={styles.planLinkSelect}
@@ -1758,10 +1792,17 @@ function PlanItemsSection({
                     }
                   >
                     <option value="">（リンクなし）</option>
-                    {linkOptions.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        協議議案：{o.topic}
-                      </option>
+                    {groupLinkOptionsByCommittee(linkOptions).map((g) => (
+                      <optgroup key={g.committee} label={g.committee}>
+                        {g.options.map((o) => (
+                          <option key={o.id} value={o.id}>
+                            {o.topic}
+                            {o.updatedAt
+                              ? `（最終更新 ${formatJaDate(o.updatedAt)}）`
+                              : ""}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                 )}
