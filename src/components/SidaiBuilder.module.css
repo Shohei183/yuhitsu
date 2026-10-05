@@ -862,3 +862,23 @@
     width: 150px;
   }
 }
+
+/* 委員会報告リンク行 */
+.reportPick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.reportPickLabel {
+  font-weight: 700;
+  color: var(--muted-strong);
+}
+.reportPickItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}

@@ -11,6 +11,7 @@ import { formatJaDateTime } from "@/lib/format";
 import { getEntry } from "@/lib/gianStore";
 import GianView from "./GianView";
 import SidaiDoc from "./SidaiDoc";
+import CommitteeReportDoc from "./CommitteeReportDoc";
 import MyReviewNotes from "./MyReviewNotes";
 import styles from "./DistributionView.module.css";
 
@@ -57,6 +58,8 @@ export default function DistributionView({ distId }: { distId: string }) {
       linkGianTo={(id) => `/haishin/${distId}/gian/${id}`}
       fixedFileById={(id) => fixedFiles.find((f) => f.id === id) ?? null}
       onOpenFixedFile={(id, name) => openFileByIdAsync(id, name)}
+      reportById={(id) => pkg.reports?.find((r) => r.id === id) ?? null}
+      linkReportTo={(r) => `/haishin/${distId}/report/${r.id}`}
     />
   );
 
@@ -120,6 +123,14 @@ export default function DistributionView({ distId }: { distId: string }) {
                   pkg.gianFiles[g.id] ?? { review: [], reference: [] }
                 }
                 embedded
+              />
+            </div>
+          ))}
+          {(pkg.reports ?? []).map((r) => (
+            <div key={r.id} data-export-gian id={`report-${r.id}`}>
+              <CommitteeReportDoc
+                report={r}
+                yearLabel={getYear(pkg.yearId)?.label ?? pkg.yearId}
               />
             </div>
           ))}

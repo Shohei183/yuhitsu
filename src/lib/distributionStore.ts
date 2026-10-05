@@ -11,6 +11,7 @@
 import { Gian } from "./mockData";
 import { getEntry as getGianEntry, lockGian } from "./gianStore";
 import { GianFileMeta } from "./gianFilesDb";
+import { CommitteeReport, getStore as getReportStore } from "./committeeReportStore";
 import { Sidai, getSidai, saveSidai } from "./sidaiStore";
 import { Period } from "./yearStore";
 import { db, callApi } from "./backend/client";
@@ -30,6 +31,8 @@ export interface DistributionPackage {
   sourceSidaiId: string;
   sidai: Sidai;
   gians: Gian[];
+  /** 次第の「委員会報告リンク」行から参照された委員会報告の確定時点コピー */
+  reports?: CommitteeReport[];
   gianFiles: Record<string, { review: GianFileMeta[]; reference: GianFileMeta[] }>;
 }
 
@@ -155,6 +158,19 @@ export async function finalizeDistribution(opts: {
       return frozen;
     });
 
+  const reportIds = Array.from(
+    new Set(
+      sidai.rows
+        .filter((r) => r.type === "reports")
+        .flatMap((r) => r.linkedReportIds ?? [])
+    )
+  );
+  const reportStore = getReportStore();
+  const reports = reportIds
+    .map((id) => reportStore[id])
+    .filter((r): r is CommitteeReport => !!r)
+    .map((r) => clone(r));
+
   const existing = Object.values(cache).filter(
     (p) => p.board === opts.board && p.occurrence === opts.occurrence
   );
@@ -220,6 +236,7 @@ export async function finalizeDistribution(opts: {
     sourceSidaiId: opts.sidaiId,
     sidai: clone(sidai),
     gians,
+    reports,
     gianFiles,
   };
 

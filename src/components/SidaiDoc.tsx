@@ -2,6 +2,7 @@
 
 import { Gian } from "@/lib/mockData";
 import { Sidai } from "@/lib/sidaiStore";
+import { CommitteeReport } from "@/lib/committeeReportStore";
 import { toHalfWidth } from "@/lib/format";
 import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./SidaiView.module.css";
@@ -16,6 +17,8 @@ export default function SidaiDoc({
   linkGianTo,
   fixedFileById,
   onOpenFixedFile,
+  reportById,
+  linkReportTo,
 }: {
   sidai: Sidai;
   /** filelink 行の gianId → 議案（見つからなければ null） */
@@ -26,6 +29,10 @@ export default function SidaiDoc({
   fixedFileById?: (fileId: string) => { name: string } | null;
   /** 固定ファイルチップのクリック時（開く）。無ければただのテキスト */
   onOpenFixedFile?: (fileId: string, name: string) => void;
+  /** 委員会報告リンク行の reportId → 委員会報告（見つからなければ null） */
+  reportById?: (reportId: string) => CommitteeReport | null;
+  /** 委員会報告チップのリンク先を返す。無ければチップはただのテキスト */
+  linkReportTo?: (report: CommitteeReport) => string;
 }) {
   const lom = useLomName();
   return (
@@ -79,6 +86,45 @@ export default function SidaiDoc({
                       ))
                     )}
                   </div>
+                </span>
+                <span className={styles.assignee}>{row.assignee}</span>
+              </div>
+            );
+          }
+
+          if (row.type === "reports") {
+            const reps = (row.linkedReportIds ?? [])
+              .map((id) => (reportById ? reportById(id) : null))
+              .filter((r): r is CommitteeReport => !!r);
+            return (
+              <div key={row.id} className={styles.item}>
+                <span className={styles.time}>{toHalfWidth(row.time)}</span>
+                <span className={styles.body}>
+                  <span className={styles.itemTitle}>
+                    {row.title || "委員会報告"}
+                  </span>
+                  {reps.length === 0 ? (
+                    <span className={styles.noGian}>（未選択）</span>
+                  ) : (
+                    reps.map((r) =>
+                      linkReportTo ? (
+                        <a
+                          key={r.id}
+                          href={linkReportTo(r)}
+                          className={styles.gianChip}
+                          data-doc-anchor={`report-${r.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {r.committeeName}　委員会報告 ↗
+                        </a>
+                      ) : (
+                        <span key={r.id} className={styles.gianChip}>
+                          {r.committeeName}　委員会報告
+                        </span>
+                      )
+                    )
+                  )}
                 </span>
                 <span className={styles.assignee}>{row.assignee}</span>
               </div>

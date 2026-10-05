@@ -18,7 +18,8 @@ export type SidaiRowType =
   | "filelink"
   | "minutes"
   | "attendance"
-  | "deadlines";
+  | "deadlines"
+  | "reports";
 
 export interface DeadlineEntry {
   id: string;
@@ -44,6 +45,8 @@ export interface SidaiRow {
   quorum?: string;
   observerCount?: string;
   deadlineRows?: DeadlineEntry[];
+  /** 委員会報告リンク行：リンクする委員会報告の id（committee_reports.id） */
+  linkedReportIds?: string[];
 }
 
 export interface Sidai {

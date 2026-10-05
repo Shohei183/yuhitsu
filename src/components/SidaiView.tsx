@@ -8,6 +8,7 @@ import { useFixedFiles } from "@/lib/useFixedFiles";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
 import { useCan } from "@/lib/useOrg";
+import { useCommitteeReportStore } from "@/lib/useCommitteeReportStore";
 import SidaiDoc from "./SidaiDoc";
 import styles from "./SidaiView.module.css";
 
@@ -15,6 +16,7 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
   const sidai = useSidai(sidaiId);
   const gianStore = useGianStore();
   const can = useCan();
+  const reportStore = useCommitteeReportStore();
   const { files: fixedFiles } = useFixedFiles(sidai?.yearId ?? "");
   const docRef = useRef<HTMLElement>(null);
 
@@ -75,6 +77,8 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
             fixedFiles.find((f) => f.id === id) ?? null
           }
           onOpenFixedFile={(id, name) => openFileByIdAsync(id, name)}
+          reportById={(id) => reportStore[id] ?? null}
+          linkReportTo={(r) => `/committee/${r.committeeId}/report/view`}
         />
       </article>
     </div>

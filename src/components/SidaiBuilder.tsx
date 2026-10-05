@@ -26,6 +26,7 @@ import { useFixedFiles } from "@/lib/useFixedFiles";
 import { useSidai } from "@/lib/useSidaiStore";
 import { useGianStore } from "@/lib/useGianStore";
 import { gianMetaLine } from "@/lib/gianMeta";
+import { useCommitteeReportStore } from "@/lib/useCommitteeReportStore";
 import { useDistributionStore } from "@/lib/useDistributionStore";
 import { useAssigneeOptions, useCan } from "@/lib/useOrg";
 import { useRouter } from "next/navigation";
@@ -41,6 +42,7 @@ const ROW_TYPE_LABEL: Record<SidaiRowType, string> = {
   minutes: "議事録指名",
   attendance: "出席・定足数",
   deadlines: "資料提出期限",
+  reports: "委員会報告リンク",
 };
 
 function blankRow(type: SidaiRowType): SidaiRow {
@@ -54,6 +56,9 @@ function blankRow(type: SidaiRowType): SidaiRow {
     linkedFixedFileId: null,
     note: "",
   };
+  if (type === "reports") {
+    return { ...base, title: "委員会報告", linkedReportIds: [] };
+  }
   if (type === "minutes") {
     return {
       ...base,
@@ -94,6 +99,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const sidai = useSidai(sidaiId);
   const gianStore = useGianStore();
   const distStore = useDistributionStore();
+  const reportStore = useCommitteeReportStore();
   const can = useCan();
   const router = useRouter();
   const lom = useLomName();
@@ -234,6 +240,12 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
     const row = selectedFilelinkRow();
     if (row) linkFixedFile(row.id, fileId);
   };
+
+  // この次第の年度の委員会報告（リンク先の候補）
+  const reportOptions = Object.values(reportStore)
+    .filter((r) => r.yearId === sidai?.yearId)
+    .map((r) => ({ id: r.id, committeeName: r.committeeName }))
+    .sort((a, b) => a.committeeName.localeCompare(b.committeeName, "ja"));
 
   const myDistributions = Object.values(distStore)
     .filter((p) => p.sourceSidaiId === sidaiId)
@@ -467,6 +479,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                           ) ?? null
                         : null
                     }
+                    reportOptions={reportOptions}
                     dragActive={dragGianId != null}
                     onSelect={() =>
                       setSelectedRowId(
@@ -760,6 +773,69 @@ function SectionAdd({
       >
         ＋ 資料提出期限
       </button>
+      <button
+        type="button"
+        className={styles.sectionAddBtn}
+        onClick={() => onAdd("reports")}
+      >
+        ＋ 委員会報告リンク
+      </button>
+    </div>
+  );
+}
+
+/* ─────────────── 委員会報告リンク行（編集）─────────────── */
+
+function ReportLinksEditor({
+  row,
+  options,
+  onChange,
+}: {
+  row: SidaiRow;
+  options: { id: string; committeeName: string }[];
+  onChange: (patch: Partial<SidaiRow>) => void;
+}) {
+  const selected = row.linkedReportIds ?? [];
+  const toggle = (id: string) =>
+    onChange({
+      linkedReportIds: selected.includes(id)
+        ? selected.filter((x) => x !== id)
+        : [...selected, id],
+    });
+  if (options.length === 0) {
+    return (
+      <p className={styles.autoNote}>
+        この年度の委員会報告がまだありません。各委員会の「委員会報告」で作成すると、ここから選べます。
+      </p>
+    );
+  }
+  const allSelected = options.every((o) => selected.includes(o.id));
+  return (
+    <div className={styles.reportPick}>
+      <span className={styles.reportPickLabel}>リンクする委員会報告：</span>
+      {options.map((o) => (
+        <label key={o.id} className={styles.reportPickItem}>
+          <input
+            type="checkbox"
+            checked={selected.includes(o.id)}
+            onClick={(e) => e.stopPropagation()}
+            onChange={() => toggle(o.id)}
+          />
+          {o.committeeName}
+        </label>
+      ))}
+      <button
+        type="button"
+        className={styles.sectionAddBtn}
+        onClick={(e) => {
+          e.stopPropagation();
+          onChange({
+            linkedReportIds: allSelected ? [] : options.map((o) => o.id),
+          });
+        }}
+      >
+        {allSelected ? "すべて外す" : "すべて選択"}
+      </button>
     </div>
   );
 }
@@ -1012,6 +1088,7 @@ function SidaiRowView({
   selected,
   linkedGian,
   linkedFixedFile,
+  reportOptions,
   dragActive,
   onSelect,
   onChange,
@@ -1025,6 +1102,7 @@ function SidaiRowView({
   selected: boolean;
   linkedGian: { committee: string; topic: string; kind: string } | null;
   linkedFixedFile: { id: string; name: string } | null;
+  reportOptions: { id: string; committeeName: string }[];
   dragActive: boolean;
   onSelect: () => void;
   onChange: (patch: Partial<SidaiRow>) => void;
@@ -1165,6 +1243,14 @@ function SidaiRowView({
 
       {row.type === "deadlines" && (
         <DeadlinesEditor row={row} onChange={onChange} />
+      )}
+
+      {row.type === "reports" && (
+        <ReportLinksEditor
+          row={row}
+          options={reportOptions}
+          onChange={onChange}
+        />
       )}
 
       {isLink && (
