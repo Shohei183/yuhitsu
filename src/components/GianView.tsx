@@ -359,6 +359,27 @@ export default function GianView({
           </div>
         )}
 
+        <h2 className={styles.h2}>資料</h2>
+        {frozenFiles ? (
+          <>
+            <FrozenResourceList
+              category="review"
+              files={frozenFiles.review}
+            />
+            <FrozenResourceList
+              category="reference"
+              files={frozenFiles.reference}
+            />
+          </>
+        ) : gianId ? (
+          <>
+            <LiveResourceList gianId={gianId} category="review" />
+            <LiveResourceList gianId={gianId} category="reference" />
+          </>
+        ) : (
+          <p className={styles.empty}>（なし）</p>
+        )}
+
         {showPriorFeedback && (
           <>
             <h2 className={styles.h2}>前回までの流れ（意見と対応）</h2>
@@ -399,26 +420,6 @@ export default function GianView({
           </>
         )}
 
-        <h2 className={styles.h2}>資料</h2>
-        {frozenFiles ? (
-          <>
-            <FrozenResourceList
-              category="review"
-              files={frozenFiles.review}
-            />
-            <FrozenResourceList
-              category="reference"
-              files={frozenFiles.reference}
-            />
-          </>
-        ) : gianId ? (
-          <>
-            <LiveResourceList gianId={gianId} category="review" />
-            <LiveResourceList gianId={gianId} category="reference" />
-          </>
-        ) : (
-          <p className={styles.empty}>（なし）</p>
-        )}
     </article>
   );
 

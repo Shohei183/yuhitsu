@@ -108,9 +108,15 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   const { files: reviewFiles } = useGianFiles(gianId, "review");
   const { files: referenceFiles } = useGianFiles(gianId, "reference");
   const attachFiles: GianFileMeta[] = [...reviewFiles, ...referenceFiles];
-  const attachGianGroups: { committee: string; gians: { id: string; label: string }[] }[] =
+  const attachGianGroups: {
+    committee: string;
+    gians: { id: string; label: string; updatedAt?: string }[];
+  }[] =
     (() => {
-      const map = new Map<string, { id: string; label: string }[]>();
+      const map = new Map<
+        string,
+        { id: string; label: string; updatedAt?: string }[]
+      >();
       for (const e of Object.values(gianStore)) {
         if (e.gian.id === gianId) continue;
         // 同じ年度の議案だけを候補にする
@@ -118,11 +124,20 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
         const c = e.gian.committee || "（委員会未設定）";
         const kl = e.gian.kind === "基本方針" ? "基本方針" : `${e.gian.kind}議案`;
         if (!map.has(c)) map.set(c, []);
-        map.get(c)!.push({ id: e.gian.id, label: `${kl}：${e.gian.topic}` });
+        map.get(c)!.push({
+          id: e.gian.id,
+          label: `${kl}：${e.gian.topic}`,
+          updatedAt: e.gian.updatedAt,
+        });
       }
       return [...map.entries()]
         .sort((a, b) => a[0].localeCompare(b[0], "ja"))
-        .map(([committee, gians]) => ({ committee, gians }));
+        .map(([committee, gians]) => ({
+          committee,
+          gians: [...gians].sort((x, y) =>
+            (y.updatedAt ?? "").localeCompare(x.updatedAt ?? "")
+          ),
+        }));
     })();
 
   const [toast, setToast] = useState<string | null>(null);
@@ -1441,7 +1456,10 @@ function groupLinkOptionsByCommittee(
 
 /** 項目の「添付追加」で使う候補（他の議案・この議案の資料）＋更新ハンドラ */
 export interface AttachContext {
-  gianGroups: { committee: string; gians: { id: string; label: string }[] }[];
+  gianGroups: {
+    committee: string;
+    gians: { id: string; label: string; updatedAt?: string }[];
+  }[];
   files: GianFileMeta[];
   onChange: (no: number, attachments: ItemLink[]) => void;
 }
@@ -1573,6 +1591,9 @@ function ItemAttachments({
                       {g.gians.map((x) => (
                         <option key={x.id} value={x.id}>
                           {x.label}
+                          {x.updatedAt
+                            ? `（最終更新 ${formatJaDate(x.updatedAt)}）`
+                            : ""}
                         </option>
                       ))}
                     </optgroup>
