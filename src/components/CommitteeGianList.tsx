@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GianKind, MOCK_GIANS, STATUS_LABEL } from "@/lib/mockData";
-import { createGian, deleteGian, duplicateGian } from "@/lib/gianStore";
+import { createGian, deleteGian } from "@/lib/gianStore";
+import { duplicateGianWithAttachments } from "@/lib/gianDuplicate";
 import { useCommittee, useCanIn } from "@/lib/useOrg";
 import { useGianStore } from "@/lib/useGianStore";
 import { gianCreatedMs, gianMetaLine } from "@/lib/gianMeta";
@@ -63,7 +64,7 @@ export default function CommitteeGianList({
   };
 
   const onDuplicate = (id: string, targetKind?: GianKind) => {
-    const newId = duplicateGian(id, targetKind);
+    const newId = duplicateGianWithAttachments(id, targetKind);
     if (newId) router.push(`/gian/${newId}`);
   };
 

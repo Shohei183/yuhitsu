@@ -204,3 +204,31 @@ export function downloadFileByIdAsync(id: string, name: string): void {
     a.remove();
   });
 }
+
+/**
+ * ファイルを R2 内で複製して新しい持ち主（議案・予算書）へ付ける。
+ * 返り値は 元ファイル id → 新ファイル id の対応。
+ */
+export async function copyFileObjs(
+  sourceIds: string[],
+  destScope: "gian" | "budget",
+  destOwnerId: string
+): Promise<Record<string, string>> {
+  if (sourceIds.length === 0) return {};
+  const res = await callApi<{ files: Array<{ id: string; sourceId: string }> }>(
+    "/api/files/copy",
+    {
+      sourceIds,
+      destScope,
+      destOwnerId,
+      destGianId: destScope === "gian" ? destOwnerId : undefined,
+    }
+  );
+  if (!res.ok || !res.data) {
+    throw new Error(res.error || "ファイルの複製に失敗しました");
+  }
+  const map: Record<string, string> = {};
+  for (const f of res.data.files) map[f.sourceId] = f.id;
+  notifyFiles();
+  return map;
+}

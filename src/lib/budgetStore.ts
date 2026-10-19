@@ -8,7 +8,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { db, fire } from "./backend/client";
-import { deleteFileObj } from "./backend/files";
+import { copyFileObjs, deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
 import { lomName } from "./settingsStore";
 
@@ -334,6 +334,40 @@ export function createBudget(opts: {
   set(d.id, d);
   void persist(d.id);
   return d.id;
+}
+
+/**
+ * 予算書を丸ごと複製する（議案の複製に合わせて使う）。
+ * 添付ファイル（見積書など）も実体ごと複製し、明細からの参照はそのまま保つ。
+ */
+export async function duplicateBudget(
+  sourceId: string,
+  opts: { gianId: string | null; title: string }
+): Promise<string | null> {
+  const src = cache[sourceId];
+  if (!src) return null;
+  const newBudgetId = newId("budget");
+  const fileMap = await copyFileObjs(
+    (src.attachments ?? []).map((a) => a.fileId),
+    "budget",
+    newBudgetId
+  );
+  const now = new Date().toISOString();
+  const copy: BudgetDoc = {
+    ...(JSON.parse(JSON.stringify(src)) as BudgetDoc),
+    id: newBudgetId,
+    gianId: opts.gianId,
+    title: opts.title,
+    attachments: (src.attachments ?? []).map((a) => ({
+      ...a,
+      fileId: fileMap[a.fileId] ?? a.fileId,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
+  set(newBudgetId, copy);
+  await persist(newBudgetId);
+  return newBudgetId;
 }
 
 export function saveBudget(id: string, doc: BudgetDoc): void {
