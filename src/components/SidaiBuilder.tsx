@@ -110,6 +110,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const [dragGianId, setDragGianId] = useState<string | null>(null);
   const [palTab, setPalTab] = useState<"gian" | "fixed">("gian");
   const [showFinalize, setShowFinalize] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
   const [fName, setFName] = useState("");
   const [fBoard, setFBoard] = useState<Board>("理事会");
   const [fOcc, setFOcc] = useState("");
@@ -286,6 +287,16 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   };
 
   const onFinalize = async () => {
+    if (finalizing) return; // 二重クリックで同じ版が重複作成されるのを防ぐ
+    setFinalizing(true);
+    try {
+      await doFinalize();
+    } finally {
+      setFinalizing(false);
+    }
+  };
+
+  const doFinalize = async () => {
     // 紐づく上程済み議案の資料メタ（確定時点のスナップショット）を集める
     const cur = getSidai(sidaiId);
     const linkedGianIds = Array.from(
@@ -704,8 +715,9 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                 type="button"
                 className={styles.finalizeBtn}
                 onClick={onFinalize}
+                disabled={finalizing}
               >
-                確定する
+                {finalizing ? "確定中…" : "確定する"}
               </button>
             </div>
           </div>

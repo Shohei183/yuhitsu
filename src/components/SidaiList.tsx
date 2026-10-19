@@ -32,6 +32,32 @@ export default function SidaiList() {
   const scope = `${year?.label ?? yearId} ／ ${PERIOD_LABEL[period]}`;
   const dists = listDistributionsFor(yearId, period);
 
+  // 会議（会議体＋回）ごとにまとめ、最新の版だけを大きく、過去の版は折りたたむ
+  const groups: {
+    key: string;
+    board: string;
+    occurrence: string;
+    versions: typeof dists; // 版の新しい順
+  }[] = [];
+  for (const d of dists) {
+    const key = `${d.board}／${d.occurrence}`;
+    let g = groups.find((x) => x.key === key);
+    if (!g) {
+      g = { key, board: d.board, occurrence: d.occurrence, versions: [] };
+      groups.push(g);
+    }
+    g.versions.push(d);
+  }
+  for (const g of groups) {
+    g.versions.sort(
+      (a, b) =>
+        b.version - a.version || b.finalizedAt.localeCompare(a.finalizedAt)
+    );
+  }
+  groups.sort((a, b) =>
+    b.versions[0].finalizedAt.localeCompare(a.versions[0].finalizedAt)
+  );
+
   const periodTabs = (
     <div className={styles.toolbar}>
       {PERIODS.map((p) => (
@@ -76,27 +102,61 @@ export default function SidaiList() {
           </p>
         ) : (
           <ul className={styles.list}>
-            {dists.map((d) => (
-              <li key={d.id} className={styles.card}>
-                <div className={styles.cardTop}>
-                  <span className={styles.kind}>配信データ</span>
-                  <span className={styles.meta}>
-                    {d.board}／{d.occurrence}
-                  </span>
-                </div>
-                <Link href={`/haishin/${d.id}`} className={styles.topicLink}>
-                  {d.name}_v{d.version}
-                </Link>
-                <div className={styles.meta}>
-                  確定日時：{fmt(d.finalizedAt)}　／　収録議案 {d.gians.length} 件
-                </div>
-                <div className={styles.cardActions}>
-                  <Link href={`/haishin/${d.id}`} className={styles.navLink}>
-                    配信データを開く
+            {groups.map((g) => {
+              const [latest, ...older] = g.versions;
+              return (
+                <li key={g.key} className={styles.card}>
+                  <div className={styles.cardTop}>
+                    <span className={styles.kind}>{g.board}</span>
+                    <span className={styles.meta}>
+                      全{g.versions.length}版
+                    </span>
+                  </div>
+                  <Link
+                    href={`/haishin/${latest.id}`}
+                    className={styles.topicLink}
+                  >
+                    {g.occurrence}
+                    <span className={styles.latestTag}>
+                      最新 v{latest.version}
+                    </span>
                   </Link>
-                </div>
-              </li>
-            ))}
+                  <div className={styles.meta}>
+                    確定日時：{fmt(latest.finalizedAt)}　／　収録議案{" "}
+                    {latest.gians.length} 件
+                  </div>
+                  <div className={styles.cardActions}>
+                    <Link
+                      href={`/haishin/${latest.id}`}
+                      className={styles.navLink}
+                    >
+                      最新の配信データを開く
+                    </Link>
+                  </div>
+                  {older.length > 0 && (
+                    <details className={styles.distOld}>
+                      <summary>過去の版（{older.length}件）</summary>
+                      <ul className={styles.distOldList}>
+                        {older.map((d) => (
+                          <li key={d.id} className={styles.distOldRow}>
+                            <Link
+                              href={`/haishin/${d.id}`}
+                              className={styles.navLink}
+                            >
+                              v{d.version}
+                            </Link>
+                            <span className={styles.meta}>
+                              {fmt(d.finalizedAt)}　／　収録議案{" "}
+                              {d.gians.length} 件
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </>
