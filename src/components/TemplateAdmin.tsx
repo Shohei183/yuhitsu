@@ -21,6 +21,7 @@ type Tab =
   | "shingi"
   | "kessanKyogi"
   | "kessanShingi"
+  | "houkoku"
   | "kihon"
   | "sidai";
 
@@ -29,6 +30,7 @@ const TAB_LABEL: Record<Tab, string> = {
   shingi: "審議",
   kessanKyogi: "決算協議",
   kessanShingi: "決算審議",
+  houkoku: "報告",
   kihon: "基本方針",
   sidai: "次第",
 };
@@ -37,6 +39,7 @@ const TABS: Tab[] = [
   "shingi",
   "kessanKyogi",
   "kessanShingi",
+  "houkoku",
   "kihon",
   "sidai",
 ];
@@ -196,6 +199,24 @@ export default function TemplateAdmin() {
             title="事業概要"
             hint="決算額・予算差異など決算特有の項目を追加できます。"
             items={tpl.kessanShingi.overview}
+            canEdit={canEdit}
+            numberStyle="1."
+          />
+        </>
+      )}
+
+      {tab === "houkoku" && (
+        <>
+          <p className={styles.subNote}>
+            報告議案（報告事項）。事業要綱・前回までの流れ・審議対象資料・メディア依頼書はなく、
+            事業概要と参考資料のみです。
+          </p>
+          <ItemListEditor
+            yearId={yearId}
+            list="houkokuOverview"
+            title="事業概要"
+            hint="報告する内容の項目。番号は自動。議案作成者はこの項目の中身を記入します。"
+            items={tpl.houkoku.overview}
             canEdit={canEdit}
             numberStyle="1."
           />

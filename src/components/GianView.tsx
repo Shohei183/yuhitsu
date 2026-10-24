@@ -145,7 +145,9 @@ export default function GianView({
               <Kv label="文書作成者" value={gian.author} />
               <Kv label="作成日時" value={gian.createdAt} />
               <Kv label="礼状の発送" value={gian.courtesyLetter} />
-              <Kv label="メディア依頼書" value={gian.mediaRequest} />
+              {gian.kind !== "報告" && (
+                <Kv label="メディア依頼書" value={gian.mediaRequest} />
+              )}
               <Kv
                 label="確認日"
                 value={
@@ -187,6 +189,8 @@ export default function GianView({
           </>
         )}
 
+        {gian.outline.length > 0 && (
+          <>
         <h2 className={styles.h2}>{kihon ? "基本方針" : "事業要綱"}</h2>
         <ol className={styles.itemList}>
           {gian.outline.map((it) => (
@@ -203,6 +207,8 @@ export default function GianView({
             </li>
           ))}
         </ol>
+          </>
+        )}
 
         <h2 className={styles.h2}>{kihon ? "事業計画" : "事業概要"}</h2>
         {kihon ? (
@@ -362,10 +368,12 @@ export default function GianView({
         <h2 className={styles.h2}>資料</h2>
         {frozenFiles ? (
           <>
-            <FrozenResourceList
-              category="review"
-              files={frozenFiles.review}
-            />
+            {gian.kind !== "報告" && (
+              <FrozenResourceList
+                category="review"
+                files={frozenFiles.review}
+              />
+            )}
             <FrozenResourceList
               category="reference"
               files={frozenFiles.reference}
@@ -373,7 +381,9 @@ export default function GianView({
           </>
         ) : gianId ? (
           <>
-            <LiveResourceList gianId={gianId} category="review" />
+            {gian.kind !== "報告" && (
+              <LiveResourceList gianId={gianId} category="review" />
+            )}
             <LiveResourceList gianId={gianId} category="reference" />
           </>
         ) : (

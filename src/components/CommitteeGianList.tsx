@@ -10,13 +10,14 @@ import { useGianStore } from "@/lib/useGianStore";
 import { gianCreatedMs, gianMetaLine } from "@/lib/gianMeta";
 import styles from "./CommitteeFolder.module.css";
 
-const KINDS: GianKind[] = ["協議", "審議", "決算協議", "決算審議", "基本方針"];
+const KINDS: GianKind[] = ["協議", "審議", "決算協議", "決算審議", "報告", "基本方針"];
 
 const KIND_CLASS: Record<GianKind, string> = {
   協議: styles.kindKyogi,
   審議: styles.kindShingi,
   決算協議: styles.kindKessanKyogi,
   決算審議: styles.kindKessanShingi,
+  報告: styles.kindHoukoku,
   基本方針: styles.kindKihon,
 };
 

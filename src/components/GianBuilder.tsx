@@ -28,6 +28,7 @@ import {
   lockGian,
   requestReplacement,
   isKihon,
+  isReport,
   saveDraftSnapshot,
   saveGian,
   showsPriorFeedback,
@@ -81,6 +82,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   };
 
   const kihon = isKihon(gian.kind);
+  const report = isReport(gian.kind);
   /** 基本方針「事業計画」のリンク先候補（同じ年度・自分以外の協議議案のみ） */
   const linkOptions: LinkOption[] = kihon
     ? Object.values(gianStore)
@@ -618,6 +620,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
             onRemoveLead={removeAssignedLead}
           />
 
+          {gian.outline.length > 0 && (
           <TemplateSection
             title={kihon ? "基本方針" : "事業要綱"}
             items={gian.outline}
@@ -629,6 +632,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
               onChange: (no, a) => updateItemAttachments("outline", no, a),
             }}
           />
+          )}
           {kihon ? (
             <PlanItemsSection
               items={gian.overview}
@@ -720,11 +724,13 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
             ファイルをドラッグ＆ドロップ、または「ファイルを選択」で追加します
             （このブラウザ内に保存）。
           </p>
-          <GianResourcePanel
-            gianId={gianId}
-            category="review"
-            editable={!readOnly}
-          />
+          {!report && (
+            <GianResourcePanel
+              gianId={gianId}
+              category="review"
+              editable={!readOnly}
+            />
+          )}
           <GianResourcePanel
             gianId={gianId}
             category="reference"
@@ -1023,12 +1029,14 @@ function ProposalHeader({
               readOnly={readOnly}
               onChange={(v) => onField("courtesyLetter", v)}
             />
-            <FieldRow
-              label="メディア依頼書"
-              value={gian.mediaRequest}
-              readOnly={readOnly}
-              onChange={(v) => onField("mediaRequest", v)}
-            />
+            {gian.kind !== "報告" && (
+              <FieldRow
+                label="メディア依頼書"
+                value={gian.mediaRequest}
+                readOnly={readOnly}
+                onChange={(v) => onField("mediaRequest", v)}
+              />
+            )}
           </div>
         </>
       )}

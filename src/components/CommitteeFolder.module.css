@@ -187,6 +187,10 @@
   background: var(--role-member-bg);
   color: var(--role-member-fg);
 }
+.kindHoukoku {
+  background: var(--badge-submitted-bg);
+  color: var(--badge-submitted-fg);
+}
 .kindKihon {
   background: var(--role-master-bg);
   color: var(--role-master-fg);

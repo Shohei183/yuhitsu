@@ -13,6 +13,7 @@ import {
   KIHON_OVERVIEW_LABELS,
   OUTLINE_LABELS,
   OVERVIEW_LABELS,
+  REPORT_OVERVIEW_LABELS,
 } from "./mockData";
 import { db, fire } from "./backend/client";
 
@@ -30,6 +31,8 @@ export type TemplateList =
   | "kessanKyogiOverview"
   | "kessanShingiOutline"
   | "kessanShingiOverview"
+  | "houkokuOutline"
+  | "houkokuOverview"
   | "kihonOutline"
   | "kihonOverview"
   | "sidaiSections";
@@ -43,6 +46,8 @@ export const TEMPLATE_LIST_LABEL: Record<TemplateList, string> = {
   kessanKyogiOverview: "事業概要の項目",
   kessanShingiOutline: "事業要綱の項目",
   kessanShingiOverview: "事業概要の項目",
+  houkokuOutline: "事業要綱の項目",
+  houkokuOverview: "事業概要の項目",
   kihonOutline: "基本方針（本文）の項目",
   kihonOverview: "事業計画の項目",
   sidaiSections: "次第の区分",
@@ -59,6 +64,7 @@ export interface YearTemplate {
   shingi: GianTemplate;
   kessanKyogi: GianTemplate;
   kessanShingi: GianTemplate;
+  houkoku: GianTemplate;
   kihon: GianTemplate;
   sidaiSections: TemplateItem[];
   updatedAt: string;
@@ -108,6 +114,10 @@ function buildDefaultTemplate(yearId: string): YearTemplate {
       outline: items(`tpl-${yearId}-dso`, OUTLINE_LABELS),
       overview: items(`tpl-${yearId}-dsv`, [...OVERVIEW_LABELS, "決算額・予算差異の説明"]),
     },
+    houkoku: {
+      outline: [],
+      overview: items(`tpl-${yearId}-hov`, REPORT_OVERVIEW_LABELS),
+    },
     kihon: {
       outline: items(`tpl-${yearId}-ho`, KIHON_OUTLINE_LABELS),
       overview: items(`tpl-${yearId}-hv`, KIHON_OVERVIEW_LABELS),
@@ -127,6 +137,8 @@ function getList(t: YearTemplate, list: TemplateList): TemplateItem[] {
     case "kessanKyogiOverview": return t.kessanKyogi.overview;
     case "kessanShingiOutline": return t.kessanShingi.outline;
     case "kessanShingiOverview": return t.kessanShingi.overview;
+    case "houkokuOutline": return t.houkoku.outline;
+    case "houkokuOverview": return t.houkoku.overview;
     case "kihonOutline": return t.kihon.outline;
     case "kihonOverview": return t.kihon.overview;
     case "sidaiSections": return t.sidaiSections;
@@ -143,6 +155,8 @@ function withList(t: YearTemplate, list: TemplateList, arr: TemplateItem[]): Yea
     case "kessanKyogiOverview": return { ...t, kessanKyogi: { ...t.kessanKyogi, overview: arr } };
     case "kessanShingiOutline": return { ...t, kessanShingi: { ...t.kessanShingi, outline: arr } };
     case "kessanShingiOverview": return { ...t, kessanShingi: { ...t.kessanShingi, overview: arr } };
+    case "houkokuOutline": return { ...t, houkoku: { ...t.houkoku, outline: arr } };
+    case "houkokuOverview": return { ...t, houkoku: { ...t.houkoku, overview: arr } };
     case "kihonOutline": return { ...t, kihon: { ...t.kihon, outline: arr } };
     case "kihonOverview": return { ...t, kihon: { ...t.kihon, overview: arr } };
     case "sidaiSections": return { ...t, sidaiSections: arr };
@@ -190,6 +204,7 @@ function mergeWithDefault(yearId: string, raw: unknown): YearTemplate {
     shingi: g(r.shingi, def.shingi),
     kessanKyogi: g(r.kessanKyogi, def.kessanKyogi),
     kessanShingi: g(r.kessanShingi, def.kessanShingi),
+    houkoku: g(r.houkoku, def.houkoku),
     kihon: g(r.kihon, def.kihon),
     sidaiSections: Array.isArray(r.sidaiSections)
       ? r.sidaiSections
@@ -217,6 +232,7 @@ export function getGianTemplate(yearId: string, kind: GianKind): GianTemplate {
   if (kind === "決算協議") return t.kessanKyogi;
   if (kind === "決算審議") return t.kessanShingi;
   if (kind === "基本方針") return t.kihon;
+  if (kind === "報告") return t.houkoku;
   return t.shingi;
 }
 
@@ -233,7 +249,7 @@ export function isTemplateCustomized(yearId: string): boolean {
   const lists: TemplateList[] = [
     "kyogiOutline", "kyogiOverview", "shingiOutline", "shingiOverview",
     "kessanKyogiOutline", "kessanKyogiOverview", "kessanShingiOutline",
-    "kessanShingiOverview", "kihonOutline", "kihonOverview", "sidaiSections",
+    "kessanShingiOverview", "houkokuOutline", "houkokuOverview", "kihonOutline", "kihonOverview", "sidaiSections",
   ];
   return !lists.every((l) => same(getList(cur, l), getList(def, l)));
 }

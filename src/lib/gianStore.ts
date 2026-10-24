@@ -202,6 +202,10 @@ export function listSubmittedGians(): GianEntry[] {
 export function showsPriorFeedback(kind: GianKind): boolean {
   return kind === "協議" || kind === "決算協議" || kind === "基本方針";
 }
+/** 報告議案（報告事項）：審議対象資料なし・事業要綱なし・メディア依頼書なし */
+export function isReport(kind: GianKind): boolean {
+  return kind === "報告";
+}
 export function isKihon(kind: GianKind): boolean {
   return kind === "基本方針";
 }
@@ -404,6 +408,7 @@ const KIND_TYPE: Record<GianKind, string> = {
   審議: "審議事項",
   決算協議: "協議事項",
   決算審議: "審議事項",
+  報告: "報告事項",
   基本方針: "基本方針",
 };
 
