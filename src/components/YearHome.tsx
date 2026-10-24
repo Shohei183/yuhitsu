@@ -66,6 +66,7 @@ export default function YearHome() {
         canEdit={can.editCommittees}
       />
       <JoteiSection />
+      <JoteiFilesSection />
       <PeriodsSection yearId={year.id} canCreate={can.createSidai} />
     </main>
   );
@@ -83,6 +84,24 @@ function JoteiSection() {
         </h2>
         <span className={styles.sectionNote}>
           委員会が会議ごとに提出する上程届。作成は各委員会フォルダの「上程届作成」から。
+        </span>
+      </div>
+    </section>
+  );
+}
+
+/* ── 上程ファイル ───────────────────────────────────── */
+function JoteiFilesSection() {
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHead}>
+        <h2 className={styles.h2}>
+          <Link href="/jotei-files" className={styles.h2Link}>
+            上程ファイル →
+          </Link>
+        </h2>
+        <span className={styles.sectionNote}>
+          各委員会から上程された議案を、会議ごとのフォルダに委員会別でまとめて表示。配信確定で次のフォルダへ。
         </span>
       </div>
     </section>
