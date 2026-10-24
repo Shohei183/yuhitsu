@@ -8,6 +8,7 @@ import { setPeriod } from "@/lib/activeViewStore";
 import { PERIOD_LABEL, Period } from "@/lib/yearStore";
 import { Gian, STATUS_LABEL } from "@/lib/mockData";
 import { gianMetaLine } from "@/lib/gianMeta";
+import type { GianEntry } from "@/lib/gianStore";
 import { formatJaDateTime } from "@/lib/format";
 import styles from "./JoteiFiles.module.css";
 
@@ -15,8 +16,10 @@ const PERIODS: Period[] = ["planned", "live"];
 
 interface FolderGian {
   gian: Gian;
-  /** 配信済みならその配信データ（凍結コピーを開く） */
+  /** 配信データに収録された議案ならその配信データ（確定時点のコピーを開く） */
   distId: string | null;
+  /** 収録されていなくても、そのフォルダ（会議）の配信データ（コメント用に引き継ぐ） */
+  folderDistId: string | null;
 }
 interface Folder {
   key: string;
@@ -37,6 +40,17 @@ function kindLabel(g: Gian): string {
 }
 function sortKey(g: Gian): string {
   return g.submittedAt ?? g.updatedAt ?? "";
+}
+
+/**
+ * 上程した日時。submittedAt が無い古い議案は、上程時のスナップショットから補う。
+ */
+function submittedAtOf(e: GianEntry): string | null {
+  if (e.gian.submittedAt) return e.gian.submittedAt;
+  const subs = e.snapshots.filter(
+    (s) => s.kind === "submission" && s.reason.startsWith("会議へ上程")
+  );
+  return subs.length ? subs[subs.length - 1].takenAt : null;
 }
 
 /**
@@ -98,28 +112,36 @@ export default function JoteiFiles() {
     const g = e.gian;
     if (g.yearId !== yearId || g.status === "editing") continue;
 
+    // 次第から直接リンクされて配信データに収録された議案
     const inMeeting = meetings.find((m) => m.ids.has(g.id));
     if (inMeeting) {
-      put(inMeeting.key, { gian: g, distId: inMeeting.latest.id });
+      put(inMeeting.key, {
+        gian: g,
+        distId: inMeeting.latest.id,
+        folderDistId: inMeeting.latest.id,
+      });
       continue;
     }
-    const at = g.submittedAt;
+    // 収録されていない議案（議案内のリンク先など）も、上程した時期の会議フォルダへ。
+    // 前回の配信以降に上程されたものだけが「上程中」に残る。
+    const at = submittedAtOf(e);
     if (!at || at > lastEnd) {
-      put("__current", { gian: g, distId: null });
+      put("__current", { gian: g, distId: null, folderDistId: null });
       continue;
     }
-    // 配信されなかった議案は、上程した時期のフォルダに「未配信」として残す
     let prevEnd = "";
     let placed = false;
     for (const m of meetings) {
       if (at > prevEnd && at <= m.endAt) {
-        put(m.key, { gian: g, distId: null });
+        put(m.key, { gian: g, distId: null, folderDistId: m.latest.id });
         placed = true;
         break;
       }
       prevEnd = m.endAt;
     }
-    if (!placed) put("__current", { gian: g, distId: null });
+    if (!placed) {
+      put("__current", { gian: g, distId: null, folderDistId: null });
+    }
   }
 
   const toFolder = (
@@ -167,7 +189,7 @@ export default function JoteiFiles() {
               <span className={styles.count}>{c.items.length}件</span>
             </div>
             <ul className={styles.gianList}>
-              {c.items.map(({ gian, distId }) => (
+              {c.items.map(({ gian, distId, folderDistId }) => (
                 <li key={gian.id} className={styles.gianRow}>
                   <span className={styles.kind}>{kindLabel(gian)}</span>
                   <span className={styles.gianMain}>
@@ -175,7 +197,9 @@ export default function JoteiFiles() {
                       href={
                         distId
                           ? `/haishin/${distId}/gian/${gian.id}`
-                          : `/gian/${gian.id}/view`
+                          : `/gian/${gian.id}/view${
+                              folderDistId ? `?dist=${folderDistId}` : ""
+                            }`
                       }
                       className={styles.gianLink}
                     >
@@ -191,7 +215,7 @@ export default function JoteiFiles() {
                     {distId
                       ? "配信済み"
                       : f.dist
-                        ? "未配信"
+                        ? "上程済み"
                         : STATUS_LABEL[gian.status]}
                   </span>
                 </li>
@@ -209,6 +233,7 @@ export default function JoteiFiles() {
         <h1 className={styles.title}>上程ファイル</h1>
         <p className={styles.note}>
           各委員会から上程された議案が、会議ごとのフォルダに委員会別でまとまります。
+          配信すると、次第から直接リンクされた議案だけでなく、その時点で上程されていたすべての議案（議案内リンクの参照先を含む）が会議フォルダへ移ります。
           <br />
           上程 → 「上程中」フォルダに委員会ごとに並ぶ → 配信確定 →
           その会議のフォルダとして確定し、新しい「上程中」フォルダが始まります。
