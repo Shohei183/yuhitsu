@@ -41,6 +41,7 @@ import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import { formatJaDate, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { isRichEmpty } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
+import { getGianTemplate } from "@/lib/templateStore";
 import RichText from "./RichText";
 import GianResourcePanel from "./GianResourcePanel";
 
@@ -196,6 +197,49 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
       overview: g.overview
         .filter((o) => o.no !== no)
         .map((o, i) => ({ ...o, no: i + 1 })),
+    }));
+  }
+
+  /**
+   * 議案を作った後にテンプレートへ追加された項目を、この議案にも足す。
+   * （テンプレートの変更は、すでに作成済みの議案には自動では反映されない）
+   */
+  const tpl = !kihon ? getGianTemplate(gian.yearId ?? "", gian.kind) : null;
+  const missingTemplateLabels = tpl
+    ? [
+        ...tpl.outline
+          .filter((t) => !gian.outline.some((o) => o.label === t.label))
+          .map((t) => t.label),
+        ...tpl.overview
+          .filter((t) => !gian.overview.some((o) => o.label === t.label))
+          .map((t) => t.label),
+      ]
+    : [];
+  function addMissingTemplateItems() {
+    if (!tpl) return;
+    const merge = (
+      current: TemplateItem[],
+      template: { label: string }[]
+    ): TemplateItem[] => {
+      const result = [...current];
+      template.forEach((t, i) => {
+        if (result.some((o) => o.label === t.label)) return;
+        let at = 0;
+        for (let j = i - 1; j >= 0; j--) {
+          const idx = result.findIndex((o) => o.label === template[j].label);
+          if (idx >= 0) {
+            at = idx + 1;
+            break;
+          }
+        }
+        result.splice(at, 0, { no: 0, label: t.label, body: "" });
+      });
+      return result.map((o, i) => ({ ...o, no: i + 1 }));
+    };
+    setGian((g) => ({
+      ...g,
+      outline: merge(g.outline, tpl.outline),
+      overview: merge(g.overview, tpl.overview),
     }));
   }
 
@@ -644,6 +688,20 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
               onRemove={removeOverviewItem}
             />
           ) : (
+            <>
+            {!readOnly && missingTemplateLabels.length > 0 && (
+              <div className={styles.tplMissing}>
+                テンプレートに追加された項目があります：
+                {missingTemplateLabels.join("・")}
+                <button
+                  type="button"
+                  className={styles.tplMissingBtn}
+                  onClick={addMissingTemplateItems}
+                >
+                  この議案に追加する
+                </button>
+              </div>
+            )}
             <TemplateSection
               title="事業概要"
               items={gian.overview}
@@ -666,6 +724,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
                 onOpen: openOrCreateBudget,
               }}
             />
+            </>
           )}
 
           {kihon && (

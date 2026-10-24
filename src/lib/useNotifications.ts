@@ -25,13 +25,15 @@ function useDismissed(): string[] {
   );
 }
 
-/** 未処理（pending）かつ未クリアの差し替え申請の一覧（新しい順） */
-export function useReplacementNotifications(): ReplacementNotice[] {
+/** 未処理（pending）かつ未クリアの差し替え申請の一覧（新しい順）。yearId 指定でその年度の議案のみ */
+export function useReplacementNotifications(yearId?: string): ReplacementNotice[] {
   const store = useGianStore();
   const dismissed = new Set(useDismissed());
 
   const out: ReplacementNotice[] = [];
   for (const entry of Object.values(store)) {
+    // 表示中の年度の議案の申請だけ（他年度の申請は出さない）
+    if (yearId && entry.gian.yearId !== yearId) continue;
     for (const req of entry.requests) {
       if (req.status !== "pending") continue;
       if (dismissed.has(req.id)) continue;

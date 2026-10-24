@@ -1790,3 +1790,27 @@
 .attachCancel:hover {
   color: var(--text);
 }
+
+/* テンプレートに後から追加された項目の取り込み案内 */
+.tplMissing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 12.5px;
+  color: var(--warn-fg);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.tplMissingBtn {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: #fff;
+  border: 1px solid var(--accent-line);
+  border-radius: 7px;
+  padding: 4px 10px;
+  cursor: pointer;
+}

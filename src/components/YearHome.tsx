@@ -54,7 +54,7 @@ export default function YearHome() {
         </p>
       </div>
 
-      {can.approveReplacement && <ReplacementNotifications />}
+      {can.approveReplacement && <ReplacementNotifications yearId={year.id} />}
 
       <FixedFilesSection yearId={year.id} canEdit={can.manageFixedFiles} />
       {can.editTemplates && (
@@ -411,8 +411,8 @@ function CommitteesSection({
 
 /* ── 差し替え申請の通知（approveReplacement 保持者のみ）──────── */
 
-function ReplacementNotifications() {
-  const notices = useReplacementNotifications();
+function ReplacementNotifications({ yearId }: { yearId: string }) {
+  const notices = useReplacementNotifications(yearId);
   if (notices.length === 0) return null;
 
   return (
