@@ -41,7 +41,7 @@ export default function RolePermAdmin() {
           この画面の権限がありません（{year?.label ?? ""}）。マスター、または
           「ロール権限」の権限を持つ役職で、その年度を選択して開いてください。
         </p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -68,7 +68,7 @@ export default function RolePermAdmin() {
             </span>
           )}
         </p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </div>

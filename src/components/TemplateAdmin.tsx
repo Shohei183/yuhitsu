@@ -72,7 +72,7 @@ export default function TemplateAdmin() {
           年度タブで対象年度を切り替えられます。
         </p>
         <div className={styles.headRow}>
-          <Link href="/" className={styles.back}>
+          <Link prefetch={false} href="/" className={styles.back}>
             ← トップへ
           </Link>
           {canEdit && customized && (

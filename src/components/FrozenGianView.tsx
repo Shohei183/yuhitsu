@@ -31,7 +31,7 @@ export default function FrozenGianView({
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>収録議案が見つかりません。</p>
-          <Link href={`/haishin/${distId}`}>← 配信データへ</Link>
+          <Link prefetch={false} href={`/haishin/${distId}`}>← 配信データへ</Link>
         </div>
       </div>
     );
@@ -45,7 +45,7 @@ export default function FrozenGianView({
         frozenFiles={pkg.gianFiles[gianId] ?? { review: [], reference: [] }}
         toolbar={
           <>
-            <Link href={`/haishin/${distId}`} className={styles.navLink}>
+            <Link prefetch={false} href={`/haishin/${distId}`} className={styles.navLink}>
               ← 配信データ
             </Link>
             <span className={styles.snapTag}>

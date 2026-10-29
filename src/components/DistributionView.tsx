@@ -28,7 +28,7 @@ export default function DistributionView({ distId }: { distId: string }) {
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>配信データが見つかりません。</p>
-          <Link href="/sidai">← 次第作成へ</Link>
+          <Link prefetch={false} href="/sidai">← 次第作成へ</Link>
         </div>
       </div>
     );
@@ -84,10 +84,10 @@ export default function DistributionView({ distId }: { distId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href="/sidai" className={styles.navLink}>
+        <Link prefetch={false} href="/sidai" className={styles.navLink}>
           ← 次第作成
         </Link>
-        <Link href={`/sidai/${pkg.sourceSidaiId}/view`} className={styles.navLink}>
+        <Link prefetch={false} href={`/sidai/${pkg.sourceSidaiId}/view`} className={styles.navLink}>
           元の次第 →
         </Link>
         <button

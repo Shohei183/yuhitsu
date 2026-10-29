@@ -25,7 +25,7 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>次第が見つかりません。</p>
-          <Link href="/sidai">← 次第一覧へ</Link>
+          <Link prefetch={false} href="/sidai">← 次第一覧へ</Link>
         </div>
       </div>
     );
@@ -42,16 +42,16 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href="/sidai" className={styles.navLink}>
+        <Link prefetch={false} href="/sidai" className={styles.navLink}>
           ← 次第一覧
         </Link>
         {can.createSidai && (
-          <Link href={`/sidai/${sidaiId}`} className={styles.navLink}>
+          <Link prefetch={false} href={`/sidai/${sidaiId}`} className={styles.navLink}>
             編集画面へ →
           </Link>
         )}
         {sidai.distributionId && (
-          <Link
+          <Link prefetch={false}
             href={`/haishin/${sidai.distributionId}`}
             className={styles.navLink}
           >

@@ -26,7 +26,7 @@ export default function GianBuilderPage({ gianId }: { gianId: string }) {
     return (
       <main style={{ maxWidth: 560, margin: "0 auto", padding: "40px 20px" }}>
         <p>議案が見つかりません。</p>
-        <Link href="/">← トップへ</Link>
+        <Link prefetch={false} href="/">← トップへ</Link>
       </main>
     );
   }

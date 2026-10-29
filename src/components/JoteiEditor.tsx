@@ -49,7 +49,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
       <div className={styles.page}>
         <div className={styles.card}>
           <p>上程届が見つかりません。</p>
-          <Link href="/jotei" className={styles.navLink}>
+          <Link prefetch={false} href="/jotei" className={styles.navLink}>
             ← 上程届一覧
           </Link>
         </div>
@@ -94,10 +94,10 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href={backHref} className={styles.navLink}>
+        <Link prefetch={false} href={backHref} className={styles.navLink}>
           ← 上程届一覧
         </Link>
-        <Link href={`/jotei/${joteiId}/view`} className={styles.navLink}>
+        <Link prefetch={false} href={`/jotei/${joteiId}/view`} className={styles.navLink}>
           閲覧
         </Link>
         {!readOnly && can.submitGian && (

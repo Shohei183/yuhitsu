@@ -58,7 +58,7 @@ export default function MyReviewNotes({
             <div key={g.gianId} className={styles.group}>
               <div className={styles.groupHead}>
                 <span className={styles.groupTitle}>{gianTitle(g.gianId)}</span>
-                <Link
+                <Link prefetch={false}
                   href={gianHref ? gianHref(g.gianId) : `/haishin/${distId}/gian/${g.gianId}`}
                   className={styles.groupLink}
                 >

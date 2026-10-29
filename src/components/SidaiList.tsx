@@ -91,7 +91,7 @@ export default function SidaiList() {
         {periodTabs}
 
         <div className={styles.toolbar}>
-          <Link href="/" className={styles.navLink}>
+          <Link prefetch={false} href="/" className={styles.navLink}>
             ← トップへ
           </Link>
         </div>
@@ -112,7 +112,7 @@ export default function SidaiList() {
                       全{g.versions.length}版
                     </span>
                   </div>
-                  <Link
+                  <Link prefetch={false}
                     href={`/haishin/${latest.id}`}
                     className={styles.topicLink}
                   >
@@ -126,7 +126,7 @@ export default function SidaiList() {
                     {latest.gians.length} 件
                   </div>
                   <div className={styles.cardActions}>
-                    <Link
+                    <Link prefetch={false}
                       href={`/haishin/${latest.id}`}
                       className={styles.navLink}
                     >
@@ -139,7 +139,7 @@ export default function SidaiList() {
                       <ul className={styles.distOldList}>
                         {older.map((d) => (
                           <li key={d.id} className={styles.distOldRow}>
-                            <Link
+                            <Link prefetch={false}
                               href={`/haishin/${d.id}`}
                               className={styles.navLink}
                             >
@@ -212,7 +212,7 @@ export default function SidaiList() {
             前回の次第を複製して作成
           </button>
         )}
-        <Link href="/" className={styles.navLink}>
+        <Link prefetch={false} href="/" className={styles.navLink}>
           ← トップへ
         </Link>
       </div>
@@ -229,15 +229,15 @@ export default function SidaiList() {
                 <span className={styles.kind}>次第</span>
                 <span className={styles.meta}>{s.rows.length}行</span>
               </div>
-              <Link href={`/sidai/${s.id}/view`} className={styles.topicLink}>
+              <Link prefetch={false} href={`/sidai/${s.id}/view`} className={styles.topicLink}>
                 {s.meetingName}
               </Link>
               <div className={styles.meta}>{s.datetime || "日時未設定"}</div>
               <div className={styles.cardActions}>
-                <Link href={`/sidai/${s.id}/view`} className={styles.navLink}>
+                <Link prefetch={false} href={`/sidai/${s.id}/view`} className={styles.navLink}>
                   閲覧
                 </Link>
-                <Link href={`/sidai/${s.id}`} className={styles.navLink}>
+                <Link prefetch={false} href={`/sidai/${s.id}`} className={styles.navLink}>
                   編集
                 </Link>
                 {!s.distributionId && (

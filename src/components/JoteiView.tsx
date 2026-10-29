@@ -15,7 +15,7 @@ export default function JoteiView({ joteiId }: { joteiId: string }) {
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>上程届が見つかりません。</p>
-          <Link href="/jotei">← 上程届一覧へ</Link>
+          <Link prefetch={false} href="/jotei">← 上程届一覧へ</Link>
         </div>
       </div>
     );
@@ -24,17 +24,17 @@ export default function JoteiView({ joteiId }: { joteiId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href="/jotei" className={styles.navLink}>
+        <Link prefetch={false} href="/jotei" className={styles.navLink}>
           ← 上程届一覧
         </Link>
-        <Link
+        <Link prefetch={false}
           href={`/committee/${jotei.committeeId}/jotei`}
           className={styles.navLink}
         >
           {jotei.committeeName} の上程届 →
         </Link>
         {jotei.status !== "submitted" && can.editGian && (
-          <Link href={`/jotei/${joteiId}`} className={styles.navLink}>
+          <Link prefetch={false} href={`/jotei/${joteiId}`} className={styles.navLink}>
             編集画面へ →
           </Link>
         )}

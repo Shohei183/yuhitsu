@@ -48,7 +48,7 @@ export default function JoteiList() {
         <p className={styles.note}>
           会議を選ぶと、その会議に提出された各委員会の上程届を表示します。
         </p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </div>
@@ -81,7 +81,7 @@ export default function JoteiList() {
                 <div key={j.id} className={styles.docCard}>
                   <div className={styles.docCardHead}>
                     <span className={styles.docCardName}>{j.committeeName}</span>
-                    <Link
+                    <Link prefetch={false}
                       href={`/jotei/${j.id}/view`}
                       className={styles.docCardLink}
                     >

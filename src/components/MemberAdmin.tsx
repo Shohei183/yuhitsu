@@ -101,7 +101,7 @@ export default function MemberAdmin() {
           この画面の権限がありません（{year?.label ?? yearId}）。マスター、または
           「メンバー管理」「ロール権限」の権限を持つ役職で、その年度を選択して開いてください。
         </p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -140,7 +140,7 @@ export default function MemberAdmin() {
           <strong>{year?.label ?? yearId}</strong> のロール割当を行います。
           年度は上部バーの年度タブで切り替えます。
         </p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </div>

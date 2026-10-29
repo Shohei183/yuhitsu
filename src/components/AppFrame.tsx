@@ -38,7 +38,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
     return (
       <div className={styles.gate}>
         <p>ログインが必要です。</p>
-        <Link href="/login">ログイン画面へ →</Link>
+        <Link prefetch={false} href="/login">ログイン画面へ →</Link>
       </div>
     );
   }

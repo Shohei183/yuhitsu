@@ -55,14 +55,14 @@ export default function TopBar() {
   return (
     <header className={styles.bar}>
       <div className={styles.left}>
-        <Link href="/" className={styles.logo} aria-label="ユーヒツ（仮）">
+        <Link prefetch={false} href="/" className={styles.logo} aria-label="ユーヒツ（仮）">
           <span className={styles.logoMark}>ユ</span>
           <span className={styles.logoName}>
             ユーヒツ<span className={styles.logoTag}>(仮)</span>
           </span>
         </Link>
         <span className={styles.lomDivider} aria-hidden="true" />
-        <Link href="/" className={styles.lom}>
+        <Link prefetch={false} href="/" className={styles.lom}>
           {lom}
         </Link>
         {member.isMaster && <span className={styles.masterTag}>マスター</span>}
@@ -100,7 +100,7 @@ export default function TopBar() {
             {/* PC：横並びリンク */}
             <span className={styles.adminInline}>
               {adminLinks.map((l) => (
-                <Link key={l.href} href={l.href} className={styles.navLink}>
+                <Link prefetch={false} key={l.href} href={l.href} className={styles.navLink}>
                   {l.label}
                 </Link>
               ))}
@@ -110,7 +110,7 @@ export default function TopBar() {
               <summary className={styles.navLink}>管理 ▾</summary>
               <div className={styles.adminMenuList}>
                 {adminLinks.map((l) => (
-                  <Link key={l.href} href={l.href} className={styles.adminMenuItem}>
+                  <Link prefetch={false} key={l.href} href={l.href} className={styles.adminMenuItem}>
                     {l.label}
                   </Link>
                 ))}

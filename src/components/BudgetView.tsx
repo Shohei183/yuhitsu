@@ -26,7 +26,7 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
       <div className={styles.page}>
         <div className={styles.notFound}>
           <p>予算書が見つかりません。</p>
-          <Link href="/">← トップへ</Link>
+          <Link prefetch={false} href="/">← トップへ</Link>
         </div>
       </div>
     );
@@ -45,11 +45,11 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href={backHref} className={styles.navLink}>
+        <Link prefetch={false} href={backHref} className={styles.navLink}>
           {budget.gianId ? "← 議案へ戻る" : "← トップへ"}
         </Link>
         {can.editGian && (
-          <Link href={`/budget/${budgetId}`} className={styles.navLink}>
+          <Link prefetch={false} href={`/budget/${budgetId}`} className={styles.navLink}>
             編集画面へ →
           </Link>
         )}

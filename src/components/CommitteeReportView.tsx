@@ -21,7 +21,7 @@ export default function CommitteeReportView({
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>委員会が見つかりません。</p>
-          <Link href="/">← トップへ</Link>
+          <Link prefetch={false} href="/">← トップへ</Link>
         </div>
       </div>
     );
@@ -35,7 +35,7 @@ export default function CommitteeReportView({
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>この委員会の委員会報告はまだありません。</p>
-          <Link
+          <Link prefetch={false}
             href={`/committee/${committeeId}/report`}
             className={styles.navLink}
           >
@@ -49,11 +49,11 @@ export default function CommitteeReportView({
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href={`/committee/${committeeId}`} className={styles.navLink}>
+        <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.navLink}>
           ← {committee.name}
         </Link>
         {can.editGian && (
-          <Link
+          <Link prefetch={false}
             href={`/committee/${committeeId}/report`}
             className={styles.navLink}
           >

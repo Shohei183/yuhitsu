@@ -23,7 +23,7 @@ export default function JoteiCommitteeList({
     return (
       <main className={styles.wrap}>
         <p className={styles.notFound}>委員会が見つかりません。</p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -54,7 +54,7 @@ export default function JoteiCommitteeList({
         <p className={styles.note}>
           会議ごとに提出する上程届の作成・一覧です。提出すると内容がロックされます。
         </p>
-        <Link href={`/committee/${committeeId}`} className={styles.back}>
+        <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.back}>
           ← {committee.name}
         </Link>
       </div>
@@ -73,7 +73,7 @@ export default function JoteiCommitteeList({
         <ul className={styles.list}>
           {list.map((j) => (
             <li key={j.id} className={styles.item}>
-              <Link
+              <Link prefetch={false}
                 href={
                   j.status === "submitted"
                     ? `/jotei/${j.id}/view`
@@ -97,11 +97,11 @@ export default function JoteiCommitteeList({
                 </span>
               </Link>
               <div className={styles.itemActions}>
-                <Link href={`/jotei/${j.id}/view`} className={styles.viewLink}>
+                <Link prefetch={false} href={`/jotei/${j.id}/view`} className={styles.viewLink}>
                   閲覧
                 </Link>
                 {j.status !== "submitted" && can.editGian && (
-                  <Link href={`/jotei/${j.id}`} className={styles.viewLink}>
+                  <Link prefetch={false} href={`/jotei/${j.id}`} className={styles.viewLink}>
                     編集
                   </Link>
                 )}

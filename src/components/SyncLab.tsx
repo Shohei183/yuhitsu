@@ -49,7 +49,7 @@ export default function SyncLab() {
           <code>BroadcastChannel</code>（同一ブラウザの別タブ間）、永続化は{" "}
           <code>IndexedDB</code>。本番の次第データ（localStorage）には影響しません。
         </p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </div>

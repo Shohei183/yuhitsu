@@ -41,7 +41,7 @@ export default function SharedFolder({
     return (
       <main className={styles.wrap}>
         <p className={styles.notFound}>委員会が見つかりません。</p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -91,7 +91,7 @@ export default function SharedFolder({
           出欠確認表・議案化前の下書きなどを自由に置ける場所です。議案システムとしての
           管理（ID・タグ・スナップショット）の対象外。形式・容量の制限はありません。
         </p>
-        <Link href={`/committee/${committeeId}`} className={styles.back}>
+        <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.back}>
           ← 委員会フォルダ
         </Link>
       </div>

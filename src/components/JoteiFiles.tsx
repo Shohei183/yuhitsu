@@ -193,7 +193,7 @@ export default function JoteiFiles() {
                 <li key={gian.id} className={styles.gianRow}>
                   <span className={styles.kind}>{kindLabel(gian)}</span>
                   <span className={styles.gianMain}>
-                    <Link
+                    <Link prefetch={false}
                       href={
                         distId
                           ? `/haishin/${distId}/gian/${gian.id}`
@@ -250,7 +250,7 @@ export default function JoteiFiles() {
             </button>
           ))}
         </div>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </div>
@@ -278,7 +278,7 @@ export default function JoteiFiles() {
           </summary>
           <div className={styles.folderBody}>
             {f.dist && (
-              <Link href={`/haishin/${f.dist.id}`} className={styles.distLink}>
+              <Link prefetch={false} href={`/haishin/${f.dist.id}`} className={styles.distLink}>
                 この会議の配信データを開く →
               </Link>
             )}

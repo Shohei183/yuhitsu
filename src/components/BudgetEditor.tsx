@@ -51,7 +51,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
       <div className={styles.page}>
         <div className={styles.card}>
           <p>予算書が見つかりません。</p>
-          <Link href="/">← トップへ</Link>
+          <Link prefetch={false} href="/">← トップへ</Link>
         </div>
       </div>
     );
@@ -78,10 +78,10 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href={backHref} className={styles.navLink}>
+        <Link prefetch={false} href={backHref} className={styles.navLink}>
           {budget.gianId ? "← 議案へ戻る" : "← トップへ"}
         </Link>
-        <Link href={`/budget/${budgetId}/view`} className={styles.navLink}>
+        <Link prefetch={false} href={`/budget/${budgetId}/view`} className={styles.navLink}>
           閲覧・印刷 →
         </Link>
         <button type="button" className={styles.dlBtn} onClick={onDownload}>

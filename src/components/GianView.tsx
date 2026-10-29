@@ -85,7 +85,7 @@ export default function GianView({
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>議案が見つかりません。</p>
-          <Link href="/">← 議案一覧へ</Link>
+          <Link prefetch={false} href="/">← 議案一覧へ</Link>
         </div>
       </div>
     );
@@ -465,7 +465,7 @@ export default function GianView({
         </div>
       ) : (
         <div className={styles.toolbar}>
-          <Link
+          <Link prefetch={false}
             href={
               committeeInfo
                 ? `/committee/${committeeInfo.committee.id}/gian`
@@ -476,7 +476,7 @@ export default function GianView({
             ← 議案一覧
           </Link>
           {gianId && (
-            <Link href={`/gian/${gianId}`} className={styles.navLink}>
+            <Link prefetch={false} href={`/gian/${gianId}`} className={styles.navLink}>
               編集画面へ →
             </Link>
           )}

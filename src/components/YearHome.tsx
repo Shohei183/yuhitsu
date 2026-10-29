@@ -78,7 +78,7 @@ function JoteiSection() {
     <section className={styles.section}>
       <div className={styles.sectionHead}>
         <h2 className={styles.h2}>
-          <Link href="/jotei" className={styles.h2Link}>
+          <Link prefetch={false} href="/jotei" className={styles.h2Link}>
             上程届 一覧 →
           </Link>
         </h2>
@@ -96,7 +96,7 @@ function JoteiFilesSection() {
     <section className={styles.section}>
       <div className={styles.sectionHead}>
         <h2 className={styles.h2}>
-          <Link href="/jotei-files" className={styles.h2Link}>
+          <Link prefetch={false} href="/jotei-files" className={styles.h2Link}>
             上程ファイル →
           </Link>
         </h2>
@@ -292,7 +292,7 @@ function TemplateSection({
           </div>
         </div>
       </div>
-      <Link href="/templates" className={styles.tplLink}>
+      <Link prefetch={false} href="/templates" className={styles.tplLink}>
         {canEdit ? "テンプレートを編集する →" : "テンプレートを見る →"}
       </Link>
     </section>
@@ -333,7 +333,7 @@ function CommitteesSection({
         {committees.map((c) => {
           return (
             <div key={c.id} className={styles.committeeCell}>
-              <Link
+              <Link prefetch={false}
                 href={`/committee/${c.id}`}
                 className={styles.committeeCard}
               >
@@ -452,7 +452,7 @@ function ReplacementNotifications({ yearId }: { yearId: string }) {
         {notices.map((n) => (
           <li key={n.request.id} className={styles.notifItem}>
             <div className={styles.notifBody}>
-              <Link href={`/gian/${n.gianId}`} className={styles.notifLink}>
+              <Link prefetch={false} href={`/gian/${n.gianId}`} className={styles.notifLink}>
                 {n.committee}／{n.gianKind}「{n.gianTopic}」
               </Link>
               {n.request.note && (
@@ -535,7 +535,7 @@ function PeriodsSection({
         {PERIODS.map((p) => {
           return (
             <div key={p} className={styles.committeeCell}>
-              <Link
+              <Link prefetch={false}
                 href="/sidai"
                 className={styles.committeeCard}
                 onClick={() => setPeriod(p)}

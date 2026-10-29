@@ -7,7 +7,7 @@ export default function NotFound() {
       <p style={{ fontSize: 14, color: "#666" }}>
         指定された議案は存在しません。
       </p>
-      <Link href="/" style={{ fontSize: 14 }}>
+      <Link prefetch={false} href="/" style={{ fontSize: 14 }}>
         ← 議案一覧へ
       </Link>
     </main>

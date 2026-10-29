@@ -32,7 +32,7 @@ export default function CommitteeReport({
     return (
       <main className={styles.wrap}>
         <p className={styles.notFound}>委員会が見つかりません。</p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -59,7 +59,7 @@ export default function CommitteeReport({
             {year.label} ／ {committee.name} ／ 委員会報告
           </div>
           <h1 className={styles.title}>委員会報告</h1>
-          <Link href={`/committee/${committeeId}`} className={styles.back}>
+          <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.back}>
             ← {committee.name}
           </Link>
         </div>
@@ -90,10 +90,10 @@ export default function CommitteeReport({
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href={`/committee/${committeeId}`} className={styles.navLink}>
+        <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.navLink}>
           ← {committee.name}
         </Link>
-        <Link
+        <Link prefetch={false}
           href={`/committee/${committeeId}/report/view`}
           className={styles.navLink}
         >

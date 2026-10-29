@@ -564,7 +564,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
       {/* ── トップバー（全カラムを横断）── */}
       <header className={styles.topbar}>
         <div className={styles.tbLeft}>
-          <Link
+          <Link prefetch={false}
             href={
               committeeInfo
                 ? `/committee/${committeeInfo.committee.id}/gian`
@@ -574,7 +574,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
           >
             ← 議案一覧
           </Link>
-          <Link href={`/gian/${gianId}/view`} className={styles.back}>
+          <Link prefetch={false} href={`/gian/${gianId}/view`} className={styles.back}>
             閲覧
           </Link>
           <span className={styles.crumb}>{gian.committee} ／ 議案構築</span>
@@ -836,7 +836,7 @@ function GianNav({
     <nav className={styles.nav}>
       <div className={styles.navGroup}>
         <div className={styles.navGroupTitle}>この議案</div>
-        <Link href={`/gian/${gianId}/view`} className={styles.navItem}>
+        <Link prefetch={false} href={`/gian/${gianId}/view`} className={styles.navItem}>
           📄 議案を閲覧（読み取り専用）
         </Link>
         <button type="button" className={styles.navItem} onClick={onBudget}>
@@ -849,16 +849,16 @@ function GianNav({
           <div className={styles.navGroupTitle}>
             {committeeInfo.committee.name}
           </div>
-          <Link href={`/committee/${cid}`} className={styles.navItem}>
+          <Link prefetch={false} href={`/committee/${cid}`} className={styles.navItem}>
             📁 委員会フォルダ
           </Link>
-          <Link href={`/committee/${cid}/gian`} className={styles.navItem}>
+          <Link prefetch={false} href={`/committee/${cid}/gian`} className={styles.navItem}>
             📁 議案構築（一覧）
           </Link>
-          <Link href={`/committee/${cid}/report`} className={styles.navItem}>
+          <Link prefetch={false} href={`/committee/${cid}/report`} className={styles.navItem}>
             📁 委員会報告
           </Link>
-          <Link href={`/committee/${cid}/shared`} className={styles.navItem}>
+          <Link prefetch={false} href={`/committee/${cid}/shared`} className={styles.navItem}>
             📁 共有用フォルダ
           </Link>
         </div>
@@ -2266,7 +2266,7 @@ function SnapshotDetail({
     items.filter((i) => i.body.trim() !== "").length;
   return (
     <div className={styles.snapDetail}>
-      <Link
+      <Link prefetch={false}
         href={`/gian/${gianId}/view?snap=${snapshotId}`}
         className={styles.linkBtn}
       >

@@ -27,7 +27,7 @@ export default function FrozenReportView({
       <div className={styles.page}>
         <div className={styles.doc}>
           <p>収録された委員会報告が見つかりません。</p>
-          <Link href={`/haishin/${distId}`}>← 配信データへ</Link>
+          <Link prefetch={false} href={`/haishin/${distId}`}>← 配信データへ</Link>
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ export default function FrozenReportView({
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Link href={`/haishin/${distId}`} className={styles.navLink}>
+        <Link prefetch={false} href={`/haishin/${distId}`} className={styles.navLink}>
           ← 配信データ
         </Link>
         <span className={styles.navLink}>

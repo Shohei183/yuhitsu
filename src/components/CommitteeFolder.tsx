@@ -26,7 +26,7 @@ export default function CommitteeFolder({
     return (
       <main className={styles.wrap}>
         <p className={styles.notFound}>委員会が見つかりません。</p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -53,13 +53,13 @@ export default function CommitteeFolder({
           {year.label} ／ 委員会 ／ {committee.name}
         </div>
         <h1 className={styles.title}>{committee.name}</h1>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← 年度フォルダへ
         </Link>
       </div>
 
       <div className={styles.cards}>
-        <Link
+        <Link prefetch={false}
           href={`/committee/${committeeId}/gian`}
           className={styles.folderCard}
         >
@@ -83,7 +83,7 @@ export default function CommitteeFolder({
           <div className={styles.folderArrow}>→</div>
         </Link>
 
-        <Link
+        <Link prefetch={false}
           href={`/committee/${committeeId}/jotei`}
           className={styles.folderCard}
         >
@@ -101,7 +101,7 @@ export default function CommitteeFolder({
           <div className={styles.folderArrow}>→</div>
         </Link>
 
-        <Link
+        <Link prefetch={false}
           href={`/committee/${committeeId}/report`}
           className={styles.folderCard}
         >
@@ -118,7 +118,7 @@ export default function CommitteeFolder({
           <div className={styles.folderArrow}>→</div>
         </Link>
 
-        <Link
+        <Link prefetch={false}
           href={`/committee/${committeeId}/shared`}
           className={styles.folderCard}
         >

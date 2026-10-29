@@ -35,7 +35,7 @@ export default function CommitteeGianList({
     return (
       <main className={styles.wrap}>
         <p className={styles.notFound}>委員会が見つかりません。</p>
-        <Link href="/" className={styles.back}>
+        <Link prefetch={false} href="/" className={styles.back}>
           ← トップへ
         </Link>
       </main>
@@ -80,7 +80,7 @@ export default function CommitteeGianList({
           この委員会の議案一覧です。議案を開くと、テンプレート反映・資料一覧・上程フロー付きの
           議案構築画面に遷移します。
         </p>
-        <Link href={`/committee/${committeeId}`} className={styles.back}>
+        <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.back}>
           ← 委員会フォルダ
         </Link>
       </div>
@@ -111,7 +111,7 @@ export default function CommitteeGianList({
         <ul className={styles.gianList}>
           {gians.map((g) => (
             <li key={g.id} className={styles.gianItem}>
-              <Link href={`/gian/${g.id}`} className={styles.gianMain}>
+              <Link prefetch={false} href={`/gian/${g.id}`} className={styles.gianMain}>
                 <span className={`${styles.kindTag} ${KIND_CLASS[g.kind]}`}>
                   {g.kind === "基本方針" ? "基本方針" : `${g.kind}議案`}
                 </span>
@@ -124,7 +124,7 @@ export default function CommitteeGianList({
                 </span>
               </Link>
               <span className={styles.gianActions}>
-                <Link href={`/gian/${g.id}/view`} className={styles.viewLink}>
+                <Link prefetch={false} href={`/gian/${g.id}/view`} className={styles.viewLink}>
                   閲覧
                 </Link>
                 {can.editGian && (

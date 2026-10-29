@@ -155,7 +155,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
     return (
       <main className={styles.notFound}>
         <p>次第を編集する権限がありません（マスターが /roles で設定）。</p>
-        <Link href={`/sidai/${sidaiId}/view`}>← 次第を閲覧</Link>
+        <Link prefetch={false} href={`/sidai/${sidaiId}/view`}>← 次第を閲覧</Link>
       </main>
     );
   }
@@ -164,7 +164,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
     return (
       <main className={styles.notFound}>
         <p>次第が見つかりません。</p>
-        <Link href="/sidai">← 次第一覧へ</Link>
+        <Link prefetch={false} href="/sidai">← 次第一覧へ</Link>
       </main>
     );
   }
@@ -334,10 +334,10 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
       {/* トップバー */}
       <header className={styles.topbar}>
         <div className={styles.tbLeft}>
-          <Link href="/sidai" className={styles.back}>
+          <Link prefetch={false} href="/sidai" className={styles.back}>
             ← 次第一覧
           </Link>
-          <Link href={`/sidai/${sidaiId}/view`} className={styles.back}>
+          <Link prefetch={false} href={`/sidai/${sidaiId}/view`} className={styles.back}>
             閲覧
           </Link>
           <span className={styles.crumb}>次第作成</span>
@@ -345,7 +345,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
         </div>
         <div className={styles.tbRight}>
           {latestDist && (
-            <Link
+            <Link prefetch={false}
               href={`/haishin/${latestDist.id}`}
               className={styles.distChip}
             >
@@ -450,7 +450,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
               配信確定済み（{latestDist.name}_v{latestDist.version}）。
               出席者数など当日記入分は引き続き編集できます。差し替えが必要なら
               「再配信確定」で新しい版を作成します。{" "}
-              <Link href={`/haishin/${latestDist.id}`}>配信データを見る →</Link>
+              <Link prefetch={false} href={`/haishin/${latestDist.id}`}>配信データを見る →</Link>
             </div>
           )}
           <div className={styles.sidaiHeadCard}>
