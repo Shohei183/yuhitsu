@@ -148,6 +148,7 @@ export async function downloadDocHtml(
       if (target) {
         const a = document.createElement("a");
         a.className = (node as HTMLElement).className;
+        a.style.cssText = node.style.cssText;
         a.setAttribute("href", `#${anchor}`);
         a.textContent = label;
         node.replaceWith(a);

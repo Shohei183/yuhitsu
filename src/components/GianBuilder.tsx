@@ -39,7 +39,7 @@ import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import { formatJaDate, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
-import { isRichEmpty } from "@/lib/richText";
+import { RICH_RED, isRichEmpty } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
 import { getGianTemplate } from "@/lib/templateStore";
 import RichText from "./RichText";
@@ -1558,6 +1558,11 @@ function ItemAttachments({
       item.no,
       list.filter((l) => l.id !== id)
     );
+  const toggleRed = (id: string) =>
+    attach.onChange(
+      item.no,
+      list.map((l) => (l.id === id ? { ...l, red: !l.red } : l))
+    );
 
   return (
     <div className={styles.attachWrap}>
@@ -1574,6 +1579,7 @@ function ItemAttachments({
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.attachChipLink}
+                  style={l.red ? { color: RICH_RED } : undefined}
                 >
                   {l.label}
                 </a>
@@ -1581,11 +1587,28 @@ function ItemAttachments({
                 <button
                   type="button"
                   className={styles.attachChipLink}
+                  style={l.red ? { color: RICH_RED } : undefined}
                   onClick={() =>
                     l.fileId && openFileByIdAsync(l.fileId, l.label)
                   }
                 >
                   {l.label}
+                </button>
+              )}
+              {!readOnly && (
+                <button
+                  type="button"
+                  className={`${styles.attachChipRed} ${
+                    l.red ? styles.attachChipRedOn : ""
+                  }`}
+                  title={
+                    l.red
+                      ? "リンクの色を元に戻す"
+                      : "リンクを赤色にする（閲覧・印刷・ダウンロードに反映）"
+                  }
+                  onClick={() => toggleRed(l.id)}
+                >
+                  赤
                 </button>
               )}
               {!readOnly && (

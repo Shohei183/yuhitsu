@@ -1716,6 +1716,23 @@
 .attachChipLink:hover {
   text-decoration: underline;
 }
+.attachChipRed {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.attachChipRedOn {
+  color: #fff;
+  background: #d21f1f;
+  border-color: #d21f1f;
+}
 .attachChipX {
   border: 0;
   background: none;

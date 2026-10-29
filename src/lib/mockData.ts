@@ -26,6 +26,8 @@ export interface ItemLink {
   fileId?: string;
   /** 表示用ラベル（作成時スナップショット） */
   label: string;
+  /** true で閲覧・印刷・ダウンロードのリンク文字を赤にする */
+  red?: boolean;
 }
 
 /** 事業要綱 / 事業概要の 1 項目（テンプレートで定義された枠。番号とラベルは固定） */

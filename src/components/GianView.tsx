@@ -11,7 +11,7 @@ import {
   getGian,
 } from "@/lib/mockData";
 import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
-import { sanitizeRichHtml } from "@/lib/richText";
+import { RICH_RED, sanitizeRichHtml } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
 import { downloadDocHtml } from "@/lib/download";
 import {
@@ -589,6 +589,7 @@ function ItemLinkChips({ links }: { links: ItemLink[] | undefined }) {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.attachChip}
+            style={l.red ? { color: RICH_RED } : undefined}
             data-doc-anchor={l.gianId}
           >
             📄 {l.label} ↗
@@ -598,6 +599,7 @@ function ItemLinkChips({ links }: { links: ItemLink[] | undefined }) {
             key={l.id}
             type="button"
             className={styles.attachChip}
+            style={l.red ? { color: RICH_RED } : undefined}
             data-file-id={l.fileId}
             data-file-name={l.label}
             onClick={() => l.fileId && openFileByIdAsync(l.fileId, l.label)}
