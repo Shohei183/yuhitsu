@@ -5,8 +5,10 @@ import {
   GianFileCategory,
   GIAN_FILE_CATEGORY_LABEL,
   deleteGianFile,
+  fileRedKey,
   putGianFile,
 } from "@/lib/gianFilesDb";
+import { RICH_RED } from "@/lib/richText";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
 import styles from "./GianResourcePanel.module.css";
@@ -21,10 +23,15 @@ export default function GianResourcePanel({
   gianId,
   category,
   editable,
+  red,
+  onToggleRed,
 }: {
   gianId: string;
   category: GianFileCategory;
   editable: boolean;
+  /** 赤にするファイル（Gian.fileRed） */
+  red?: Record<string, boolean>;
+  onToggleRed?: (key: string) => void;
 }) {
   const { files, loading } = useGianFiles(gianId, category);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -116,11 +123,32 @@ export default function GianResourcePanel({
                 type="button"
                 className={styles.name}
                 title="開く（PDF等はタブ表示）"
+                style={
+                  red?.[fileRedKey(category, f.name)]
+                    ? { color: RICH_RED }
+                    : undefined
+                }
                 onClick={() => onOpen(f.id, f.name)}
               >
                 📄 {f.name}
               </button>
               <span className={styles.size}>{fmtSize(f.size)}</span>
+              {editable && onToggleRed && (
+                <button
+                  type="button"
+                  className={`${styles.redBtn} ${
+                    red?.[fileRedKey(category, f.name)] ? styles.redBtnOn : ""
+                  }`}
+                  title={
+                    red?.[fileRedKey(category, f.name)]
+                      ? "リンクの色を元に戻す"
+                      : "リンクを赤色にする（閲覧・印刷・ダウンロードに反映）"
+                  }
+                  onClick={() => onToggleRed(fileRedKey(category, f.name))}
+                >
+                  赤
+                </button>
+              )}
               {editable && (
                 <button
                   type="button"

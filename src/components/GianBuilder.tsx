@@ -243,6 +243,16 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     }));
   }
 
+  /** 資料（審議対象資料・参考資料）のリンクを赤にする／戻す */
+  function toggleFileRed(key: string) {
+    setGian((g) => {
+      const next = { ...(g.fileRed ?? {}) };
+      if (next[key]) delete next[key];
+      else next[key] = true;
+      return { ...g, fileRed: next };
+    });
+  }
+
   /** 項目に添付したリンク（他の議案・資料）の更新 */
   function updateItemAttachments(
     list: TemplateListKey,
@@ -789,12 +799,16 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
               gianId={gianId}
               category="review"
               editable={!readOnly}
+              red={gian.fileRed}
+              onToggleRed={toggleFileRed}
             />
           )}
           <GianResourcePanel
             gianId={gianId}
             category="reference"
             editable={!readOnly}
+            red={gian.fileRed}
+            onToggleRed={toggleFileRed}
           />
         </aside>
       </div>

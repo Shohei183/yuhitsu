@@ -23,6 +23,11 @@ export const GIAN_FILE_CATEGORY_LABEL: Record<GianFileCategory, string> = {
   reference: "参考資料",
 };
 
+/** Gian.fileRed のキー（資料のコピーで id が変わっても保てるよう区分＋名前） */
+export function fileRedKey(category: GianFileCategory, name: string): string {
+  return `${category}:${name}`;
+}
+
 export interface GianFileMeta {
   id: string;
   gianId: string;

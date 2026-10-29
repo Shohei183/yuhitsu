@@ -18,6 +18,7 @@ import {
   GianFileCategory,
   GIAN_FILE_CATEGORY_LABEL,
   GianFileMeta,
+  fileRedKey,
 } from "@/lib/gianFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
@@ -388,19 +389,29 @@ export default function GianView({
               <FrozenResourceList
                 category="review"
                 files={frozenFiles.review}
+                red={gian.fileRed}
               />
             )}
             <FrozenResourceList
               category="reference"
               files={frozenFiles.reference}
+              red={gian.fileRed}
             />
           </>
         ) : gianId ? (
           <>
             {gian.kind !== "報告" && (
-              <LiveResourceList gianId={gianId} category="review" />
+              <LiveResourceList
+                gianId={gianId}
+                category="review"
+                red={gian.fileRed}
+              />
             )}
-            <LiveResourceList gianId={gianId} category="reference" />
+            <LiveResourceList
+              gianId={gianId}
+              category="reference"
+              red={gian.fileRed}
+            />
           </>
         ) : (
           <p className={styles.empty}>（なし）</p>
@@ -679,9 +690,11 @@ function PlanLink({ gianId, distId }: { gianId: string; distId?: string }) {
 function LiveResourceList({
   gianId,
   category,
+  red,
 }: {
   gianId: string;
   category: GianFileCategory;
+  red?: Record<string, boolean>;
 }) {
   const { files, loading } = useGianFiles(gianId, category);
   return (
@@ -704,6 +717,11 @@ function LiveResourceList({
               <button
                 type="button"
                 className={styles.fileLink}
+                style={
+                  red?.[fileRedKey(category, f.name)]
+                    ? { color: RICH_RED }
+                    : undefined
+                }
                 data-file-id={f.id}
                 data-file-name={f.name}
                 onClick={() => openFileByIdAsync(f.id, f.name)}
@@ -724,9 +742,11 @@ function LiveResourceList({
 function FrozenResourceList({
   category,
   files,
+  red,
 }: {
   category: GianFileCategory;
   files: GianFileMeta[];
+  red?: Record<string, boolean>;
 }) {
   return (
     <div className={styles.resGroup}>
@@ -746,6 +766,11 @@ function FrozenResourceList({
               <button
                 type="button"
                 className={styles.fileLink}
+                style={
+                  red?.[fileRedKey(category, f.name)]
+                    ? { color: RICH_RED }
+                    : undefined
+                }
                 data-file-id={f.id}
                 data-file-name={f.name}
                 onClick={() => openFileByIdAsync(f.id, f.name)}

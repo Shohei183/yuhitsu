@@ -131,6 +131,11 @@ export interface Gian {
   status: GianStatus;
   /** 直近「会議へ上程」した日時（次第の議案候補一覧の絞り込みに使用） */
   submittedAt?: string | null;
+  /**
+   * 資料（審議対象資料・参考資料）のリンクを赤にするファイル。
+   * キーは `fileRedKey(category, name)`。配信・複製でファイル id が変わっても保てるよう名前で持つ。
+   */
+  fileRed?: Record<string, boolean>;
   /** 最終更新日時（本番DB: gians.updated_at）。委員会の議案一覧などの表示用 */
   updatedAt?: string;
   /** 所属年度（本番DB: gians.fiscal_year_id） */
