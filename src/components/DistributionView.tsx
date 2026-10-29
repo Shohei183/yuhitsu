@@ -18,7 +18,7 @@ import styles from "./DistributionView.module.css";
 const fmt = formatJaDateTime;
 
 export default function DistributionView({ distId }: { distId: string }) {
-  const pkg = useDistribution(distId);
+  const { pkg, loading } = useDistribution(distId);
   const { files: fixedFiles } = useFixedFiles(pkg?.yearId ?? "");
   const exportRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
@@ -27,7 +27,7 @@ export default function DistributionView({ distId }: { distId: string }) {
     return (
       <div className={styles.page}>
         <div className={styles.doc}>
-          <p>配信データが見つかりません。</p>
+          <p>{loading ? "配信データを読み込み中…" : "配信データが見つかりません。"}</p>
           <Link prefetch={false} href="/sidai">← 次第作成へ</Link>
         </div>
       </div>

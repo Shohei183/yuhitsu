@@ -19,14 +19,14 @@ export default function FrozenGianView({
   distId: string;
   gianId: string;
 }) {
-  const pkg = useDistribution(distId);
+  const { pkg, loading } = useDistribution(distId);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const gian = pkg?.gians.find((g) => g.id === gianId);
 
   if (!pkg || !gian) {
-    if (!mounted) return <div className={styles.page} aria-hidden />;
+    if (!mounted || loading) return <div className={styles.page} aria-hidden />;
     return (
       <div className={styles.page}>
         <div className={styles.doc}>

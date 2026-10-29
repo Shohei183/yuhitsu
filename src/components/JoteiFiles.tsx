@@ -90,7 +90,7 @@ export default function JoteiFiles() {
       (mx, p) => (p.finalizedAt > mx ? p.finalizedAt : mx),
       ""
     );
-    const ids = new Set(m.versions.flatMap((p) => p.gians.map((g) => g.id)));
+    const ids = new Set(m.versions.flatMap((p) => p.gianIds));
     return { ...m, versions: sorted, latest: sorted[0], endAt, ids };
   });
   meetings.sort((a, b) => a.endAt.localeCompare(b.endAt)); // 古い順

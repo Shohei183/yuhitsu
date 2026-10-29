@@ -123,7 +123,7 @@ export default function SidaiList() {
                   </Link>
                   <div className={styles.meta}>
                     確定日時：{fmt(latest.finalizedAt)}　／　収録議案{" "}
-                    {latest.gians.length} 件
+                    {latest.gianIds.length} 件
                   </div>
                   <div className={styles.cardActions}>
                     <Link prefetch={false}
@@ -147,7 +147,7 @@ export default function SidaiList() {
                             </Link>
                             <span className={styles.meta}>
                               {fmt(d.finalizedAt)}　／　収録議案{" "}
-                              {d.gians.length} 件
+                              {d.gianIds.length} 件
                             </span>
                           </li>
                         ))}

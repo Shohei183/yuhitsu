@@ -15,14 +15,14 @@ export default function FrozenReportView({
   distId: string;
   reportId: string;
 }) {
-  const pkg = useDistribution(distId);
+  const { pkg, loading } = useDistribution(distId);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const report = pkg?.reports?.find((r) => r.id === reportId);
 
   if (!pkg || !report) {
-    if (!mounted) return <div className={styles.page} aria-hidden />;
+    if (!mounted || loading) return <div className={styles.page} aria-hidden />;
     return (
       <div className={styles.page}>
         <div className={styles.doc}>

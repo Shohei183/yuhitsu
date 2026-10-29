@@ -36,7 +36,37 @@ export interface DistributionPackage {
   gianFiles: Record<string, { review: GianFileMeta[]; reference: GianFileMeta[] }>;
 }
 
-export type DistributionStore = Record<string, DistributionPackage>;
+/**
+ * 一覧用の軽い情報。起動時はこれだけ読み込み、次第・収録議案の凍結コピー
+ * （DistributionPackage の本体）は開くときに loadDistribution() で取得する。
+ */
+export type DistributionSummary = Omit<
+  DistributionPackage,
+  "sidai" | "gians" | "reports" | "gianFiles"
+> & {
+  /** 収録された議案の id */
+  gianIds: string[];
+  /** 収録された委員会報告の id */
+  reportIds: string[];
+};
+
+export type DistributionStore = Record<string, DistributionSummary>;
+
+function summarize(pkg: DistributionPackage): DistributionSummary {
+  return {
+    id: pkg.id,
+    yearId: pkg.yearId,
+    period: pkg.period,
+    name: pkg.name,
+    version: pkg.version,
+    board: pkg.board,
+    occurrence: pkg.occurrence,
+    finalizedAt: pkg.finalizedAt,
+    sourceSidaiId: pkg.sourceSidaiId,
+    gianIds: pkg.gians.map((g) => g.id),
+    reportIds: (pkg.reports ?? []).map((r) => r.id),
+  };
+}
 
 let seq = 0;
 function newId(prefix: string): string {
@@ -51,6 +81,9 @@ function clone<T>(v: T): T {
 
 // ── キャッシュ ──
 let cache: DistributionStore = {};
+/** 開いた配信データの本体。null = 取得したが存在しなかった */
+let full: Record<string, DistributionPackage | null> = {};
+const fullInflight = new Map<string, Promise<void>>();
 let hydrated = false;
 const EMPTY: DistributionStore = {};
 const listeners = new Set<() => void>();
@@ -66,41 +99,113 @@ export function subscribe(fn: () => void): () => void {
   return () => listeners.delete(fn);
 }
 
+const SUMMARY_COLUMNS =
+  "id,fiscal_year_id,period,name,version,board,occurrence,source_sidai_id,finalized_at,summary";
+
+interface SummaryRow {
+  id: string;
+  fiscal_year_id: string;
+  period: Period;
+  name: string;
+  version: number;
+  board: Board;
+  occurrence: string;
+  source_sidai_id: string | null;
+  finalized_at: string;
+  summary: { gianIds?: string[]; reportIds?: string[] } | null;
+}
+
 export async function hydrate(): Promise<void> {
-  const { data, error } = await db().from("distributions").select("*");
-  if (error) {
-    console.error("[distributionStore] hydrate 失敗:", error.message);
-    return;
-  }
+  // 起動時は本体（doc）を読まない。summary 列が無い環境では従来どおり doc から作る。
+  const lite = await db().from("distributions").select(SUMMARY_COLUMNS);
   const next: DistributionStore = {};
-  for (const r of (data ?? []) as { id: string; doc: DistributionPackage }[]) {
-    next[r.id] = r.doc;
+  if (!lite.error) {
+    for (const r of (lite.data ?? []) as SummaryRow[]) {
+      next[r.id] = {
+        id: r.id,
+        yearId: r.fiscal_year_id,
+        period: r.period,
+        name: r.name,
+        version: r.version,
+        board: r.board,
+        occurrence: r.occurrence,
+        finalizedAt: r.finalized_at,
+        sourceSidaiId: r.source_sidai_id ?? "",
+        gianIds: r.summary?.gianIds ?? [],
+        reportIds: r.summary?.reportIds ?? [],
+      };
+    }
+  } else {
+    const { data, error } = await db().from("distributions").select("*");
+    if (error) {
+      console.error("[distributionStore] hydrate 失敗:", error.message);
+      return;
+    }
+    const docs: Record<string, DistributionPackage | null> = {};
+    for (const r of (data ?? []) as { id: string; doc: DistributionPackage }[]) {
+      next[r.id] = summarize(r.doc);
+      docs[r.id] = r.doc;
+    }
+    full = { ...full, ...docs };
+  }
+  // 「存在しなかった」の記録は取り直せるようにしておく
+  full = Object.fromEntries(Object.entries(full).filter(([, v]) => v !== null));
+  // 確定処理中などで手元にしかない配信データは残す
+  for (const [id, pkg] of Object.entries(full)) {
+    if (pkg && !next[id] && cache[id]) next[id] = cache[id];
   }
   cache = next;
   hydrated = true;
   notify();
 }
 
+/** 一覧用の情報（本体は含まない） */
 export function getStore(): DistributionStore {
   return cache;
 }
 export function getStoreDefault(): DistributionStore {
   return EMPTY;
 }
-export function getDistribution(id: string): DistributionPackage | undefined {
-  return cache[id];
+
+/** 開いた配信データの本体。undefined = 未取得、null = 存在しない */
+export function getDistribution(
+  id: string
+): DistributionPackage | null | undefined {
+  return full[id];
 }
-export function getDistributionDefault(): DistributionPackage | undefined {
+export function getDistributionDefault(): undefined {
   return undefined;
 }
 
-export function listDistributions(): DistributionPackage[] {
+/** 配信データの本体（次第・収録議案の凍結コピー）をこの 1 件分だけ取得する */
+export function loadDistribution(id: string): Promise<void> {
+  if (full[id] !== undefined) return Promise.resolve();
+  const hit = fullInflight.get(id);
+  if (hit) return hit;
+  const p = (async () => {
+    const { data, error } = await db()
+      .from("distributions")
+      .select("id,doc")
+      .eq("id", id);
+    if (error) {
+      console.error("[distributionStore] 配信データ取得失敗:", error.message);
+      return; // 未取得のまま（次に開いたとき再試行）
+    }
+    const row = ((data ?? []) as { id: string; doc: DistributionPackage }[])[0];
+    full = { ...full, [id]: row?.doc ?? null };
+    notify();
+  })().finally(() => fullInflight.delete(id));
+  fullInflight.set(id, p);
+  return p;
+}
+
+export function listDistributions(): DistributionSummary[] {
   return Object.values(cache).sort((a, b) =>
     b.finalizedAt.localeCompare(a.finalizedAt)
   );
 }
 
-export function distributionsForSidai(sidaiId: string): DistributionPackage[] {
+export function distributionsForSidai(sidaiId: string): DistributionSummary[] {
   return Object.values(cache)
     .filter((p) => p.sourceSidaiId === sidaiId)
     .sort((a, b) => b.version - a.version);
@@ -109,14 +214,14 @@ export function distributionsForSidai(sidaiId: string): DistributionPackage[] {
 export function listDistributionsFor(
   yearId: string,
   period: Period
-): DistributionPackage[] {
+): DistributionSummary[] {
   return listDistributions().filter(
     (p) => p.yearId === yearId && p.period === period
   );
 }
 
 async function persist(pkg: DistributionPackage): Promise<void> {
-  const { error } = await db().from("distributions").upsert({
+  const row = {
     id: pkg.id,
     fiscal_year_id: pkg.yearId,
     period: pkg.period,
@@ -127,7 +232,15 @@ async function persist(pkg: DistributionPackage): Promise<void> {
     source_sidai_id: pkg.sourceSidaiId,
     finalized_at: pkg.finalizedAt,
     doc: pkg,
-  });
+  };
+  const s = summarize(pkg);
+  let { error } = await db()
+    .from("distributions")
+    .upsert({ ...row, summary: { gianIds: s.gianIds, reportIds: s.reportIds } });
+  if (error) {
+    // summary 列が無い環境（supabase/distributions-summary.sql 未適用）では列なしで保存
+    ({ error } = await db().from("distributions").upsert(row));
+  }
   if (error) console.error("[distributionStore] 保存失敗:", error.message);
 }
 
@@ -240,7 +353,8 @@ export async function finalizeDistribution(opts: {
     gianFiles,
   };
 
-  cache = { ...cache, [pkg.id]: pkg };
+  cache = { ...cache, [pkg.id]: summarize(pkg) };
+  full = { ...full, [pkg.id]: pkg };
   notify();
   await persist(pkg);
 

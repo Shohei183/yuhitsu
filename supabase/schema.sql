@@ -152,7 +152,8 @@ create table if not exists public.distributions (
   occurrence       text not null default '',
   source_sidai_id  text,
   finalized_at     timestamptz not null default now(),
-  doc              jsonb not null       -- DistributionPackage 全体（次第・収録議案の凍結コピー等）
+  doc              jsonb not null,      -- DistributionPackage 全体（次第・収録議案の凍結コピー等）
+  summary          jsonb                -- 一覧用 { gianIds, reportIds }（起動時はこれだけ読む）
 );
 create index if not exists distributions_year_period_idx on public.distributions(fiscal_year_id, period);
 
