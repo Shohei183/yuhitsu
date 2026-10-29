@@ -126,6 +126,7 @@ export async function downloadDocHtml(
         const dataUrl = await blobToDataUrl(got.blob);
         const a = document.createElement("a");
         a.className = (node as HTMLElement).className;
+        a.style.cssText = node.style.cssText;
         a.setAttribute("href", dataUrl);
         a.setAttribute("download", name);
         a.textContent = label || name;

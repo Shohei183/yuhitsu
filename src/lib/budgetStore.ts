@@ -55,6 +55,8 @@ export interface BudgetAttachment {
   name: string;
   /** 表示番号（作成時に採番・以降不変） */
   no: number;
+  /** true で閲覧・印刷・ダウンロードのリンク文字を赤にする */
+  red?: boolean;
 }
 
 /** 明細の1行（様式2・3） */

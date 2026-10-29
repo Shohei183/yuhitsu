@@ -431,6 +431,7 @@ function ItemRow({
               <button
                 type="button"
                 className={styles.attachLink}
+                style={att.red ? { color: RICH_RED } : undefined}
                 onClick={() => openFileByIdAsync(att.fileId, att.name)}
               >
                 {att.no}. {att.name}
@@ -536,6 +537,14 @@ function AttachmentPanel({
     }
   };
 
+  const toggleRed = (attId: string) =>
+    update({
+      ...budget,
+      attachments: budget.attachments.map((a) =>
+        a.id === attId ? { ...a, red: !a.red } : a
+      ),
+    });
+
   const removeAttachment = (attId: string) => {
     const target = budget.attachments.find((a) => a.id === attId);
     if (!target) return;
@@ -616,10 +625,25 @@ function AttachmentPanel({
                 type="button"
                 className={styles.sideName}
                 title={a.name}
+                style={a.red ? { color: RICH_RED } : undefined}
                 onClick={() => openFileByIdAsync(a.fileId, a.name)}
               >
                 {a.name}
               </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  className={`${styles.sideRed} ${a.red ? styles.sideRedOn : ""}`}
+                  title={
+                    a.red
+                      ? "リンクの色を元に戻す"
+                      : "リンクを赤色にする（閲覧・印刷・ダウンロードに反映）"
+                  }
+                  onClick={() => toggleRed(a.id)}
+                >
+                  赤
+                </button>
+              )}
               {!readOnly && (
                 <button
                   type="button"

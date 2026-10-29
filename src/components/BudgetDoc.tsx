@@ -149,6 +149,7 @@ export default function BudgetDoc({
                         className={styles.attachLink}
                         data-file-id={a.fileId}
                         data-file-name={a.name}
+                        style={a.red ? { color: RICH_RED } : undefined}
                         onClick={() => openFileByIdAsync(a.fileId, a.name)}
                       >
                         {a.name}
@@ -180,7 +181,7 @@ function BudgetDetail({
 
   return (
     <div className={styles.tableWrap}>
-      <table className={styles.table}>
+      <table className={`${styles.table} ${styles.detailTable}`}>
         <thead>
           <tr>
             <th className={styles.colCat}>科目</th>
@@ -246,6 +247,9 @@ function DetailRows({
                     type="button"
                     className={styles.attachLink}
                     title={a.name}
+                    data-file-id={a.fileId}
+                    data-file-name={a.name}
+                    style={a.red ? { color: RICH_RED } : undefined}
                     onClick={() => openFileByIdAsync(a.fileId, a.name)}
                   >
                     {a.no}

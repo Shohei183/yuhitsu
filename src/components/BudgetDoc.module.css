@@ -146,6 +146,13 @@
   .table td {
     padding: 4px 6px;
   }
+  .table thead th {
+    white-space: normal;
+  }
+  /* 明細（5列）は画面幅に押し込まず、表の中だけ横スクロールさせる */
+  .detailTable {
+    min-width: 460px;
+  }
   .colCat {
     width: 92px;
   }

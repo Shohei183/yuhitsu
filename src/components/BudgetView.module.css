@@ -80,12 +80,10 @@
   border-color: var(--border);
 }
 
-/* 印刷・DL 用の全様式版：画面外に描画しておき、印刷時のみ表示 */
+/* 印刷・DL 用の全様式版：画面では描画せず（スマホで横幅を広げてしまうため）、
+   印刷時のみ表示。ダウンロードは DOM を複製して作るので非表示でも問題ない。 */
 .exportSrc {
-  position: fixed;
-  left: -200vw;
-  top: 0;
-  width: 860px;
+  display: none;
 }
 
 @media print {
@@ -98,8 +96,6 @@
     background: #fff;
   }
   .exportSrc {
-    position: static;
-    left: 0;
-    width: auto;
+    display: block;
   }
 }
