@@ -34,7 +34,7 @@ import {
   showsPriorFeedback,
   submitGian,
 } from "@/lib/gianStore";
-import { useGianEntry, useGianStore } from "@/lib/useGianStore";
+import { useGianEntry, useGianSnapshots, useGianStore } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
@@ -58,7 +58,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   const gianId = initialGian.id;
   const entry = useGianEntry(gianId);
   const gian = entry?.gian ?? initialGian;
-  const snapshots = entry?.snapshots ?? [];
+  const { snapshots, loaded: snapshotsLoaded } = useGianSnapshots(gianId);
   const requests = entry?.requests ?? [];
   const pendingRequest = requests.find((r) => r.status === "pending") ?? null;
   const committeeInfo = useCommitteeOfGian(gianId);
@@ -769,6 +769,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
           <FlowPanel
             gian={gian}
             snapshots={snapshots}
+            snapshotsLoaded={snapshotsLoaded}
             requests={requests}
             canApprove={can.approveReplacement}
             onDecide={decide}
@@ -2094,6 +2095,7 @@ const fmtDateTime = formatJaDateTime;
 function FlowPanel({
   gian,
   snapshots,
+  snapshotsLoaded,
   requests,
   canApprove,
   onDecide,
@@ -2101,6 +2103,7 @@ function FlowPanel({
 }: {
   gian: Gian;
   snapshots: Snapshot[];
+  snapshotsLoaded: boolean;
   requests: ReplacementRequest[];
   canApprove: boolean;
   onDecide: (requestId: string, approve: boolean) => void;
@@ -2179,7 +2182,7 @@ function FlowPanel({
       )}
 
       <div className={styles.subHead}>
-        スナップショット履歴（{snapshots.length}）
+        スナップショット履歴（{snapshotsLoaded ? snapshots.length : "読み込み中…"}）
       </div>
       <p className={styles.snapLegend}>
         <span className={`${styles.snapKind} ${styles.snapKindSubmission}`}>
@@ -2191,7 +2194,9 @@ function FlowPanel({
         </span>
         保険用の一時記録・直近 {AUTOSAVE_LIMIT} 件のみ
       </p>
-      {snapshots.length === 0 ? (
+      {snapshots.length === 0 && !snapshotsLoaded ? (
+        <p className={styles.feedbackEmpty}>履歴を読み込み中…</p>
+      ) : snapshots.length === 0 ? (
         <p className={styles.feedbackEmpty}>
           まだありません（上程・下書き保存・同期で保存されます）。
         </p>

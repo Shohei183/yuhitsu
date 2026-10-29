@@ -22,7 +22,7 @@ import {
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
 import { isKihon, showsPriorFeedback } from "@/lib/gianStore";
-import { useGianEntry } from "@/lib/useGianStore";
+import { useGianEntry, useGianSnapshots } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, sectionTotal } from "@/lib/budgetStore";
 import { useCommitteeOfGian } from "@/lib/useOrg";
@@ -68,6 +68,11 @@ export default function GianView({
   distId?: string;
 }) {
   const entry = useGianEntry(gianId ?? "");
+  // 過去版（?snap=）を開くときだけ、その議案の履歴を取得する
+  const { loaded: snapsLoaded } = useGianSnapshots(
+    gianId ?? "",
+    !!snapshotId && !!gianId
+  );
   const committeeInfo = useCommitteeOfGian(gianId ?? "");
   const docRef = useRef<HTMLElement>(null);
   useBudgetStore();
@@ -79,6 +84,17 @@ export default function GianView({
       ? entry.snapshots.find((s) => s.id === snapshotId)
       : null;
   const gian: Gian | undefined = gianProp ?? snap?.gian ?? entry?.gian;
+
+  // 過去版の履歴を取得中は、現在の内容を一瞬見せないよう待つ
+  if (snapshotId && gianId && !gianProp && !snap && !snapsLoaded) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.doc}>
+          <p>履歴を読み込み中…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!gian) {
     return (

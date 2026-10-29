@@ -89,15 +89,16 @@ function yearIdOf(gian: Gian): string | null {
 
 // ── ハイドレーション ──
 export async function hydrate(): Promise<void> {
-  const [gians, snaps, reqs] = await Promise.all([
+  // スナップショット（履歴）は容量が大きいので起動時には読まず、
+  // 議案の履歴を開くときに loadSnapshots() でその議案の分だけ取得する。
+  const [gians, reqs] = await Promise.all([
     db().from("gians").select("*"),
-    db().from("gian_snapshots").select("*"),
     db().from("replacement_requests").select("*"),
   ]);
-  if (gians.error || snaps.error || reqs.error) {
+  if (gians.error || reqs.error) {
     console.error(
       "[gianStore] hydrate 失敗:",
-      gians.error?.message || snaps.error?.message || reqs.error?.message
+      gians.error?.message || reqs.error?.message
     );
     return;
   }
@@ -106,15 +107,6 @@ export async function hydrate(): Promise<void> {
   for (const r of (gians.data ?? []) as GianRow[]) {
     if (deletedGianIds.has(r.id)) continue; // 削除処理中の議案は取り込まない
     next[r.id] = { gian: normalizeGian(r), snapshots: [], requests: [] };
-  }
-  for (const s of (snaps.data ?? []) as SnapRow[]) {
-    next[s.gian_id]?.snapshots.push({
-      id: s.id,
-      takenAt: s.taken_at,
-      kind: s.kind,
-      reason: s.reason,
-      gian: s.doc,
-    });
   }
   for (const q of (reqs.data ?? []) as ReqRow[]) {
     next[q.gian_id]?.requests.push({
@@ -125,11 +117,8 @@ export async function hydrate(): Promise<void> {
       decidedAt: q.decided_at,
     });
   }
-  for (const e of Object.values(next)) {
-    e.snapshots.sort((a, b) => a.takenAt.localeCompare(b.takenAt));
-  }
-
   cache = next;
+  snapshotsLoaded.clear();
   hydrated = true;
   notify();
 
@@ -150,6 +139,54 @@ type GianRow = {
   doc: Gian;
   updated_at: string;
 };
+/** スナップショットを取得済みの議案 id（未取得の議案の snapshots は一部だけのことがある） */
+const snapshotsLoaded = new Set<string>();
+const snapshotsInflight = new Map<string, Promise<void>>();
+
+export function areSnapshotsLoaded(id: string): boolean {
+  return snapshotsLoaded.has(id);
+}
+
+/** 1 議案のスナップショット履歴を DB から取得して、手元の分とマージする */
+export function loadSnapshots(id: string): Promise<void> {
+  if (snapshotsLoaded.has(id)) return Promise.resolve();
+  const hit = snapshotsInflight.get(id);
+  if (hit) return hit;
+  const p = (async () => {
+    const { data, error } = await db()
+      .from("gian_snapshots")
+      .select("*")
+      .eq("gian_id", id);
+    if (error) {
+      console.error("[gianStore] snapshot 取得失敗:", error.message);
+      return;
+    }
+    const e = cache[id];
+    if (!e) return;
+    const byId = new Map(e.snapshots.map((s) => [s.id, s]));
+    for (const s of (data ?? []) as SnapRow[]) {
+      if (!byId.has(s.id)) {
+        byId.set(s.id, {
+          id: s.id,
+          takenAt: s.taken_at,
+          kind: s.kind,
+          reason: s.reason,
+          gian: s.doc,
+        });
+      }
+    }
+    const merged = [...byId.values()].sort((a, b) =>
+      a.takenAt.localeCompare(b.takenAt)
+    );
+    snapshotsLoaded.add(id);
+    setEntry(id, { ...(cache[id] ?? e), snapshots: merged });
+  })().finally(() => {
+    snapshotsInflight.delete(id);
+  });
+  snapshotsInflight.set(id, p);
+  return p;
+}
+
 type SnapRow = {
   id: string;
   gian_id: string;
@@ -245,23 +282,23 @@ async function persistSnapshot(gianId: string, snap: Snapshot): Promise<void> {
 }
 
 async function pruneAutosaves(gianId: string): Promise<void> {
+  // 履歴が未取得のまま「手元にある分だけ残す」と DB の古い履歴まで消してしまうので、
+  // 先に全履歴を取得してから、新しい AUTOSAVE_LIMIT 件を残して古い下書きを消す。
+  await loadSnapshots(gianId);
   const e = cache[gianId];
-  if (!e) return;
-  const autosaveIds = e.snapshots
-    .filter((s) => s.kind === "autosave")
-    .map((s) => s.id);
-  // cache 側で AUTOSAVE_LIMIT に絞った後、DB からあふれた分を消す
-  const { data } = await db()
+  if (!e || !snapshotsLoaded.has(gianId)) return;
+  const autosaves = e.snapshots.filter((s) => s.kind === "autosave");
+  if (autosaves.length <= AUTOSAVE_LIMIT) return;
+  const stale = autosaves.slice(0, autosaves.length - AUTOSAVE_LIMIT);
+  const staleIds = new Set(stale.map((s) => s.id));
+  setEntry(gianId, {
+    ...e,
+    snapshots: e.snapshots.filter((s) => !staleIds.has(s.id)),
+  });
+  await db()
     .from("gian_snapshots")
-    .select("id")
-    .eq("gian_id", gianId)
-    .eq("kind", "autosave");
-  const stale = ((data ?? []) as { id: string }[])
-    .map((r) => r.id)
-    .filter((id) => !autosaveIds.includes(id));
-  if (stale.length) {
-    await db().from("gian_snapshots").delete().in("id", stale);
-  }
+    .delete()
+    .in("id", [...staleIds]);
 }
 
 function setEntry(id: string, entry: GianEntry) {

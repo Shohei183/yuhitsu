@@ -42,15 +42,9 @@ function sortKey(g: Gian): string {
   return g.submittedAt ?? g.updatedAt ?? "";
 }
 
-/**
- * 上程した日時。submittedAt が無い古い議案は、上程時のスナップショットから補う。
- */
+/** 上程した日時（submittedAt。古い議案も DB 側で補完済み）。 */
 function submittedAtOf(e: GianEntry): string | null {
-  if (e.gian.submittedAt) return e.gian.submittedAt;
-  const subs = e.snapshots.filter(
-    (s) => s.kind === "submission" && s.reason.startsWith("会議へ上程")
-  );
-  return subs.length ? subs[subs.length - 1].takenAt : null;
+  return e.gian.submittedAt ?? null;
 }
 
 /**
