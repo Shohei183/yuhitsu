@@ -17,7 +17,7 @@ export default function SidaiView({ sidaiId }: { sidaiId: string }) {
   const gianStore = useGianStore();
   const can = useCan();
   const reportStore = useCommitteeReportStore();
-  const { files: fixedFiles } = useFixedFiles(sidai?.yearId ?? "");
+  const { files: fixedFiles } = useFixedFiles(sidai?.yearId ?? "", sidai?.id);
   const docRef = useRef<HTMLElement>(null);
 
   if (!sidai) {

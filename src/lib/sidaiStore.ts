@@ -10,6 +10,8 @@
 import { Period } from "./yearStore";
 import { sectionLabels } from "./templateStore";
 import { db, fire } from "./backend/client";
+import { deleteFileObj } from "./backend/files";
+import { listSidaiFiles } from "./fixedFilesDb";
 
 export type SidaiRowType =
   | "heading"
@@ -262,4 +264,8 @@ export function deleteSidai(id: string): void {
   cache = next;
   notify();
   fire(db().from("sidais").delete().eq("id", id));
+  // その次第に直接追加した資料も削除する
+  void listSidaiFiles(id)
+    .then((fs) => fs.forEach((f) => void deleteFileObj(f.id)))
+    .catch(() => {});
 }

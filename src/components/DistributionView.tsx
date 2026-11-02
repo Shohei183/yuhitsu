@@ -24,7 +24,7 @@ const fmt = formatJaDateTime;
 
 export default function DistributionView({ distId }: { distId: string }) {
   const { pkg, loading } = useDistribution(distId);
-  const { files: fixedFiles } = useFixedFiles(pkg?.yearId ?? "");
+  const { files: fixedFiles } = useFixedFiles(pkg?.yearId ?? "", pkg?.sourceSidaiId);
   const gianStore = useGianStore();
   const budgetStore = useBudgetStore();
   const exportRef = useRef<HTMLDivElement>(null);

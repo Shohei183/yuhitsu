@@ -26,7 +26,9 @@ export default function SidaiDoc({
   /** filelink チップのリンク先を返す。無ければチップはただのテキスト */
   linkGianTo?: (gianId: string) => string;
   /** filelink 行の固定ファイル id → メタ（見つからなければ null） */
-  fixedFileById?: (fileId: string) => { name: string } | null;
+  fixedFileById?: (
+    fileId: string
+  ) => { name: string; sidaiOwned?: boolean } | null;
   /** 固定ファイルチップのクリック時（開く）。無ければただのテキスト */
   onOpenFixedFile?: (fileId: string, name: string) => void;
   /** 委員会報告リンク行の reportId → 委員会報告（見つからなければ null） */
@@ -244,11 +246,11 @@ export default function SidaiDoc({
                           onOpenFixedFile(row.linkedFixedFileId as string, ff.name)
                         }
                       >
-                        固定ファイル：{ff.name} ↗
+                        {ff.sidaiOwned ? "資料" : "固定ファイル"}：{ff.name} ↗
                       </button>
                     ) : (
                       <span className={styles.gianChip}>
-                        固定ファイル：{ff.name}
+                        {ff.sidaiOwned ? "資料" : "固定ファイル"}：{ff.name}
                       </span>
                     )
                   ) : row.linkedFixedFileId ? (

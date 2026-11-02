@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { STATUS_LABEL } from "@/lib/mockData";
 import { useLomName } from "@/lib/useSettingsStore";
 import {
@@ -23,6 +23,8 @@ import { GianFileMeta, listAllGianFiles } from "@/lib/gianFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { toHalfWidth } from "@/lib/format";
 import { useFixedFiles } from "@/lib/useFixedFiles";
+import { putSidaiFile } from "@/lib/fixedFilesDb";
+import { deleteFileObj } from "@/lib/backend/files";
 import { useSidai } from "@/lib/useSidaiStore";
 import { useGianStore } from "@/lib/useGianStore";
 import { gianMetaLine } from "@/lib/gianMeta";
@@ -108,14 +110,21 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [dragGianId, setDragGianId] = useState<string | null>(null);
-  const [palTab, setPalTab] = useState<"gian" | "fixed">("gian");
+  const [palTab, setPalTab] = useState<"gian" | "fixed" | "own">("gian");
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+  const [dzOver, setDzOver] = useState(false);
+  const ownFileInput = useRef<HTMLInputElement>(null);
   const [showFinalize, setShowFinalize] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const [fName, setFName] = useState("");
   const [fBoard, setFBoard] = useState<Board>("理事会");
   const [fOcc, setFOcc] = useState("");
 
-  const { files: fixedFiles } = useFixedFiles(sidai?.yearId ?? "");
+  const { files: allFiles } = useFixedFiles(sidai?.yearId ?? "", sidaiId);
+  // 年度の固定ファイルと、この次第に直接追加した資料（議事録など）を分けて扱う
+  const fixedFiles = allFiles.filter((f) => !f.sidaiOwned);
+  const ownFiles = allFiles.filter((f) => f.sidaiOwned);
 
   const flash = useCallback((m: string) => {
     setToast(m);
@@ -240,6 +249,45 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const attachFixedToSelected = (fileId: string) => {
     const row = selectedFilelinkRow();
     if (row) linkFixedFile(row.id, fileId);
+  };
+
+  /** 議事録など、この次第だけで使う資料を追加する（固定ファイルには入れない） */
+  const uploadOwnFiles = async (list: FileList | File[]) => {
+    const arr = Array.from(list);
+    if (arr.length === 0) return;
+    setUploading(true);
+    setUploadErr(null);
+    try {
+      const added: { id: string }[] = [];
+      for (const f of arr) {
+        try {
+          added.push(await putSidaiFile(sidaiId, f));
+        } catch (e) {
+          setUploadErr(
+            e instanceof Error ? `${f.name}: ${e.message}` : `${f.name}: 追加できませんでした`
+          );
+        }
+      }
+      // ファイルリンク行を選択中で 1 件だけ追加したときは、そのまま紐づける
+      const row = sidai?.rows.find((r) => r.id === selectedRowId);
+      if (added.length === 1 && row?.type === "filelink") {
+        linkFixedFile(row.id, added[0].id);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeOwnFile = (id: string, name: string) => {
+    if (!window.confirm(`「${name}」を削除します。次第の紐づけも外れます。よろしいですか？`))
+      return;
+    update((s) => ({
+      ...s,
+      rows: s.rows.map((r) =>
+        r.linkedFixedFileId === id ? { ...r, linkedFixedFileId: null } : r
+      ),
+    }));
+    void deleteFileObj(id);
   };
 
   // この次第の年度の委員会報告（リンク先の候補）
@@ -485,7 +533,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                     }
                     linkedFixedFile={
                       row.linkedFixedFileId
-                        ? fixedFiles.find(
+                        ? allFiles.find(
                             (f) => f.id === row.linkedFixedFileId
                           ) ?? null
                         : null
@@ -581,16 +629,29 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
             >
               固定ファイル一覧
             </button>
+            <button
+              type="button"
+              className={`${styles.palTab} ${
+                palTab === "own" ? styles.palTabActive : ""
+              }`}
+              onClick={() => setPalTab("own")}
+            >
+              この次第の資料
+            </button>
           </div>
           <p className={styles.autoNote}>
             {palTab === "gian"
               ? "議案構築画面で「会議へ上程」した議案が並びます。"
-              : "年度フォルダの固定ファイル（規約・議事法等）が並びます。"}
+              : palTab === "fixed"
+                ? "年度フォルダの固定ファイル（規約・議事法等）が並びます。"
+                : "議事録など、この次第だけで使う資料を追加します（固定ファイルには入りません）。"}
             {selectedRowId
               ? "選択中のファイルリンク行にクリックで紐づけできます。"
               : palTab === "gian"
                 ? "ファイルリンク行へドラッグ&ドロップ、または行を選択してクリックで紐づけます。"
-                : "ファイルリンク行を選択してクリックで紐づけます。"}
+                : palTab === "fixed"
+                  ? "ファイルリンク行を選択してクリックで紐づけます。"
+                  : "ファイルリンク行を選択してから追加すると、そのまま紐づきます。"}
           </p>
 
           {palTab === "gian" ? (
@@ -631,6 +692,80 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                 ))}
               </div>
             )
+          ) : palTab === "own" ? (
+            <>
+              <div
+                className={`${styles.palDz} ${dzOver ? styles.palDzOver : ""}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDzOver(true);
+                }}
+                onDragLeave={() => setDzOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDzOver(false);
+                  void uploadOwnFiles(e.dataTransfer.files);
+                }}
+              >
+                <span className={styles.palDzText}>
+                  {uploading ? "アップロード中…" : "D&D または"}
+                </span>
+                {!uploading && (
+                  <button
+                    type="button"
+                    className={styles.palDzBtn}
+                    onClick={() => ownFileInput.current?.click()}
+                  >
+                    ファイルを選択
+                  </button>
+                )}
+                <input
+                  ref={ownFileInput}
+                  type="file"
+                  multiple
+                  hidden
+                  onChange={(e) => {
+                    if (e.target.files) void uploadOwnFiles(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              {uploadErr && <div className={styles.palErr}>{uploadErr}</div>}
+              {ownFiles.length === 0 ? (
+                <div className={styles.palEmpty}>
+                  この次第の資料はまだありません。
+                  <br />
+                  議事録などをここに追加して、ファイルリンク行に紐づけます。
+                </div>
+              ) : (
+                <div className={styles.palList}>
+                  {ownFiles.map((f) => (
+                    <div key={f.id} className={styles.palOwnRow}>
+                      <button
+                        type="button"
+                        className={styles.palItem}
+                        onClick={() => attachFixedToSelected(f.id)}
+                        title="選択中のファイルリンク行に紐づけ"
+                      >
+                        <span className={styles.palKind}>資料</span>
+                        <span className={styles.palTopic}>{f.name}</span>
+                        <span className={styles.palMeta}>
+                          {(f.size / 1024).toFixed(1)} KB
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.palOwnDel}
+                        title="この資料を削除"
+                        onClick={() => removeOwnFile(f.id, f.name)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           ) : fixedFiles.length === 0 ? (
             <div className={styles.palEmpty}>
               この年度フォルダの固定ファイルがありません。
@@ -1113,7 +1248,7 @@ function SidaiRowView({
   total: number;
   selected: boolean;
   linkedGian: { committee: string; topic: string; kind: string } | null;
-  linkedFixedFile: { id: string; name: string } | null;
+  linkedFixedFile: { id: string; name: string; sidaiOwned?: boolean } | null;
   reportOptions: { id: string; committeeName: string }[];
   dragActive: boolean;
   onSelect: () => void;
@@ -1302,7 +1437,9 @@ function SidaiRowView({
             </div>
           ) : linkedFixedFile ? (
             <div className={styles.linkChip}>
-              <span className={styles.linkChipKind}>固定ファイル</span>
+              <span className={styles.linkChipKind}>
+                {linkedFixedFile.sidaiOwned ? "資料" : "固定ファイル"}
+              </span>
               <span className={styles.linkChipText}>{linkedFixedFile.name}</span>
               <button
                 type="button"

@@ -23,9 +23,11 @@ export interface FixedFileMeta {
   type: string;
   size: number;
   addedAt: string;
+  /** 次第に直接追加した資料（年度の固定ファイルではない） */
+  sidaiOwned?: boolean;
 }
 
-function toMeta(f: FileObj): FixedFileMeta {
+function toMeta(f: FileObj, sidaiOwned = false): FixedFileMeta {
   return {
     id: f.id,
     yearId: f.ownerId,
@@ -33,6 +35,7 @@ function toMeta(f: FileObj): FixedFileMeta {
     type: f.type,
     size: f.size,
     addedAt: f.createdAt,
+    ...(sidaiOwned ? { sidaiOwned: true } : {}),
   };
 }
 
@@ -46,7 +49,7 @@ export async function putFixedFile(
 }
 
 export async function listFixedFiles(yearId: string): Promise<FixedFileMeta[]> {
-  return (await listFiles("fixed", yearId)).map(toMeta);
+  return (await listFiles("fixed", yearId)).map((f) => toMeta(f));
 }
 
 export async function getFixedFileBlob(
@@ -57,4 +60,18 @@ export async function getFixedFileBlob(
 
 export async function deleteFixedFile(id: string): Promise<void> {
   await deleteFileObj(id);
+}
+
+// ── 次第に直接追加する資料（議事録など、その次第だけで使うファイル） ──
+//   固定ファイル一覧には出さないよう、年度ではなく次第の id を持ち主にして保存する。
+
+export async function putSidaiFile(
+  sidaiId: string,
+  file: File
+): Promise<FixedFileMeta> {
+  return toMeta(await uploadFile("fixed", sidaiId, file), true);
+}
+
+export async function listSidaiFiles(sidaiId: string): Promise<FixedFileMeta[]> {
+  return (await listFiles("fixed", sidaiId)).map((f) => toMeta(f, true));
 }
