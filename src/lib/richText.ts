@@ -101,3 +101,48 @@ export function richToPlain(html: string | null | undefined): string {
 export function isRichEmpty(html: string | null | undefined): boolean {
   return richToPlain(html) === "";
 }
+
+/** リッチテキストの赤を外して黒（既定色）に戻す。赤の span / font は中身だけ残す */
+export function stripRichRed(html: string): string {
+  if (typeof document === "undefined") return html;
+  const tpl = document.createElement("template");
+  tpl.innerHTML = html;
+  const reds = Array.from(tpl.content.querySelectorAll<HTMLElement>("*")).filter(
+    (el) => {
+      const raw =
+        el.style?.color ||
+        (el.tagName.toLowerCase() === "font" ? el.getAttribute("color") || "" : "");
+      return raw ? isRed(raw) : false;
+    }
+  );
+  // 内側から外す（入れ子でも崩れない）
+  for (const el of reds.reverse()) el.replaceWith(...Array.from(el.childNodes));
+  const div = document.createElement("div");
+  div.appendChild(tpl.content.cloneNode(true));
+  return div.innerHTML;
+}
+
+/**
+ * 議案・予算書などの値から赤をすべて外す（複製用）。
+ *  - リッチテキストの赤文字 → 黒
+ *  - 赤フラグ（リンク・資料・金額の red / amountRed / fileRed）→ 外す
+ * 渡した値は変更せず、外したコピーを返す。
+ */
+export function clearRed<T>(value: T): T {
+  const walk = (v: unknown): unknown => {
+    if (typeof v === "string") {
+      return v.includes("<") && /color/i.test(v) ? stripRichRed(v) : v;
+    }
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === "object") {
+      const out: Record<string, unknown> = {};
+      for (const [k, x] of Object.entries(v as Record<string, unknown>)) {
+        if (k === "red" || k === "amountRed" || k === "fileRed") continue;
+        out[k] = walk(x);
+      }
+      return out;
+    }
+    return v;
+  };
+  return walk(value) as T;
+}

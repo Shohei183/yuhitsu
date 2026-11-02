@@ -12,6 +12,7 @@ import { Gian, GianKind } from "./mockData";
 import { getGianTemplate } from "./templateStore";
 import { formatJaDate } from "./format";
 import { lomName } from "./settingsStore";
+import { clearRed } from "./richText";
 import {
   findCommittee,
   addGianToCommittee,
@@ -516,8 +517,9 @@ export function duplicateGian(
   const kind = targetKind ?? src.kind;
   const kindChanged = kind !== src.kind;
 
+  // 赤文字・赤リンクは複製時にすべて黒へ戻す
   const copy: Gian = {
-    ...clone(src),
+    ...clearRed(clone(src)),
     id,
     kind,
     status: "editing",
@@ -525,7 +527,9 @@ export function duplicateGian(
     topic: kindChanged
       ? src.topic.replace(/（.*?）$/, "") + `（${kind}）`
       : `${src.topic}（複製）`,
-    priorFeedback: showsPriorFeedback(kind) ? clone(src.priorFeedback) : [],
+    priorFeedback: showsPriorFeedback(kind)
+      ? clearRed(clone(src.priorFeedback))
+      : [],
     createdAt: formatJaDate(new Date()),
   };
 

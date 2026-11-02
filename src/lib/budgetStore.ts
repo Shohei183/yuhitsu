@@ -11,6 +11,7 @@ import { db, fire } from "./backend/client";
 import { copyFileObjs, deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
 import { lomName } from "./settingsStore";
+import { clearRed } from "./richText";
 
 /** 収益の科目（様式1・固定） */
 export const REVENUE_CATEGORIES = [
@@ -355,15 +356,17 @@ export async function duplicateBudget(
     newBudgetId
   );
   const now = new Date().toISOString();
+  // 赤文字・赤リンク・赤字の金額は複製時にすべて黒へ戻す
   const copy: BudgetDoc = {
-    ...(JSON.parse(JSON.stringify(src)) as BudgetDoc),
+    ...clearRed(JSON.parse(JSON.stringify(src)) as BudgetDoc),
     id: newBudgetId,
     gianId: opts.gianId,
     title: opts.title,
-    attachments: (src.attachments ?? []).map((a) => ({
-      ...a,
-      fileId: fileMap[a.fileId] ?? a.fileId,
-    })),
+    attachments: (src.attachments ?? []).map((a) => {
+      const { red: _red, ...rest } = a;
+      void _red;
+      return { ...rest, fileId: fileMap[a.fileId] ?? a.fileId };
+    }),
     createdAt: now,
     updatedAt: now,
   };
