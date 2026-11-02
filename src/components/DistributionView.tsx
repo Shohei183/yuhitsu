@@ -9,6 +9,9 @@ import { openFileByIdAsync } from "@/lib/backend/files";
 import { downloadDocHtml } from "@/lib/download";
 import { formatJaDateTime } from "@/lib/format";
 import { getEntry } from "@/lib/gianStore";
+import { useGianStore } from "@/lib/useGianStore";
+import { referencedGianIds } from "@/lib/gianMeta";
+import type { Gian } from "@/lib/mockData";
 import GianView from "./GianView";
 import SidaiDoc from "./SidaiDoc";
 import CommitteeReportDoc from "./CommitteeReportDoc";
@@ -20,6 +23,7 @@ const fmt = formatJaDateTime;
 export default function DistributionView({ distId }: { distId: string }) {
   const { pkg, loading } = useDistribution(distId);
   const { files: fixedFiles } = useFixedFiles(pkg?.yearId ?? "");
+  const gianStore = useGianStore();
   const exportRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -32,6 +36,24 @@ export default function DistributionView({ distId }: { distId: string }) {
         </div>
       </div>
     );
+  }
+
+  // 収録議案の中から張られている他の議案（添付追加・関連議案）。収録されていないものは
+  // ダウンロード時点の内容をファイルへ同梱し、ファイル内でリンクが飛べるようにする。
+  // （下書き中の議案は含めない）
+  const refGians: Gian[] = [];
+  {
+    const seen = new Set(pkg.gians.map((g) => g.id));
+    const queue = pkg.gians.flatMap(referencedGianIds);
+    while (queue.length) {
+      const id = queue.shift()!;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const g = gianStore[id]?.gian;
+      if (!g || g.status === "editing") continue;
+      refGians.push(g);
+      queue.push(...referencedGianIds(g));
+    }
   }
 
   const onDownload = async () => {
@@ -124,6 +146,14 @@ export default function DistributionView({ distId }: { distId: string }) {
                 }
                 embedded
               />
+            </div>
+          ))}
+          {refGians.map((g) => (
+            <div key={g.id} data-export-gian id={`gian-${g.id}`}>
+              <p className={styles.empty}>
+                ※ 収録議案から参照されている議案（ダウンロード時点の内容）
+              </p>
+              <GianView gian={g} gianId={g.id} embedded />
             </div>
           ))}
           {(pkg.reports ?? []).map((r) => (

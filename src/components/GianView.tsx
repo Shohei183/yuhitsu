@@ -601,7 +601,7 @@ function ItemLinkChips({ links }: { links: ItemLink[] | undefined }) {
             rel="noopener noreferrer"
             className={styles.attachChip}
             style={l.red ? { color: RICH_RED } : undefined}
-            data-doc-anchor={l.gianId}
+            data-doc-anchor={`gian-${l.gianId}`}
           >
             📄 {l.label} ↗
           </a>
@@ -680,6 +680,7 @@ function PlanLink({ gianId, distId }: { gianId: string; distId?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       className={styles.planLink}
+      data-doc-anchor={`gian-${gianId}`}
     >
       🔗 {g ? g.topic : "関連議案"} ↗
     </a>

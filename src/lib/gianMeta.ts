@@ -31,3 +31,18 @@ export function gianCreatedMs(g: Gian): number {
   const d = (g.createdAt ?? "").match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
   return d ? new Date(+d[1], +d[2] - 1, +d[3]).getTime() : 0;
 }
+
+/**
+ * この議案が他の議案へ張っているリンク先の id
+ * （項目の「添付追加」と、基本方針「事業計画」項目の関連議案）。
+ */
+export function referencedGianIds(g: Gian): string[] {
+  const ids: string[] = [];
+  for (const it of [...g.outline, ...g.overview]) {
+    if (it.linkedGianId) ids.push(it.linkedGianId);
+    for (const l of it.attachments ?? []) {
+      if (l.kind === "gian" && l.gianId) ids.push(l.gianId);
+    }
+  }
+  return ids;
+}
