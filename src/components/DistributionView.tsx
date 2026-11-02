@@ -61,9 +61,23 @@ export default function DistributionView({ distId }: { distId: string }) {
 
   // 収録議案・参照先議案にリンクされた予算書（見積書つき）もファイルへ同梱する
   const gianIdsAll = new Set([...pkg.gians, ...refGians].map((g) => g.id));
-  const budgets = Object.values(budgetStore).filter(
-    (b) => b.gianId && gianIdsAll.has(b.gianId)
-  );
+  const budgetOf = (gianId: string) =>
+    gianIdsAll.has(gianId)
+      ? Object.values(budgetStore).find((b) => b.gianId === gianId)
+      : undefined;
+  /** その議案の予算書だけを、議案の直後に置く（議案ごとに独立した予算書にする） */
+  const budgetBlock = (g: Gian) => {
+    const b = budgetOf(g.id);
+    if (!b) return null;
+    return (
+      <div data-export-gian id={`budget-${b.id}`}>
+        <p className={styles.empty}>
+          ※ 「{g.topic}」の事業収支予算書（ダウンロード時点の内容）
+        </p>
+        <BudgetDoc budget={b} />
+      </div>
+    );
+  };
 
   const onDownload = async () => {
     if (downloading) return;
@@ -155,6 +169,7 @@ export default function DistributionView({ distId }: { distId: string }) {
                 }
                 embedded
               />
+              {budgetBlock(g)}
             </div>
           ))}
           {refGians.map((g) => (
@@ -163,14 +178,7 @@ export default function DistributionView({ distId }: { distId: string }) {
                 ※ 収録議案から参照されている議案（ダウンロード時点の内容）
               </p>
               <GianView gian={g} gianId={g.id} embedded />
-            </div>
-          ))}
-          {budgets.map((b) => (
-            <div key={b.id} data-export-gian id={`budget-${b.id}`}>
-              <p className={styles.empty}>
-                ※ 事業収支予算書（ダウンロード時点の内容）
-              </p>
-              <BudgetDoc budget={b} />
+              {budgetBlock(g)}
             </div>
           ))}
           {(pkg.reports ?? []).map((r) => (
