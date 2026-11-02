@@ -26,6 +26,7 @@ import { isKihon, showsPriorFeedback } from "@/lib/gianStore";
 import { useGianEntry, useGianSnapshots } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, sectionTotal } from "@/lib/budgetStore";
+import BudgetDoc from "./BudgetDoc";
 import { useCommitteeOfGian } from "@/lib/useOrg";
 import styles from "./GianView.module.css";
 
@@ -78,7 +79,8 @@ export default function GianView({
   const docRef = useRef<HTMLElement>(null);
   useBudgetStore();
   const lom = useLomName();
-  const linkedBudget = gianId ? budgetForGian(gianId) : undefined;
+  const budgetOwnerId = gianId ?? gianProp?.id;
+  const linkedBudget = budgetOwnerId ? budgetForGian(budgetOwnerId) : undefined;
 
   const snap =
     snapshotId && entry
@@ -313,6 +315,7 @@ export default function GianView({
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.budgetLink}
+                    data-doc-anchor={`budget-${linkedBudget.id}`}
                   >
                     💰 事業収支予算書（費用計 ¥
                     {jpNum(sectionTotal(linkedBudget.expense))}） ↗
@@ -457,6 +460,18 @@ export default function GianView({
           </>
         )}
 
+        {/* ダウンロード時のみ出力：リンクされた予算書（見積書つき）を議案の後ろへ同梱。
+            埋め込み表示では配信データ側がまとめて同梱する。 */}
+        {!embedded && linkedBudget && (
+          <div
+            data-export-show
+            data-export-gian
+            id={`budget-${linkedBudget.id}`}
+            style={{ display: "none" }}
+          >
+            <BudgetDoc budget={linkedBudget} />
+          </div>
+        )}
     </article>
   );
 

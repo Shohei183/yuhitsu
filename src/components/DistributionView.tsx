@@ -10,6 +10,8 @@ import { downloadDocHtml } from "@/lib/download";
 import { formatJaDateTime } from "@/lib/format";
 import { getEntry } from "@/lib/gianStore";
 import { useGianStore } from "@/lib/useGianStore";
+import { useBudgetStore } from "@/lib/useBudgetStore";
+import BudgetDoc from "./BudgetDoc";
 import { referencedGianIds } from "@/lib/gianMeta";
 import type { Gian } from "@/lib/mockData";
 import GianView from "./GianView";
@@ -24,6 +26,7 @@ export default function DistributionView({ distId }: { distId: string }) {
   const { pkg, loading } = useDistribution(distId);
   const { files: fixedFiles } = useFixedFiles(pkg?.yearId ?? "");
   const gianStore = useGianStore();
+  const budgetStore = useBudgetStore();
   const exportRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -55,6 +58,12 @@ export default function DistributionView({ distId }: { distId: string }) {
       queue.push(...referencedGianIds(g));
     }
   }
+
+  // 収録議案・参照先議案にリンクされた予算書（見積書つき）もファイルへ同梱する
+  const gianIdsAll = new Set([...pkg.gians, ...refGians].map((g) => g.id));
+  const budgets = Object.values(budgetStore).filter(
+    (b) => b.gianId && gianIdsAll.has(b.gianId)
+  );
 
   const onDownload = async () => {
     if (downloading) return;
@@ -154,6 +163,14 @@ export default function DistributionView({ distId }: { distId: string }) {
                 ※ 収録議案から参照されている議案（ダウンロード時点の内容）
               </p>
               <GianView gian={g} gianId={g.id} embedded />
+            </div>
+          ))}
+          {budgets.map((b) => (
+            <div key={b.id} data-export-gian id={`budget-${b.id}`}>
+              <p className={styles.empty}>
+                ※ 事業収支予算書（ダウンロード時点の内容）
+              </p>
+              <BudgetDoc budget={b} />
             </div>
           ))}
           {(pkg.reports ?? []).map((r) => (
