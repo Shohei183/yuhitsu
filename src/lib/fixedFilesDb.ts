@@ -25,6 +25,13 @@ export interface FixedFileMeta {
   addedAt: string;
   /** 次第に直接追加した資料（年度の固定ファイルではない） */
   sidaiOwned?: boolean;
+  /** 議事録フォルダに提出された議事録 */
+  minutes?: boolean;
+}
+
+/** 次第のファイルリンクに出す種別名 */
+export function fileKindLabel(f: { sidaiOwned?: boolean; minutes?: boolean }): string {
+  return f.minutes ? "議事録" : f.sidaiOwned ? "資料" : "固定ファイル";
 }
 
 function toMeta(f: FileObj, sidaiOwned = false): FixedFileMeta {

@@ -21,9 +21,9 @@ import {
 } from "@/lib/distributionStore";
 import { GianFileMeta, listAllGianFiles } from "@/lib/gianFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
-import { toHalfWidth } from "@/lib/format";
+import { formatJaDate, toHalfWidth } from "@/lib/format";
 import { useFixedFiles } from "@/lib/useFixedFiles";
-import { putSidaiFile } from "@/lib/fixedFilesDb";
+import { fileKindLabel, putSidaiFile } from "@/lib/fixedFilesDb";
 import { deleteFileObj } from "@/lib/backend/files";
 import { useSidai } from "@/lib/useSidaiStore";
 import { useGianStore } from "@/lib/useGianStore";
@@ -110,7 +110,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [dragGianId, setDragGianId] = useState<string | null>(null);
-  const [palTab, setPalTab] = useState<"gian" | "fixed" | "own">("gian");
+  const [palTab, setPalTab] = useState<"gian" | "fixed" | "minutes" | "own">("gian");
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [dzOver, setDzOver] = useState(false);
@@ -123,7 +123,10 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
 
   const { files: allFiles } = useFixedFiles(sidai?.yearId ?? "", sidaiId);
   // 年度の固定ファイルと、この次第に直接追加した資料（議事録など）を分けて扱う
-  const fixedFiles = allFiles.filter((f) => !f.sidaiOwned);
+  const fixedFiles = allFiles.filter((f) => !f.sidaiOwned && !f.minutes);
+  const minutesFiles = allFiles
+    .filter((f) => f.minutes)
+    .sort((a, b) => b.addedAt.localeCompare(a.addedAt));
   const ownFiles = allFiles.filter((f) => f.sidaiOwned);
 
   const flash = useCallback((m: string) => {
@@ -632,11 +635,20 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
             <button
               type="button"
               className={`${styles.palTab} ${
+                palTab === "minutes" ? styles.palTabActive : ""
+              }`}
+              onClick={() => setPalTab("minutes")}
+            >
+              議事録
+            </button>
+            <button
+              type="button"
+              className={`${styles.palTab} ${
                 palTab === "own" ? styles.palTabActive : ""
               }`}
               onClick={() => setPalTab("own")}
             >
-              この次第の資料
+              資料追加
             </button>
           </div>
           <p className={styles.autoNote}>
@@ -644,14 +656,18 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
               ? "議案構築画面で「会議へ上程」した議案が並びます。"
               : palTab === "fixed"
                 ? "年度フォルダの固定ファイル（規約・議事法等）が並びます。"
-                : "議事録など、この次第だけで使う資料を追加します（固定ファイルには入りません）。"}
+                : palTab === "minutes"
+                  ? "議事録フォルダに提出された議事録が新しい順に並びます。"
+                  : "この次第だけで使う資料を追加します（固定ファイルには入りません）。"}
             {selectedRowId
               ? "選択中のファイルリンク行にクリックで紐づけできます。"
               : palTab === "gian"
                 ? "ファイルリンク行へドラッグ&ドロップ、または行を選択してクリックで紐づけます。"
                 : palTab === "fixed"
                   ? "ファイルリンク行を選択してクリックで紐づけます。"
-                  : "ファイルリンク行を選択してから追加すると、そのまま紐づきます。"}
+                  : palTab === "minutes"
+                    ? "ファイルリンク行を選択してクリックで紐づけます。"
+                    : "ファイルリンク行を選択してから追加すると、そのまま紐づきます。"}
           </p>
 
           {palTab === "gian" ? (
@@ -688,6 +704,32 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                     {gianMetaLine(g) && (
                       <span className={styles.palMeta}>{gianMetaLine(g)}</span>
                     )}
+                  </button>
+                ))}
+              </div>
+            )
+          ) : palTab === "minutes" ? (
+            minutesFiles.length === 0 ? (
+              <div className={styles.palEmpty}>
+                提出された議事録がありません。
+                <br />
+                トップの「議事録フォルダ」から提出できます。
+              </div>
+            ) : (
+              <div className={styles.palList}>
+                {minutesFiles.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={styles.palItem}
+                    onClick={() => attachFixedToSelected(f.id)}
+                    title="選択中のファイルリンク行に紐づけ"
+                  >
+                    <span className={styles.palKind}>議事録</span>
+                    <span className={styles.palTopic}>{f.name}</span>
+                    <span className={styles.palMeta}>
+                      {formatJaDate(f.addedAt)} ・ {(f.size / 1024).toFixed(1)} KB
+                    </span>
                   </button>
                 ))}
               </div>
@@ -733,9 +775,9 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
               {uploadErr && <div className={styles.palErr}>{uploadErr}</div>}
               {ownFiles.length === 0 ? (
                 <div className={styles.palEmpty}>
-                  この次第の資料はまだありません。
+                  追加した資料はまだありません。
                   <br />
-                  議事録などをここに追加して、ファイルリンク行に紐づけます。
+                  資料をここに追加して、ファイルリンク行に紐づけます。
                 </div>
               ) : (
                 <div className={styles.palList}>
@@ -1248,7 +1290,12 @@ function SidaiRowView({
   total: number;
   selected: boolean;
   linkedGian: { committee: string; topic: string; kind: string } | null;
-  linkedFixedFile: { id: string; name: string; sidaiOwned?: boolean } | null;
+  linkedFixedFile: {
+    id: string;
+    name: string;
+    sidaiOwned?: boolean;
+    minutes?: boolean;
+  } | null;
   reportOptions: { id: string; committeeName: string }[];
   dragActive: boolean;
   onSelect: () => void;
@@ -1438,7 +1485,7 @@ function SidaiRowView({
           ) : linkedFixedFile ? (
             <div className={styles.linkChip}>
               <span className={styles.linkChipKind}>
-                {linkedFixedFile.sidaiOwned ? "資料" : "固定ファイル"}
+                {fileKindLabel(linkedFixedFile)}
               </span>
               <span className={styles.linkChipText}>{linkedFixedFile.name}</span>
               <button

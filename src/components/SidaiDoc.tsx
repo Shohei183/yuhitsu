@@ -4,6 +4,7 @@ import { Gian } from "@/lib/mockData";
 import { Sidai } from "@/lib/sidaiStore";
 import { CommitteeReport } from "@/lib/committeeReportStore";
 import { toHalfWidth } from "@/lib/format";
+import { fileKindLabel } from "@/lib/fixedFilesDb";
 import { useLomName } from "@/lib/useSettingsStore";
 import styles from "./SidaiView.module.css";
 
@@ -28,7 +29,7 @@ export default function SidaiDoc({
   /** filelink 行の固定ファイル id → メタ（見つからなければ null） */
   fixedFileById?: (
     fileId: string
-  ) => { name: string; sidaiOwned?: boolean } | null;
+  ) => { name: string; sidaiOwned?: boolean; minutes?: boolean } | null;
   /** 固定ファイルチップのクリック時（開く）。無ければただのテキスト */
   onOpenFixedFile?: (fileId: string, name: string) => void;
   /** 委員会報告リンク行の reportId → 委員会報告（見つからなければ null） */
@@ -246,11 +247,11 @@ export default function SidaiDoc({
                           onOpenFixedFile(row.linkedFixedFileId as string, ff.name)
                         }
                       >
-                        {ff.sidaiOwned ? "資料" : "固定ファイル"}：{ff.name} ↗
+                        {fileKindLabel(ff)}：{ff.name} ↗
                       </button>
                     ) : (
                       <span className={styles.gianChip}>
-                        {ff.sidaiOwned ? "資料" : "固定ファイル"}：{ff.name}
+                        {fileKindLabel(ff)}：{ff.name}
                       </span>
                     )
                   ) : row.linkedFixedFileId ? (
