@@ -67,6 +67,7 @@ export default function YearHome() {
       />
       <JoteiSection />
       <JoteiFilesSection />
+      <MinutesSection />
       <PeriodsSection yearId={year.id} canCreate={can.createSidai} />
     </main>
   );
@@ -102,6 +103,24 @@ function JoteiFilesSection() {
         </h2>
         <span className={styles.sectionNote}>
           各委員会から上程された議案を、会議ごとのフォルダに委員会別でまとめて表示。配信確定で次のフォルダへ。
+        </span>
+      </div>
+    </section>
+  );
+}
+
+/* ── 議事録フォルダ ─────────────────────────────────── */
+function MinutesSection() {
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHead}>
+        <h2 className={styles.h2}>
+          <Link prefetch={false} href="/minutes" className={styles.h2Link}>
+            議事録フォルダ →
+          </Link>
+        </h2>
+        <span className={styles.sectionNote}>
+          会議ごとに議事録を提出し、過去に提出された議事録を一覧で見られます。
         </span>
       </div>
     </section>

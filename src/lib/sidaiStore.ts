@@ -12,6 +12,7 @@ import { sectionLabels } from "./templateStore";
 import { db, fire } from "./backend/client";
 import { deleteFileObj } from "./backend/files";
 import { listSidaiFiles } from "./fixedFilesDb";
+import { listMinutes } from "./minutesDb";
 
 export type SidaiRowType =
   | "heading"
@@ -266,6 +267,10 @@ export function deleteSidai(id: string): void {
   fire(db().from("sidais").delete().eq("id", id));
   // その次第に直接追加した資料も削除する
   void listSidaiFiles(id)
+    .then((fs) => fs.forEach((f) => void deleteFileObj(f.id)))
+    .catch(() => {});
+  // その次第に提出された議事録も削除する
+  void listMinutes([id])
     .then((fs) => fs.forEach((f) => void deleteFileObj(f.id)))
     .catch(() => {});
 }
