@@ -312,7 +312,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
   const onDelete = () => {
     if (
       !window.confirm(
-        `この次第「${sidai.meetingName}」を削除します（提出された議事録も削除されます）。元に戻せません。よろしいですか？`
+        `この次第「${sidai.meetingName}」を削除します。元に戻せません。よろしいですか？`
       )
     )
       return;

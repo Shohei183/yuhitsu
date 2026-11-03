@@ -120,7 +120,7 @@ function MinutesSection() {
           </Link>
         </h2>
         <span className={styles.sectionNote}>
-          会議ごとに議事録を提出し、過去に提出された議事録を一覧で見られます。
+          議事録の提出と、提出された議事録の一覧。
         </span>
       </div>
     </section>

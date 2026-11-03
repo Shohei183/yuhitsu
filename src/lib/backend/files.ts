@@ -79,26 +79,6 @@ export async function listFiles(
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
-/** 複数の持ち主（owner_id）の分をまとめて取得する。 */
-export async function listFilesByOwners(
-  scope: FileScope,
-  ownerIds: string[]
-): Promise<FileObj[]> {
-  if (ownerIds.length === 0) return [];
-  const { data, error } = await db()
-    .from("file_objects")
-    .select("*")
-    .eq("scope", scope)
-    .in("owner_id", ownerIds);
-  if (error) {
-    console.error("[files] listFilesByOwners 失敗:", error.message);
-    return [];
-  }
-  return ((data ?? []) as FileRow[])
-    .map(fromRow)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-}
-
 // ── アップロード ──
 // サイズ上限は撤廃（表示用の目安値のみ残す）。R2 の単一 PUT は最大 5GB。
 export const MAX_FILE_BYTES = 5 * 1024 * 1024 * 1024;
