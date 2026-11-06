@@ -311,7 +311,7 @@ export default function GianView({
                 )}
                 {it.label === BUDGET_LABEL && linkedBudget && (
                   <a
-                    href={`/budget/${linkedBudget.id}`}
+                    href={`/budget/${linkedBudget.id}/view`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.budgetLink}
