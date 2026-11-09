@@ -16,7 +16,6 @@ import {
   balance,
   attachmentOf,
   addOrReuseAttachment,
-  pruneAttachments,
 } from "@/lib/budgetStore";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import { jpNum } from "@/lib/format";
@@ -364,21 +363,19 @@ function ItemRow({
     }));
 
   const setRef = (ref: string | null) => {
-    update(
-      pruneAttachments({
-        ...budget,
-        [section]: budget[section].map((c) =>
-          c.name === catName
-            ? {
-                ...c,
-                items: c.items.map((x) =>
-                  x.id === item.id ? { ...x, attachmentRef: ref } : x
-                ),
-              }
-            : c
-        ),
-      })
-    );
+    update({
+      ...budget,
+      [section]: budget[section].map((c) =>
+        c.name === catName
+          ? {
+              ...c,
+              items: c.items.map((x) =>
+                x.id === item.id ? { ...x, attachmentRef: ref } : x
+              ),
+            }
+          : c
+      ),
+    });
   };
 
   return (
@@ -475,16 +472,14 @@ function ItemRow({
             type="button"
             className={styles.xBtn}
             onClick={() =>
-              update(
-                pruneAttachments({
-                  ...budget,
-                  [section]: budget[section].map((c) =>
-                    c.name === catName
-                      ? { ...c, items: c.items.filter((x) => x.id !== item.id) }
-                      : c
-                  ),
-                })
-              )
+              update({
+                ...budget,
+                [section]: budget[section].map((c) =>
+                  c.name === catName
+                    ? { ...c, items: c.items.filter((x) => x.id !== item.id) }
+                    : c
+                ),
+              })
             }
           >
             ×
@@ -561,13 +556,14 @@ function AttachmentPanel({
           it.attachmentRef === attId ? { ...it, attachmentRef: null } : it
         ),
       }));
-    update(
-      pruneAttachments({
-        ...budget,
-        revenue: cleared(budget.revenue),
-        expense: cleared(budget.expense),
-      })
-    );
+    // 削除するのはこの資料だけ。参照されていない他の資料（アップロードしたばかりのもの）は残す
+    void deleteFileObj(target.fileId);
+    update({
+      ...budget,
+      revenue: cleared(budget.revenue),
+      expense: cleared(budget.expense),
+      attachments: budget.attachments.filter((a) => a.id !== attId),
+    });
   };
 
   return (

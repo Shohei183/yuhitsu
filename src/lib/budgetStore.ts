@@ -201,20 +201,6 @@ export function addOrReuseAttachment(
   };
 }
 
-/** どの行からも参照されなくなった資料プール項目を掃除（file_objects も削除） */
-export function pruneAttachments(doc: BudgetDoc): BudgetDoc {
-  const refs = new Set(
-    [...doc.revenue, ...doc.expense]
-      .flatMap((c) => c.items)
-      .map((it) => it.attachmentRef)
-      .filter(Boolean)
-  );
-  const kept = doc.attachments.filter((a) => refs.has(a.id));
-  const removed = doc.attachments.filter((a) => !refs.has(a.id));
-  for (const a of removed) void deleteFileObj(a.fileId);
-  return removed.length ? { ...doc, attachments: kept } : doc;
-}
-
 export function attachmentOf(
   doc: BudgetDoc,
   ref: string | null | undefined
