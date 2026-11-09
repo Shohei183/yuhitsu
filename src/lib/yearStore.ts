@@ -26,6 +26,7 @@ export type Role =
   | "vice_president"
   | "auditor"
   | "secretary_general"
+  | "deputy_secretary_general"
   | "committee_chair"
   | "committee_member"
   | "director";
@@ -38,6 +39,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   vice_president: "副理事長",
   auditor: "監事",
   secretary_general: "事務局長",
+  deputy_secretary_general: "事務局次長",
   committee_chair: "委員長",
   committee_member: "委員会メンバー",
   director: "理事",
@@ -50,6 +52,7 @@ export const SELECTABLE_ROLES: Role[] = [
   "vice_president",
   "auditor",
   "secretary_general",
+  "deputy_secretary_general",
   "committee_chair",
   "committee_member",
   "director",

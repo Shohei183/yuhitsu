@@ -19,7 +19,7 @@ create or replace function public.default_perm(p_role text, p_cap text)
 returns boolean language sql immutable as $$
   select case
     when p_role = 'master' then true
-    when p_role in ('president','executive_director','secretary_general') then
+    when p_role in ('president','executive_director','secretary_general','deputy_secretary_general') then
       p_cap in ('editGian','submitGian','requestReplacement','approveReplacement',
                 'createSidai','finalizeDistribution','editTemplates','editCommittees',
                 'manageFixedFiles','editRoles')

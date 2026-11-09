@@ -9,6 +9,7 @@ const ROLE_ALIASES: Record<string, Role> = {
   副理事長: "vice_president",
   監事: "auditor",
   事務局長: "secretary_general",
+  事務局次長: "deputy_secretary_general",
   委員長: "committee_chair",
   委員: "committee_member",
   委員会メンバー: "committee_member",

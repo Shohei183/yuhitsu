@@ -56,9 +56,9 @@ http://localhost:3000 を開きます。**未ログインなら `/login` にリ�
 - **年度タブ**：切り替えると委員会一覧・議案・配信フォルダ・自分のロール・`/members` のロール割当対象年度が年度ごとに変わる。
 - **メンバー管理（`/members`・マスター）**（[`MemberAdmin.tsx`](src/components/MemberAdmin.tsx)）：アカウント発行・**無効化／有効化**（LOM 全体・年度非依存）＋ **選択中年度のロール割当**（`editRoles` 権限で `<select>` 編集、`yearStore.setAssignment()`）。担当委員会は**マスター以外の全メンバー**で選択可（**現在の委員会フォルダ名**を参照）。列は 氏名／ロール／担当委員会／**変更**／アカウント（メール・状態列は非表示。無効メンバーは氏名に「無効」タグ）。「変更」で氏名・メールアドレスの編集ダイアログ（`memberStore.updateMember()`、メール重複は拒否）。※ ダッシュボード（`/`）の「メンバー権限」セクションは廃止しここへ集約。
 - **ロール（仮）**：JC の役職に対応（[`yearStore.ts`](src/lib/yearStore.ts)）。
-  `master`（LOM管理者・アカウント属性）／`president`（理事長）／`executive_director`（専務）／`vice_president`（副理事長）／`auditor`（監事）／`secretary_general`（事務局長）／`committee_chair`（委員長）／`committee_member`（委員会メンバー）／`director`（理事）。
+  `master`（LOM管理者・アカウント属性）／`president`（理事長）／`executive_director`（専務）／`vice_president`（副理事長）／`auditor`（監事）／`secretary_general`（事務局長）／`deputy_secretary_general`（事務局次長）／`committee_chair`（委員長）／`committee_member`（委員会メンバー）／`director`（理事）。
   実効ロール＝デモ上書き → マスター属性 → 年度割当（[`useOrg.ts`](src/lib/useOrg.ts) の `useEffectiveRole` / `useCan`）。
-  既定権限の目安：理事長・専務・事務局長＝配信までひととおり操作可／副理事長＝上程・差し替え承認まで／委員長・理事＝上程まで／委員会メンバー・監事＝議案編集のみ（すべて `/roles` で変更可）。
+  既定権限の目安：理事長・専務・事務局長・事務局次長＝配信までひととおり操作可／副理事長＝上程・差し替え承認まで／委員長・理事＝上程まで／委員会メンバー・監事＝議案編集のみ（すべて `/roles` で変更可）。
 - **ロール権限の設定（`/roles`・マスターのみ）**：[`RolePermAdmin.tsx`](src/components/RolePermAdmin.tsx)。ロール（master 以外の8種）を選び、12 個の操作権限をチェックボックスで切り替える。変更は `rolePermStore` に「既定からの差分」として保存され、`useCan()` が即座に反映（該当ロールのユーザー・デモ表示で切替中のロールに効く）。マスターは常に全許可（編集不可）。「このロールを既定に戻す」で差分を破棄。
   - 画面で強制されている権限：議案の編集・新規作成・複製（`CommitteeGianList`）／会議へ上程・差し替え申請・その承認（`GianBuilder`）／次第の作成・複製・編集（`SidaiList` は権限なしだと配信データ一覧のみ表示／`SidaiBuilder` は権限なしだと `/sidai/[id]/view` へリダイレクト）／配信確定・再配信確定（同）／議案・次第テンプレートの編集（`TemplateAdmin`）／**委員会フォルダの編集**（`editCommittees`・`YearHome` の委員会追加・名称変更）／固定ファイルの登録更新（`YearHome`）／メンバー権限の割当（`/members`・`editRoles`）／メンバー管理（`/members`・`master` のみ）
   - **差し替え申請の通知**：`approveReplacement` を持つロールでダッシュボード（`/`）上部に、未処理（pending）の差し替え申請が委員会・議案名・理由つきで一覧表示（[`useNotifications.ts`](src/lib/useNotifications.ts) の `useReplacementNotifications()`）。議案名クリックで `/gian/[id]`、各行「クリア」／「すべてクリア」で非表示（`notificationStore` にこのブラウザ内で記録）

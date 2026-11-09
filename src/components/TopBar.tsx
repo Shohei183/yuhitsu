@@ -21,6 +21,7 @@ const ROLE_CLASS: Record<Role, string> = {
   past_president: styles.roleBoard,
   executive_director: styles.roleOfficer,
   secretary_general: styles.roleOfficer,
+  deputy_secretary_general: styles.roleOfficer,
   vice_president: styles.roleBoard,
   auditor: styles.roleBoard,
   director: styles.roleBoard,

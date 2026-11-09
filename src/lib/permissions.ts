@@ -138,6 +138,7 @@ export const DEFAULT_PERMS: Record<Role, Record<Capability, boolean>> = {
   past_president: caps(["editGian", "submitGian", "requestReplacement"]),
   executive_director: caps(OFFICER_CAPS),
   secretary_general: caps(OFFICER_CAPS),
+  deputy_secretary_general: caps(OFFICER_CAPS),
   vice_president: caps([
     "editGian",
     "submitGian",
