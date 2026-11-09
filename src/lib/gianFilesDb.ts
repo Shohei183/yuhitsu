@@ -52,23 +52,40 @@ function toMeta(f: FileObj): GianFileMeta {
 
 export const subscribe = subscribeFiles;
 
+const nameCollator = new Intl.Collator("ja", { numeric: true });
+
+/** 全角数字などを半角にそろえ、先頭の「審議／参考／資料」の語を除く（並べ替え用） */
+function sortableName(name: string): string {
+  return name
+    .normalize("NFKC")
+    .trim()
+    .replace(/^(?:審議|参考|審|参)?\s*(?:資料)?\s*/, "");
+}
+
 /**
- * ファイル名の先頭にある資料番号を読む（「審議1-…」「審1_…」「1. …」など）。
+ * ファイル名の先頭にある資料番号を読む（「審議1-…」「審1_…」「参考資料2」「1. …」など。全角数字も可）。
  * 無ければ null。表示時の並べ替えに使う（リネームはしない）。
  */
 export function resourceNo(name: string): number | null {
-  const m = name.match(/^\s*(?:審議|参考|審|参)?\s*(\d+)/);
+  const m = sortableName(name).match(/^(\d+)/);
   return m ? Number(m[1]) : null;
 }
 
-/** 資料番号 昇順（番号なしは末尾・その中は元の順） */
-function byResourceNo(a: GianFileMeta, b: GianFileMeta): number {
-  const na = resourceNo(a.name);
-  const nb = resourceNo(b.name);
-  if (na != null && nb != null) return na - nb;
-  if (na != null) return -1;
-  if (nb != null) return 1;
-  return a.addedAt.localeCompare(b.addedAt);
+/**
+ * 資料の並び順：ファイル名の資料番号 昇順（1-2 は 1-10 より前）。
+ * 番号なしは末尾で、その中はファイル名順。
+ */
+export function compareResourceName(a: string, b: string): number {
+  const na = resourceNo(a);
+  const nb = resourceNo(b);
+  if (na != null && nb == null) return -1;
+  if (na == null && nb != null) return 1;
+  return nameCollator.compare(sortableName(a), sortableName(b));
+}
+
+/** 資料をファイル名の番号順に並べた新しい配列 */
+export function sortResources<T extends { name: string }>(files: T[]): T[] {
+  return [...files].sort((a, b) => compareResourceName(a.name, b.name));
 }
 
 export async function putGianFile(
@@ -86,13 +103,13 @@ export async function listGianFiles(
   gianId: string,
   category: GianFileCategory
 ): Promise<GianFileMeta[]> {
-  return (await listFiles("gian", gianId, category)).map(toMeta).sort(byResourceNo);
+  return sortResources((await listFiles("gian", gianId, category)).map(toMeta));
 }
 
 export async function listAllGianFiles(
   gianId: string
 ): Promise<{ review: GianFileMeta[]; reference: GianFileMeta[] }> {
-  const all = (await listFiles("gian", gianId)).map(toMeta).sort(byResourceNo);
+  const all = sortResources((await listFiles("gian", gianId)).map(toMeta));
   return {
     review: all.filter((f) => f.category === "review"),
     reference: all.filter((f) => f.category === "reference"),

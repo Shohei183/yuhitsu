@@ -19,6 +19,7 @@ import {
   GIAN_FILE_CATEGORY_LABEL,
   GianFileMeta,
   fileRedKey,
+  sortResources,
 } from "@/lib/gianFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
@@ -773,7 +774,7 @@ function FrozenResourceList({
         <p className={styles.empty}>（なし）</p>
       ) : (
         <ul className={styles.resList}>
-          {files.map((f) => (
+          {sortResources(files).map((f) => (
             <li
               key={f.id}
               data-note-item={`file-${f.id}`}
