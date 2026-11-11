@@ -18,6 +18,7 @@ import {
   addOrReuseAttachment,
 } from "@/lib/budgetStore";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
+import { useEditMode } from "@/lib/useEditMode";
 import { jpNum } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import { uploadFile, deleteFileObj, openFileByIdAsync } from "@/lib/backend/files";
@@ -44,6 +45,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   const router = useRouter();
   const previewRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<Tab>("form1");
+  const edit = useEditMode(budgetId);
 
   if (!budget) {
     return (
@@ -58,7 +60,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
 
   const backHref = budget.gianId ? `/gian/${budget.gianId}` : "/";
 
-  const readOnly = !can.editGian;
+  const readOnly = !can.editGian || !edit.editing;
   const update = (next: BudgetDoc) => saveBudget(budgetId, next);
   const setField = (patch: Partial<BudgetDoc>) => update({ ...budget, ...patch });
 
@@ -86,6 +88,21 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
         <button type="button" className={styles.dlBtn} onClick={onDownload}>
           ダウンロード
         </button>
+        {can.editGian &&
+          (edit.editing ? (
+            <button type="button" className={styles.dlBtn} onClick={edit.stop}>
+              編集を終了
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.editBtn}
+              onClick={edit.start}
+              title="編集を始めます（編集中の変更は自動で保存されます）"
+            >
+              編集開始
+            </button>
+          ))}
         {!readOnly && (
           <button
             type="button"

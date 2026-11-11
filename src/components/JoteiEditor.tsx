@@ -20,6 +20,7 @@ import { listSidai } from "@/lib/sidaiStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
 import { useCommittee, useAuthMember, useCanIn } from "@/lib/useOrg";
 import { formatJaDateTime } from "@/lib/format";
+import { useEditMode } from "@/lib/useEditMode";
 import styles from "./JoteiEditor.module.css";
 
 export default function JoteiEditor({ joteiId }: { joteiId: string }) {
@@ -31,6 +32,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
   const member = useAuthMember();
   const can = useCanIn(jotei?.yearId, jotei?.committeeId);
   const listId = useId();
+  const edit = useEditMode(joteiId);
 
   const meetingSuggestions = useMemo(() => {
     const yid = jotei?.yearId ?? "";
@@ -57,7 +59,8 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
     );
   }
 
-  const readOnly = jotei.status === "submitted";
+  const locked = jotei.status === "submitted";
+  const readOnly = locked || !edit.editing;
   const backHref = jotei.committeeId
     ? `/committee/${jotei.committeeId}/jotei`
     : "/jotei";
@@ -100,7 +103,22 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
         <Link prefetch={false} href={`/jotei/${joteiId}/view`} className={styles.navLink}>
           閲覧
         </Link>
-        {!readOnly && can.submitGian && (
+        {!locked &&
+          (edit.editing ? (
+            <button type="button" className={styles.ghostBtn} onClick={edit.stop}>
+              編集を終了
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={edit.start}
+              title="編集を始めます（編集中の変更は自動で保存されます）"
+            >
+              編集開始
+            </button>
+          ))}
+        {!locked && can.submitGian && (
           <button type="button" className={styles.primaryBtn} onClick={onSubmit}>
             提出する
           </button>
@@ -110,17 +128,17 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
             削除
           </button>
         )}
-        {readOnly && member?.isMaster && (
+        {locked && member?.isMaster && (
           <button type="button" className={styles.ghostBtn} onClick={onReopen}>
             提出を取り消す
           </button>
         )}
         <span
           className={`${styles.badge} ${
-            readOnly ? styles.badgeLocked : styles.badgeDraft
+            locked ? styles.badgeLocked : styles.badgeDraft
           }`}
         >
-          {readOnly ? "提出済み（ロック）" : "下書き"}
+          {locked ? "提出済み（ロック）" : "下書き"}
         </span>
       </div>
 
@@ -129,7 +147,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
           {found?.year.label} ／ {jotei.committeeName} ／ 上程届
         </div>
 
-        {readOnly && (
+        {locked && (
           <p className={styles.lockNote}>
             提出済みのため編集できません。
             {jotei.submittedAt &&

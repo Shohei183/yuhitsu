@@ -14,6 +14,7 @@ import { useCommittee, useAuthMember, useCanIn } from "@/lib/useOrg";
 import { formatJaDate } from "@/lib/format";
 import RichText from "./RichText";
 import { useLomName } from "@/lib/useSettingsStore";
+import { useEditMode } from "@/lib/useEditMode";
 import styles from "./CommitteeReport.module.css";
 
 export default function CommitteeReport({
@@ -27,6 +28,7 @@ export default function CommitteeReport({
   const member = useAuthMember();
   const can = useCanIn(found?.year.id, committeeId);
   const lom = useLomName();
+  const edit = useEditMode(committeeId);
 
   if (!found) {
     return (
@@ -41,7 +43,7 @@ export default function CommitteeReport({
 
   const { year, committee } = found;
   const report = reportForCommittee(committeeId);
-  const readOnly = !can.editGian;
+  const readOnly = !can.editGian || !edit.editing;
 
   const create = () => {
     ensureReport({
@@ -99,6 +101,21 @@ export default function CommitteeReport({
         >
           閲覧・PDF出力 →
         </Link>
+        {can.editGian &&
+          (edit.editing ? (
+            <button type="button" className={styles.ghostBtn} onClick={edit.stop}>
+              編集を終了
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={edit.start}
+              title="編集を始めます（編集中の変更は自動で保存されます）"
+            >
+              編集開始
+            </button>
+          ))}
         {member?.isMaster && (
           <button
             type="button"

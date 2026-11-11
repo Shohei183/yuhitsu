@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useEditMode } from "@/lib/useEditMode";
 import {
   AssignedMember,
   BudgetLine,
@@ -145,7 +146,8 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
 
   const [toast, setToast] = useState<string | null>(null);
 
-  const readOnly = gian.status !== "editing" || !can.editGian;
+  const edit = useEditMode(gianId);
+  const readOnly = gian.status !== "editing" || !can.editGian || !edit.editing;
 
   /** 議案本体の更新（localStorage ストアへ保存） */
   const setGian = useCallback(
@@ -519,8 +521,8 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
   }
 
   function saveDraft() {
-    saveDraftSnapshot(gianId, "下書き保存");
-    flash(`下書きを保存しました（一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
+    saveDraftSnapshot(gianId, "保存");
+    flash(`保存しました（履歴に一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
   }
 
   function submitToMeeting() {
@@ -598,9 +600,25 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
           </span>
           {gian.status === "editing" && can.editGian && (
             <>
-              <button type="button" className={styles.ghostBtn} onClick={saveDraft}>
-                下書き保存
-              </button>
+              {edit.editing ? (
+                <>
+                  <button type="button" className={styles.ghostBtn} onClick={saveDraft}>
+                    保存
+                  </button>
+                  <button type="button" className={styles.ghostBtn} onClick={edit.stop}>
+                    編集を終了
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.primaryBtn}
+                  onClick={edit.start}
+                  title="編集を始めます（編集中の変更は自動で保存されます）"
+                >
+                  編集開始
+                </button>
+              )}
               {can.submitGian ? (
                 <button
                   type="button"
@@ -2150,7 +2168,7 @@ function FlowPanel({
 
   const hint =
     gian.status === "editing"
-      ? "委員会メンバーが自由に編集できます。「会議へ上程」でその時点のスナップショットを保存し、上程済みに移行します。"
+      ? "「編集開始」を押すと編集できます（編集中の変更は自動で保存されます）。「会議へ上程」でその時点のスナップショットを保存し、上程済みに移行します。"
       : gian.status === "submitted"
         ? "本文・資料一覧は編集ロック中です。変更するには「差し替え申請」→ 承認が必要です。"
         : "配信確定済み。完全ロックされています。";
@@ -2227,7 +2245,7 @@ function FlowPanel({
         </span>
         正式な記録・永続保存　／
         <span className={`${styles.snapKind} ${styles.snapKindAutosave}`}>
-          💾 下書き・同期
+          💾 保存・同期
         </span>
         保険用の一時記録・直近 {AUTOSAVE_LIMIT} 件のみ
       </p>
@@ -2235,7 +2253,7 @@ function FlowPanel({
         <p className={styles.feedbackEmpty}>履歴を読み込み中…</p>
       ) : snapshots.length === 0 ? (
         <p className={styles.feedbackEmpty}>
-          まだありません（上程・下書き保存・同期で保存されます）。
+          まだありません（上程・保存・同期で記録されます）。
         </p>
       ) : (
         <div className={styles.snapList}>
@@ -2264,7 +2282,7 @@ function FlowPanel({
                         : styles.snapKindAutosave
                     }`}
                   >
-                    {isSubmission ? "📌 上程時" : "💾 下書き・同期"}
+                    {isSubmission ? "📌 上程時" : "💾 保存・同期"}
                   </span>
                   <span className={styles.snapReason}>{s.reason}</span>
                   <span className={styles.snapDate}>{fmtDateTime(s.takenAt)}</span>
