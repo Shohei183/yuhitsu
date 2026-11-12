@@ -488,7 +488,7 @@ function ReplacementNotifications({ yearId }: { yearId: string }) {
                 onClick={() => {
                   if (
                     confirm(
-                      "この差し替え申請を承認します。議案は「編集中」に戻り、担当者が修正できるようになります。よろしいですか？"
+                      "この差し替え申請を承認します。議案は「上程前」に戻り、担当者が修正できるようになります。よろしいですか？"
                     )
                   ) {
                     decideReplacement(n.gianId, n.request.id, true);

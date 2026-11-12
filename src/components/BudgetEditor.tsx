@@ -91,7 +91,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
         {can.editGian &&
           (edit.editing ? (
             <button type="button" className={styles.dlBtn} onClick={edit.stop}>
-              編集を終了
+              保存して終了
             </button>
           ) : (
             <button

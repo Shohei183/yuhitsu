@@ -699,7 +699,7 @@ export function getGian(_id: string): Gian | undefined {
 }
 
 export const STATUS_LABEL: Record<GianStatus, string> = {
-  editing: "編集中",
+  editing: "上程前",
   submitted: "上程済み",
   locked: "配信確定",
 };

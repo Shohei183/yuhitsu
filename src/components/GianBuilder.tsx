@@ -522,7 +522,8 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
 
   function saveDraft() {
     saveDraftSnapshot(gianId, "保存");
-    flash(`保存しました（履歴に一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
+    edit.stop();
+    flash(`保存して編集を終了しました（履歴に一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
   }
 
   function submitToMeeting() {
@@ -554,7 +555,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     decideReplacement(gianId, requestId, approve);
     flash(
       approve
-        ? "差し替え申請を承認しました（編集中に戻しました）"
+        ? "差し替え申請を承認しました（上程前に戻しました）"
         : "差し替え申請を却下しました"
     );
   }
@@ -596,19 +597,21 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
         </div>
         <div className={styles.tbRight}>
           <span className={`${styles.badge} ${styles[gian.status]}`}>
-            {STATUS_LABEL[gian.status]}
+            {gian.status === "editing" && edit.editing
+              ? "編集中"
+              : STATUS_LABEL[gian.status]}
           </span>
           {gian.status === "editing" && can.editGian && (
             <>
               {edit.editing ? (
-                <>
-                  <button type="button" className={styles.ghostBtn} onClick={saveDraft}>
-                    保存
-                  </button>
-                  <button type="button" className={styles.ghostBtn} onClick={edit.stop}>
-                    編集を終了
-                  </button>
-                </>
+                <button
+                  type="button"
+                  className={styles.ghostBtn}
+                  onClick={saveDraft}
+                  title="履歴に保存して、編集を終了します"
+                >
+                  保存して終了
+                </button>
               ) : (
                 <button
                   type="button"
@@ -801,6 +804,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
             requests={requests}
             canApprove={can.approveReplacement}
             onDecide={decide}
+            editing={edit.editing}
             onDistribution={confirmDistribution}
           />
         </main>
@@ -2153,6 +2157,7 @@ function FlowPanel({
   snapshotsLoaded,
   requests,
   canApprove,
+  editing,
   onDecide,
   onDistribution,
 }: {
@@ -2161,6 +2166,8 @@ function FlowPanel({
   snapshotsLoaded: boolean;
   requests: ReplacementRequest[];
   canApprove: boolean;
+  /** 編集開始中（この画面で編集している） */
+  editing: boolean;
   onDecide: (requestId: string, approve: boolean) => void;
   onDistribution: () => void;
 }) {
@@ -2181,7 +2188,9 @@ function FlowPanel({
         <span>
           現在の状態：
           <strong className={`${styles.flowBadge} ${styles[gian.status]}`}>
-            {STATUS_LABEL[gian.status]}
+            {gian.status === "editing" && editing
+              ? "編集中"
+              : STATUS_LABEL[gian.status]}
           </strong>
         </span>
         <span className={styles.flowHint}>{hint}</span>
@@ -2231,7 +2240,7 @@ function FlowPanel({
             </div>
           ))}
           <p className={styles.autoNote}>
-            ※ 承認機能は仮実装です（承認すると状態を「編集中」に戻します）。
+            ※ 承認機能は仮実装です（承認すると状態を「上程前」に戻します）。
           </p>
         </div>
       )}

@@ -104,7 +104,7 @@ export default function CommitteeReport({
         {can.editGian &&
           (edit.editing ? (
             <button type="button" className={styles.ghostBtn} onClick={edit.stop}>
-              編集を終了
+              保存して終了
             </button>
           ) : (
             <button
