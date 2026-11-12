@@ -19,7 +19,7 @@ import {
   removeGianFromCommittee,
   syncCommitteeGians,
 } from "./yearStore";
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
 
 export const AUTOSAVE_LIMIT = 5;
@@ -98,6 +98,7 @@ export async function hydrate(): Promise<void> {
     db().from("replacement_requests").select("*"),
   ]);
   if (gians.error || reqs.error) {
+    markHydrateFailure();
     console.error(
       "[gianStore] hydrate 失敗:",
       gians.error?.message || reqs.error?.message

@@ -9,7 +9,7 @@
 //  doc に JoteiTodoke 全体。提出（submit）でロック。会議ごとに別レコード。
 // ─────────────────────────────────────────────────────────────
 
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
 
 /** 上程届の1項目（区分内の1行）。 */
@@ -136,6 +136,7 @@ type Row = {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("jotei_todokes").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[joteiStore] hydrate 失敗:", error.message);
     return;
   }

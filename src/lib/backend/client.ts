@@ -12,6 +12,19 @@ export function db() {
   return getSupabase();
 }
 
+// 起動時の読み込み（hydrate）で失敗したストアがあったかの記録。
+// 各 hydrate は失敗しても例外を投げない（変更後の再取得でも使うため）ので、
+// hydrateAll がここを見て「一部しか読めていない」状態を検知し、再試行できるようにする。
+let hydrateFailures = 0;
+export function markHydrateFailure(): void {
+  hydrateFailures++;
+}
+export function takeHydrateFailures(): number {
+  const n = hydrateFailures;
+  hydrateFailures = 0;
+  return n;
+}
+
 /**
  * 応答を待たずに DB 書き込みを実行する。
  * supabase-js のクエリは PromiseLike で、`.then()` を呼ぶまで HTTP リクエストを

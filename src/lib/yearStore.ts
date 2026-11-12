@@ -8,7 +8,7 @@
 //  gians.committee_id が真実で、gianStore 側から同期する（派生フィールド）。
 // ─────────────────────────────────────────────────────────────
 
-import { db } from "./backend/client";
+import { markHydrateFailure, db } from "./backend/client";
 
 /** 予定者期間 / 本番期間 */
 export type Period = "planned" | "live";
@@ -132,6 +132,7 @@ export async function hydrate(): Promise<void> {
     db().from("role_assignments").select("*"),
   ]);
   if (years.error || committees.error || assignments.error) {
+    markHydrateFailure();
     console.error(
       "[yearStore] hydrate 失敗:",
       years.error?.message || committees.error?.message || assignments.error?.message

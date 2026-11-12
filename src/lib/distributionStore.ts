@@ -14,7 +14,7 @@ import { GianFileMeta } from "./gianFilesDb";
 import { CommitteeReport, getStore as getReportStore } from "./committeeReportStore";
 import { Sidai, getSidai, saveSidai } from "./sidaiStore";
 import { Period } from "./yearStore";
-import { db, callApi } from "./backend/client";
+import { markHydrateFailure, db, callApi } from "./backend/client";
 
 export type Board = "理事会" | "三役会";
 export const BOARDS: Board[] = ["理事会", "三役会"];
@@ -138,6 +138,7 @@ export async function hydrate(): Promise<void> {
   } else {
     const { data, error } = await db().from("distributions").select("*");
     if (error) {
+      markHydrateFailure();
       console.error("[distributionStore] hydrate 失敗:", error.message);
       return;
     }

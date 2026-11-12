@@ -7,7 +7,7 @@
 //  各科目の「予算額」は明細行の合計（単一ソース）。
 // ─────────────────────────────────────────────────────────────
 
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
 import { copyFileObjs, deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
@@ -241,6 +241,7 @@ export function subscribe(fn: () => void): () => void {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("budget_docs").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[budgetStore] hydrate 失敗:", error.message);
     return;
   }

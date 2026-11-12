@@ -10,7 +10,7 @@
 
 import { Role } from "./yearStore";
 import { Capability, DEFAULT_PERMS } from "./permissions";
-import { db } from "./backend/client";
+import { markHydrateFailure, db } from "./backend/client";
 
 /** 既定からの上書き分のみ（未指定なら DEFAULT_PERMS を使う） */
 export type RolePermOverrides = Partial<
@@ -33,6 +33,7 @@ export function subscribe(fn: () => void): () => void {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("role_perm_overrides").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[rolePermStore] hydrate 失敗:", error.message);
     return;
   }

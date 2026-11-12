@@ -5,7 +5,7 @@
 //   当面は団体名（lom_name）のみ。マスターだけが変更できる（RLS）。
 // ─────────────────────────────────────────────────────────────
 
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { LOM_NAME_DEFAULT } from "./lom";
 
 export type SettingsMap = Record<string, string>;
@@ -35,6 +35,7 @@ export function getStoreDefault(): SettingsMap {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("app_settings").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[settingsStore] hydrate 失敗:", error.message);
     return;
   }

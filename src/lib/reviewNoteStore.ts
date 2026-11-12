@@ -7,7 +7,7 @@
 //  配信された確定版議案に対する、会議での発言用の私的メモ。
 // ─────────────────────────────────────────────────────────────
 
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { getState as getAuthState } from "./authStore";
 
 export interface ReviewNote {
@@ -84,6 +84,7 @@ function fromRow(r: Row): ReviewNote {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("review_notes").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[reviewNoteStore] hydrate 失敗:", error.message);
     return;
   }

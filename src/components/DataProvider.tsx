@@ -25,22 +25,39 @@ export default function DataProvider({
     let cancelled = false;
     setReady(false);
     setError(null);
-    hydrateAll()
-      .then(() => {
-        if (cancelled) return;
-        // アクティブ年度が未設定／不正なら先頭の年度に合わせる
-        const years = listYears();
-        const av = getActiveView();
-        if (!years.some((y) => y.id === av.yearId) && years[0]) {
-          setYear(years[0].id);
-        }
-        setReady(true);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "読み込みに失敗しました");
-      });
+    // 一時的な通信エラー・認証更新の取りこぼしで空の画面にならないよう、自動で再試行する
+    const RETRY_WAIT_MS = [1500, 3000, 6000];
+    const attempt = (n: number) => {
+      hydrateAll()
+        .then(() => {
+          if (cancelled) return;
+          const years = listYears();
+          // エラーなしで空が返ることがある（認証の反映前など）。年度が0件なら再試行する
+          if (years.length === 0 && n < RETRY_WAIT_MS.length) {
+            retryTimer = setTimeout(() => attempt(n + 1), RETRY_WAIT_MS[n]);
+            return;
+          }
+          // アクティブ年度が未設定／不正なら先頭の年度に合わせる
+          const av = getActiveView();
+          if (!years.some((y) => y.id === av.yearId) && years[0]) {
+            setYear(years[0].id);
+          }
+          setReady(true);
+        })
+        .catch((e) => {
+          if (cancelled) return;
+          if (n < RETRY_WAIT_MS.length) {
+            retryTimer = setTimeout(() => attempt(n + 1), RETRY_WAIT_MS[n]);
+          } else {
+            setError(e instanceof Error ? e.message : "読み込みに失敗しました");
+          }
+        });
+    };
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    attempt(0);
     return () => {
       cancelled = true;
+      clearTimeout(retryTimer);
     };
   }, [userId]);
 

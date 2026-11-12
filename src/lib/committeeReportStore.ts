@@ -5,7 +5,7 @@
 //   委員会ごとに1レコード。会議のたびに meetings に1行追記していく運用。
 // ─────────────────────────────────────────────────────────────
 
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
 
 export interface ReportMeeting {
@@ -96,6 +96,7 @@ type Row = {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("committee_reports").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[committeeReportStore] hydrate 失敗:", error.message);
     return;
   }

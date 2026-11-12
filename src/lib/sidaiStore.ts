@@ -9,7 +9,7 @@
 
 import { Period } from "./yearStore";
 import { sectionLabels } from "./templateStore";
-import { db, fire } from "./backend/client";
+import { markHydrateFailure, db, fire } from "./backend/client";
 import { deleteFileObj } from "./backend/files";
 import { listSidaiFiles } from "./fixedFilesDb";
 
@@ -108,6 +108,7 @@ type Row = {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("sidais").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[sidaiStore] hydrate 失敗:", error.message);
     return;
   }

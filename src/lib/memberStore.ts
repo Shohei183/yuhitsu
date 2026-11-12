@@ -7,7 +7,7 @@
 //  - 起動時に hydrate() が全件をキャッシュへ。以降は subscribe で購読。
 // ─────────────────────────────────────────────────────────────
 
-import { db, callApi } from "./backend/client";
+import { markHydrateFailure, db, callApi } from "./backend/client";
 
 export type MemberStatus = "active" | "retired";
 
@@ -65,6 +65,7 @@ export function subscribe(fn: () => void): () => void {
 export async function hydrate(): Promise<void> {
   const { data, error } = await db().from("members").select("*");
   if (error) {
+    markHydrateFailure();
     console.error("[memberStore] hydrate 失敗:", error.message);
     return;
   }
