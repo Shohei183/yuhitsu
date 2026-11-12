@@ -16,9 +16,11 @@ import {
   balance,
   attachmentOf,
   addOrReuseAttachment,
+  reloadBudget,
 } from "@/lib/budgetStore";
-import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
-import { useEditMode } from "@/lib/useEditMode";
+import { useCanIn, useCollabEnabled, useCommitteeOfGian } from "@/lib/useOrg";
+import { editStartLabel, editStartTitle, useEditMode } from "@/lib/useEditMode";
+import EditNotice from "./EditNotice";
 import { jpNum } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import { uploadFile, deleteFileObj, openFileByIdAsync } from "@/lib/backend/files";
@@ -45,7 +47,12 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   const router = useRouter();
   const previewRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<Tab>("form1");
-  const edit = useEditMode(budgetId);
+  const collab = useCollabEnabled(budget?.yearId);
+  const edit = useEditMode(budgetId, {
+    type: "budget",
+    enabled: collab,
+    reload: () => reloadBudget(budgetId),
+  });
 
   if (!budget) {
     return (
@@ -78,6 +85,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
 
   return (
     <div className={styles.page}>
+      <EditNotice message={edit.message} onClose={edit.dismissMessage} />
       <div className={styles.toolbar}>
         <Link prefetch={false} href={backHref} className={styles.navLink}>
           {budget.gianId ? "← 議案へ戻る" : "← トップへ"}
@@ -98,9 +106,10 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
               type="button"
               className={styles.editBtn}
               onClick={edit.start}
-              title="編集を始めます（編集中の変更は自動で保存されます）"
+              disabled={edit.busy || !!edit.holder}
+              title={editStartTitle(edit)}
             >
-              編集開始
+              {editStartLabel(edit)}
             </button>
           ))}
         {!readOnly && (

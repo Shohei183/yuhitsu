@@ -20,6 +20,7 @@ import {
   syncCommitteeGians,
 } from "./yearStore";
 import { db, fire } from "./backend/client";
+import { reportIfLockRejected } from "./editLockStore";
 
 export const AUTOSAVE_LIMIT = 5;
 
@@ -267,7 +268,17 @@ async function persistGian(id: string): Promise<void> {
     doc: e.gian,
     updated_at: new Date().toISOString(),
   });
-  if (error) console.error("[gianStore] gian 保存失敗:", error.message);
+  if (error && !reportIfLockRejected("gian", id, error))
+    console.error("[gianStore] gian 保存失敗:", error.message);
+}
+
+/** 1件だけ DB から読み直す（編集開始の直前・書き込みを拒否されたとき。履歴・申請は据え置き） */
+export async function reloadGian(id: string): Promise<void> {
+  const { data, error } = await db().from("gians").select("*").eq("id", id).maybeSingle();
+  if (error || !data || deletedGianIds.has(id)) return;
+  const gian = normalizeGian(data as GianRow);
+  const entry = cache[id];
+  setEntry(id, entry ? { ...entry, gian } : { gian, snapshots: [], requests: [] });
 }
 
 async function persistSnapshot(gianId: string, snap: Snapshot): Promise<void> {

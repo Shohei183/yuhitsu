@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { GianKind, MOCK_GIANS, STATUS_LABEL } from "@/lib/mockData";
 import { createGian, deleteGian } from "@/lib/gianStore";
 import { duplicateGianWithAttachments } from "@/lib/gianDuplicate";
-import { useCommittee, useCanIn } from "@/lib/useOrg";
+import { useCommittee, useCanIn, useCollabEnabled } from "@/lib/useOrg";
+import { useEditLocks } from "@/lib/useEditLocks";
 import { useGianStore } from "@/lib/useGianStore";
 import { gianCreatedMs, gianMetaLine } from "@/lib/gianMeta";
 import styles from "./CommitteeFolder.module.css";
@@ -30,6 +31,7 @@ export default function CommitteeGianList({
   const gianStore = useGianStore();
   const can = useCanIn(found?.year.id, committeeId);
   const router = useRouter();
+  const locks = useEditLocks(useCollabEnabled(found?.year.id));
 
   if (!found) {
     return (
@@ -120,7 +122,15 @@ export default function CommitteeGianList({
                   <span className={styles.gianSub}>{gianMetaLine(g)}</span>
                 </span>
                 <span className={`${styles.statusTag} ${styles[g.status]}`}>
-                  {STATUS_LABEL[g.status]}
+                  {(() => {
+                    const lock =
+                      g.status === "editing"
+                        ? locks.find((l) => l.docType === "gian" && l.docId === g.id)
+                        : undefined;
+                    return lock
+                      ? `編集中（${lock.memberName}）`
+                      : STATUS_LABEL[g.status];
+                  })()}
                 </span>
               </Link>
               <span className={styles.gianActions}>

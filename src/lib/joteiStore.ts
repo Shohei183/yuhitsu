@@ -10,6 +10,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { db, fire } from "./backend/client";
+import { reportIfLockRejected } from "./editLockStore";
 
 /** 上程届の1項目（区分内の1行）。 */
 export interface JoteiItem {
@@ -209,7 +210,29 @@ async function persist(id: string): Promise<void> {
     submitted_at: j.submittedAt ?? null,
     updated_at: j.updatedAt,
   });
-  if (error) console.error("[joteiStore] 保存失敗:", error.message);
+  if (error && !reportIfLockRejected("jotei", id, error))
+    console.error("[joteiStore] 保存失敗:", error.message);
+}
+
+/** 1件だけ DB から読み直す */
+export async function reloadJotei(id: string): Promise<void> {
+  const { data, error } = await db().from("jotei_todokes").select("*").eq("id", id).maybeSingle();
+  if (error || !data) return;
+  const r = data as Row;
+  set(
+    id,
+    normalize({
+      ...r.doc,
+      id: r.id,
+      yearId: r.fiscal_year_id,
+      committeeId: r.committee_id ?? r.doc.committeeId,
+      status: r.status,
+      meetingName: r.meeting_name || r.doc.meetingName,
+      submittedAt: r.submitted_at ?? r.doc.submittedAt,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    })
+  );
 }
 
 function set(id: string, j: JoteiTodoke) {

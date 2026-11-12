@@ -6,15 +6,17 @@ import {
   blankMeeting,
   deleteReport,
   ensureReport,
+  reloadReport,
   reportForCommittee,
   saveReport,
 } from "@/lib/committeeReportStore";
 import { useCommitteeReportStore } from "@/lib/useCommitteeReportStore";
-import { useCommittee, useAuthMember, useCanIn } from "@/lib/useOrg";
+import { useCommittee, useAuthMember, useCanIn, useCollabEnabled } from "@/lib/useOrg";
 import { formatJaDate } from "@/lib/format";
 import RichText from "./RichText";
 import { useLomName } from "@/lib/useSettingsStore";
-import { useEditMode } from "@/lib/useEditMode";
+import { editStartLabel, editStartTitle, useEditMode } from "@/lib/useEditMode";
+import EditNotice from "./EditNotice";
 import styles from "./CommitteeReport.module.css";
 
 export default function CommitteeReport({
@@ -28,7 +30,14 @@ export default function CommitteeReport({
   const member = useAuthMember();
   const can = useCanIn(found?.year.id, committeeId);
   const lom = useLomName();
-  const edit = useEditMode(committeeId);
+  const collab = useCollabEnabled(found?.year.id);
+  const reportDocId = reportForCommittee(committeeId)?.id;
+  const edit = useEditMode(committeeId, {
+    type: "report",
+    id: reportDocId,
+    enabled: collab && !!reportDocId,
+    reload: () => (reportDocId ? reloadReport(reportDocId) : Promise.resolve()),
+  });
 
   if (!found) {
     return (
@@ -91,6 +100,7 @@ export default function CommitteeReport({
 
   return (
     <div className={styles.page}>
+      <EditNotice message={edit.message} onClose={edit.dismissMessage} />
       <div className={styles.toolbar}>
         <Link prefetch={false} href={`/committee/${committeeId}`} className={styles.navLink}>
           ← {committee.name}
@@ -111,9 +121,10 @@ export default function CommitteeReport({
               type="button"
               className={styles.primaryBtn}
               onClick={edit.start}
-              title="編集を始めます（編集中の変更は自動で保存されます）"
+              disabled={edit.busy || !!edit.holder}
+              title={editStartTitle(edit)}
             >
-              編集開始
+              {editStartLabel(edit)}
             </button>
           ))}
         {member?.isMaster && (

@@ -81,6 +81,8 @@ export interface FiscalYear {
   committees: Committee[];
   assignments: RoleAssignment[];
   sortOrder?: number;
+  /** 共同編集（編集ロック）を使う年度（fiscal_years.collab_enabled） */
+  collabEnabled?: boolean;
 }
 
 export type YearStore = Record<string, FiscalYear>;
@@ -108,6 +110,7 @@ type YearRow = {
   planned_period_label: string;
   live_period_label: string;
   sort_order: number;
+  collab_enabled?: boolean;
 };
 type CommitteeRow = {
   id: string;
@@ -149,6 +152,7 @@ export async function hydrate(): Promise<void> {
       plannedPeriodLabel: r.planned_period_label,
       livePeriodLabel: r.live_period_label,
       sortOrder: r.sort_order,
+      collabEnabled: r.collab_enabled ?? false,
       committees: [],
       assignments: [],
     };

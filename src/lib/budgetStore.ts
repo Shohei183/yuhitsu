@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { db, fire } from "./backend/client";
+import { reportIfLockRejected } from "./editLockStore";
 import { copyFileObjs, deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
 import { lomName } from "./settingsStore";
@@ -305,7 +306,35 @@ async function persist(id: string): Promise<void> {
     doc: d,
     updated_at: d.updatedAt,
   });
-  if (error) console.error("[budgetStore] 保存失敗:", error.message);
+  if (error && !reportIfLockRejected("budget", id, error))
+    console.error("[budgetStore] 保存失敗:", error.message);
+}
+
+/** 1件だけ DB から読み直す */
+export async function reloadBudget(id: string): Promise<void> {
+  const { data, error } = await db().from("budget_docs").select("*").eq("id", id).maybeSingle();
+  if (error || !data) return;
+  const r = data as {
+    id: string;
+    fiscal_year_id: string;
+    gian_id: string | null;
+    title: string;
+    doc: BudgetDoc;
+    created_at: string;
+    updated_at: string;
+  };
+  set(
+    id,
+    normalize({
+      ...r.doc,
+      id: r.id,
+      yearId: r.fiscal_year_id,
+      gianId: r.gian_id,
+      title: r.title,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    })
+  );
 }
 
 function set(id: string, d: BudgetDoc) {

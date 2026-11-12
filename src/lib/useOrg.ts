@@ -90,6 +90,12 @@ export function useActiveYear(): FiscalYear | undefined {
   return getYear(yearId);
 }
 
+/** 共同編集（編集ロック）を使う年度か（fiscal_years.collab_enabled） */
+export function useCollabEnabled(yearId: string | undefined): boolean {
+  useYearStore();
+  return !!(yearId && getYear(yearId)?.collabEnabled);
+}
+
 export function useCommittee(committeeId: string):
   | { year: FiscalYear; committee: Committee }
   | undefined {

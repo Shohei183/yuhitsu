@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { db, fire } from "./backend/client";
+import { reportIfLockRejected } from "./editLockStore";
 
 export interface ReportMeeting {
   id: string;
@@ -133,7 +134,27 @@ async function persist(id: string): Promise<void> {
     doc: r,
     updated_at: r.updatedAt,
   });
-  if (error) console.error("[committeeReportStore] 保存失敗:", error.message);
+  if (error && !reportIfLockRejected("report", id, error))
+    console.error("[committeeReportStore] 保存失敗:", error.message);
+}
+
+/** 1件だけ DB から読み直す */
+export async function reloadReport(id: string): Promise<void> {
+  const { data, error } = await db().from("committee_reports").select("*").eq("id", id).maybeSingle();
+  if (error || !data) return;
+  const r = data as Row;
+  set(
+    id,
+    normalize({
+      ...r.doc,
+      id: r.id,
+      yearId: r.fiscal_year_id,
+      committeeId: r.committee_id,
+      committeeName: r.committee_name || r.doc.committeeName,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    })
+  );
 }
 
 function set(id: string, r: CommitteeReport) {

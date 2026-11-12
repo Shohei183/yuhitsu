@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useEditMode } from "@/lib/useEditMode";
+import { editStartLabel, editStartTitle, useEditMode } from "@/lib/useEditMode";
+import EditNotice from "./EditNotice";
 import {
   AssignedMember,
   BudgetLine,
@@ -27,6 +28,7 @@ import {
   decideReplacement,
   getEntry,
   lockGian,
+  reloadGian,
   requestReplacement,
   isKihon,
   isReport,
@@ -38,7 +40,7 @@ import {
 import { useGianEntry, useGianSnapshots, useGianStore } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, createBudget, sectionTotal } from "@/lib/budgetStore";
-import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
+import { useCanIn, useCollabEnabled, useCommitteeOfGian } from "@/lib/useOrg";
 import { formatJaDate, formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { RICH_RED, isRichEmpty } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
@@ -146,7 +148,12 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
 
   const [toast, setToast] = useState<string | null>(null);
 
-  const edit = useEditMode(gianId);
+  const collab = useCollabEnabled(gian.yearId ?? committeeInfo?.year.id);
+  const edit = useEditMode(gianId, {
+    type: "gian",
+    enabled: collab,
+    reload: () => reloadGian(gianId),
+  });
   const readOnly = gian.status !== "editing" || !can.editGian || !edit.editing;
 
   /** 議案本体の更新（localStorage ストアへ保存） */
@@ -574,6 +581,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
 
   return (
     <div className={styles.root}>
+      <EditNotice message={edit.message} onClose={edit.dismissMessage} />
       {/* ── トップバー（全カラムを横断）── */}
       <header className={styles.topbar}>
         <div className={styles.tbLeft}>
@@ -617,9 +625,10 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
                   type="button"
                   className={styles.primaryBtn}
                   onClick={edit.start}
-                  title="編集を始めます（編集中の変更は自動で保存されます）"
+                  disabled={edit.busy || !!edit.holder}
+                  title={editStartTitle(edit)}
                 >
-                  編集開始
+                  {editStartLabel(edit)}
                 </button>
               )}
               {can.submitGian ? (

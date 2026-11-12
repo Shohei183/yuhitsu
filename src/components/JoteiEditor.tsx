@@ -9,6 +9,7 @@ import {
   blankItem,
   deleteJotei,
   listJoteiForYear,
+  reloadJotei,
   reopenJotei,
   saveJotei,
   sectionItems,
@@ -18,9 +19,10 @@ import {
 import { useJotei, useJoteiStore } from "@/lib/useJoteiStore";
 import { listSidai } from "@/lib/sidaiStore";
 import { useSidaiStore } from "@/lib/useSidaiStore";
-import { useCommittee, useAuthMember, useCanIn } from "@/lib/useOrg";
+import { useCommittee, useAuthMember, useCanIn, useCollabEnabled } from "@/lib/useOrg";
 import { formatJaDateTime } from "@/lib/format";
-import { useEditMode } from "@/lib/useEditMode";
+import { editStartLabel, editStartTitle, useEditMode } from "@/lib/useEditMode";
+import EditNotice from "./EditNotice";
 import styles from "./JoteiEditor.module.css";
 
 export default function JoteiEditor({ joteiId }: { joteiId: string }) {
@@ -32,7 +34,12 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
   const member = useAuthMember();
   const can = useCanIn(jotei?.yearId, jotei?.committeeId);
   const listId = useId();
-  const edit = useEditMode(joteiId);
+  const collab = useCollabEnabled(jotei?.yearId);
+  const edit = useEditMode(joteiId, {
+    type: "jotei",
+    enabled: collab,
+    reload: () => reloadJotei(joteiId),
+  });
 
   const meetingSuggestions = useMemo(() => {
     const yid = jotei?.yearId ?? "";
@@ -96,6 +103,7 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
 
   return (
     <div className={styles.page}>
+      <EditNotice message={edit.message} onClose={edit.dismissMessage} />
       <div className={styles.toolbar}>
         <Link prefetch={false} href={backHref} className={styles.navLink}>
           ← 上程届一覧
@@ -113,9 +121,10 @@ export default function JoteiEditor({ joteiId }: { joteiId: string }) {
               type="button"
               className={styles.primaryBtn}
               onClick={edit.start}
-              title="編集を始めます（編集中の変更は自動で保存されます）"
+              disabled={edit.busy || !!edit.holder}
+              title={editStartTitle(edit)}
             >
-              編集開始
+              {editStartLabel(edit)}
             </button>
           ))}
         {!locked && can.submitGian && (

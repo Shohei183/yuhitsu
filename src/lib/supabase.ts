@@ -60,3 +60,8 @@ export async function getAccessToken(): Promise<string | null> {
   const { data } = await getSupabase().auth.getSession();
   return data.session?.access_token ?? null;
 }
+
+/** keepalive の fetch など、supabase-js を通さない呼び出し用（未設定なら null） */
+export function getSupabaseEnv(): { url: string; anon: string } | null {
+  return url && anon ? { url, anon } : null;
+}

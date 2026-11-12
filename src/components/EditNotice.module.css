@@ -1,0 +1,32 @@
+.notice {
+  position: fixed;
+  top: calc(var(--topbar-h, 56px) + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: min(560px, calc(100vw - 24px));
+  padding: 10px 14px;
+  background: #fdf3d8;
+  border: 1px solid #ecd9a8;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  color: #7a5a00;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.text {
+  overflow-wrap: anywhere;
+}
+.close {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
