@@ -84,18 +84,14 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 }
 
 /**
- * 表示中のドキュメント要素（`<article>` など）を、
- * ページの CSS を同梱した自己完結の HTML ファイルとして保存する。
- *
- * 資料ファイル（[data-file-id]）は実体を HTML に同梱するため、
- * 大きな資料が多いと生成に時間がかかり、ファイルも大きくなる。
+ * 書き出し用に、表示中のドキュメント要素を複製して整える
+ * （ボタン・入力欄を静的テキストに、資料リンクを同梱／テキストに）。
+ * embedFiles=false のときは資料ファイルは同梱せず、名前だけのテキストにする。
  */
-export async function downloadDocHtml(
-  el: HTMLElement | null,
-  filename: string,
-  title: string
-): Promise<void> {
-  if (!el) return;
+async function prepareExportClone(
+  el: HTMLElement,
+  embedFiles: boolean
+): Promise<HTMLElement> {
   const clone = el.cloneNode(true) as HTMLElement;
 
   // display:none で隠していた「ダウンロード専用」部分を表示に戻す
@@ -121,6 +117,7 @@ export async function downloadDocHtml(
       const name =
         node.getAttribute("data-file-name") || label || "download";
       try {
+        if (!embedFiles) throw new Error("skip");
         const got = id ? await getFileBlobById(id) : undefined;
         if (!got) throw new Error("not found");
         const dataUrl = await blobToDataUrl(got.blob);
@@ -178,6 +175,23 @@ export async function downloadDocHtml(
     );
   });
 
+  return clone;
+}
+
+/**
+ * 表示中のドキュメント要素（`<article>` など）を、
+ * ページの CSS を同梱した自己完結の HTML ファイルとして保存する。
+ *
+ * 資料ファイル（[data-file-id]）は実体を HTML に同梱するため、
+ * 大きな資料が多いと生成に時間がかかり、ファイルも大きくなる。
+ */
+export async function downloadDocHtml(
+  el: HTMLElement | null,
+  filename: string,
+  title: string
+): Promise<void> {
+  if (!el) return;
+  const clone = await prepareExportClone(el, true);
   const css = collectPageCss();
   const html =
     `<!doctype html><html lang="ja"><head><meta charset="utf-8">` +
@@ -193,5 +207,50 @@ export async function downloadDocHtml(
   downloadBlob(
     new Blob([html], { type: "text/html;charset=utf-8" }),
     sanitizeFilename(filename.endsWith(".html") ? filename : `${filename}.html`)
+  );
+}
+
+/** CSS 変数 var(--x, 既定値) を、現在の値に置き換える（Word は CSS 変数を解釈しないため） */
+function resolveCssVars(css: string): string {
+  const root = getComputedStyle(document.documentElement);
+  return css.replace(
+    /var\(\s*(--[\w-]+)\s*(?:,\s*([^()]*))?\)/g,
+    (_m, name: string, fallback?: string) =>
+      root.getPropertyValue(name).trim() || (fallback ?? "").trim() || "inherit"
+  );
+}
+
+/**
+ * 表示中のドキュメント要素を、Word で開ける .doc（Word 形式の HTML）として保存する。
+ * 画面の見た目をそのまま Word に写す簡易版なので、表の罫線・余白・段組みは
+ * 画面と多少ずれる。資料ファイルは同梱せず、名前だけのテキストにする。
+ */
+export async function downloadDocWord(
+  el: HTMLElement | null,
+  filename: string,
+  title: string
+): Promise<void> {
+  if (!el) return;
+  const clone = await prepareExportClone(el, false);
+  const css = resolveCssVars(collectPageCss());
+  const html =
+    `﻿<html xmlns:o="urn:schemas-microsoft-com:office:office" ` +
+    `xmlns:w="urn:schemas-microsoft-com:office:word" ` +
+    `xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">` +
+    `<title>${escapeHtml(title)}</title>` +
+    `<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>` +
+    `<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->` +
+    `<style>
+${css}
+` +
+    `@page WordSection1{size:210mm 297mm;margin:14mm 12mm;mso-page-orientation:portrait}` +
+    `div.WordSection1{page:WordSection1}` +
+    `body{background:#fff;color:#1a2230}` +
+    `[data-export-gian]{page-break-before:always}` +
+    `</style></head><body><div class="WordSection1">${clone.outerHTML}</div></body></html>`;
+
+  downloadBlob(
+    new Blob([html], { type: "application/msword;charset=utf-8" }),
+    sanitizeFilename(filename.endsWith(".doc") ? filename : `${filename}.doc`)
   );
 }

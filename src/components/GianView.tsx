@@ -13,7 +13,7 @@ import {
 import { formatJaDateTime, jpNum, sumAmounts } from "@/lib/format";
 import { RICH_RED, sanitizeRichHtml } from "@/lib/richText";
 import { useLomName } from "@/lib/useSettingsStore";
-import { downloadDocHtml } from "@/lib/download";
+import { downloadDocHtml, downloadDocWord } from "@/lib/download";
 import {
   GianFileCategory,
   GIAN_FILE_CATEGORY_LABEL,
@@ -122,6 +122,14 @@ export default function GianView({
       `${kindLabel}_${gian.topic}`,
       `${kindLabel}：${gian.topic}`
     ).catch((e) => console.error("[議案] ダウンロード失敗:", e));
+  };
+
+  const onDownloadWord = () => {
+    void downloadDocWord(
+      docRef.current,
+      `${kindLabel}_${gian.topic}`,
+      `${kindLabel}：${gian.topic}`
+    ).catch((e) => console.error("[議案] Word出力失敗:", e));
   };
 
   const body = (
@@ -487,6 +495,14 @@ export default function GianView({
         title="この議案を単一 HTML ファイルとして保存（オフラインで開ける／印刷で PDF 化も可）"
       >
         ダウンロード
+      </button>
+      <button
+        type="button"
+        className={styles.downloadBtn}
+        onClick={onDownloadWord}
+        title="この議案を Word 形式（.doc）で保存（仮）。見た目は画面と多少ずれます"
+      >
+        Word出力（仮）
       </button>
       <button
         type="button"

@@ -18,6 +18,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
     "aws4fetch": "^1.0.20",
+    "docx": "^9.15.3",
     "next": "^16.4.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
