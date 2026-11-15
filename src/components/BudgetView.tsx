@@ -6,6 +6,7 @@ import { useBudget } from "@/lib/useBudgetStore";
 import { reloadBudget } from "@/lib/budgetStore";
 import { useAutoRefresh } from "@/lib/useAutoRefresh";
 import { downloadDocHtml } from "@/lib/download";
+import { downloadDocDocx } from "@/lib/exportDocx";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import BudgetDoc, { BudgetForm } from "./BudgetDoc";
 import styles from "./BudgetView.module.css";
@@ -45,6 +46,17 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
     ).catch((e) => console.error("[予算書] ダウンロード失敗:", e));
   };
 
+  const onDownloadWord = () => {
+    void downloadDocDocx(
+      docRef.current,
+      `事業収支予算書_${budget.title || "無題"}`,
+      `事業収支予算書：${budget.title || "無題"}`
+    ).catch((e) => {
+      console.error("[予算書] Word出力失敗:", e);
+      alert("Word出力に失敗しました。もう一度お試しください。");
+    });
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
@@ -58,6 +70,14 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
         )}
         <button type="button" className={styles.dlBtn} onClick={onDownload}>
           ダウンロード
+        </button>
+        <button
+          type="button"
+          className={styles.dlBtn}
+          onClick={onDownloadWord}
+          title="全様式を Word（.docx）で保存します"
+        >
+          Word出力
         </button>
         <button
           type="button"
