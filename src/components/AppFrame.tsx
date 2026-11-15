@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuthState } from "@/lib/useOrg";
 import TopBar from "./TopBar";
 import DataProvider from "./DataProvider";
+import SaveStatusBanner from "./SaveStatusBanner";
 import styles from "./AppFrame.module.css";
 
 /** ログイン不要で表示するパス */
@@ -48,6 +49,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
       <div className={styles.frame}>
         <TopBar />
         <div className={styles.body}>{children}</div>
+        <SaveStatusBanner />
       </div>
     </DataProvider>
   );

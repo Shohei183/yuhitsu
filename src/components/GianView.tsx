@@ -23,7 +23,8 @@ import {
 } from "@/lib/gianFilesDb";
 import { openFileByIdAsync } from "@/lib/backend/files";
 import { useGianFiles } from "@/lib/useGianFiles";
-import { isKihon, showsPriorFeedback } from "@/lib/gianStore";
+import { isKihon, reloadGian, showsPriorFeedback } from "@/lib/gianStore";
+import { useAutoRefresh } from "@/lib/useAutoRefresh";
 import { useGianEntry, useGianSnapshots } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, sectionTotal } from "@/lib/budgetStore";
@@ -79,6 +80,10 @@ export default function GianView({
   const committeeInfo = useCommitteeOfGian(gianId ?? "");
   const docRef = useRef<HTMLElement>(null);
   useBudgetStore();
+  // 現在の議案をそのまま表示しているときだけ、他の人の保存を取り込む
+  useAutoRefresh(
+    !embedded && !snapshotId && !gianProp && gianId ? () => reloadGian(gianId) : null
+  );
   const lom = useLomName();
   const budgetOwnerId = gianId ?? gianProp?.id;
   const linkedBudget = budgetOwnerId ? budgetForGian(budgetOwnerId) : undefined;

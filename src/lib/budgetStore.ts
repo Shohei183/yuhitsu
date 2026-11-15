@@ -9,6 +9,7 @@
 
 import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
+import { dbErrorResult, hasPendingSaves, queueSave } from "./backend/saveQueue";
 import { copyFileObjs, deleteFileObj } from "./backend/files";
 import { parseAmount } from "./format";
 import { lomName } from "./settingsStore";
@@ -296,25 +297,45 @@ export function budgetForGian(gianId: string): BudgetDoc | undefined {
 }
 
 // ── 永続化 ──
-async function persist(id: string): Promise<void> {
-  const d = cache[id];
-  if (!d) return;
-  const { error } = await db().from("budget_docs").upsert({
-    id,
-    fiscal_year_id: d.yearId,
-    gian_id: d.gianId,
-    title: d.title,
-    doc: d,
-    updated_at: d.updatedAt,
-  });
-  if (error && !reportIfLockRejected("budget", id, error))
+// 保存は文書ごとに1件ずつ順番に行い（保存キュー）、失敗したら自動でやり直す。
+function persist(id: string): Promise<void> {
+  return queueSave(`budget:${id}`, async () => {
+    const d = cache[id];
+    if (!d) return { kind: "ok" }; // 削除済みは書き戻さない
+    const { error } = await db().from("budget_docs").upsert({
+      id,
+      fiscal_year_id: d.yearId,
+      gian_id: d.gianId,
+      title: d.title,
+      doc: d,
+      updated_at: d.updatedAt,
+    });
+    if (!error) {
+      // 一定時間ごとに、保存履歴へも残す
+      const last = lastSnapshot.get(id);
+      if (!last || Date.now() - last.at > SNAPSHOT_INTERVAL_MS) {
+        void takeBudgetSnapshot(id, "自動保存");
+      }
+      return { kind: "ok" };
+    }
+    if (reportIfLockRejected("budget", id, error)) return { kind: "rejected" };
     console.error("[budgetStore] 保存失敗:", error.message);
+    return dbErrorResult(error);
+  });
+}
+
+/** 内容が同じか（更新日時は無視） */
+function sameContent(a: BudgetDoc, b: BudgetDoc): boolean {
+  return JSON.stringify({ ...a, updatedAt: "" }) === JSON.stringify({ ...b, updatedAt: "" });
 }
 
 /** 1件だけ DB から読み直す */
 export async function reloadBudget(id: string): Promise<void> {
+  // 保存が終わっていない手元の変更は、読み直しで消さない
+  if (hasPendingSaves(`budget:${id}`)) return;
   const { data, error } = await db().from("budget_docs").select("*").eq("id", id).maybeSingle();
   if (error || !data) return;
+  if (hasPendingSaves(`budget:${id}`)) return;
   const r = data as {
     id: string;
     fiscal_year_id: string;
@@ -324,18 +345,18 @@ export async function reloadBudget(id: string): Promise<void> {
     created_at: string;
     updated_at: string;
   };
-  set(
-    id,
-    normalize({
-      ...r.doc,
-      id: r.id,
-      yearId: r.fiscal_year_id,
-      gianId: r.gian_id,
-      title: r.title,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    })
-  );
+  const next = normalize({
+    ...r.doc,
+    id: r.id,
+    yearId: r.fiscal_year_id,
+    gianId: r.gian_id,
+    title: r.title,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  });
+  const cur = cache[id];
+  if (cur && sameContent(cur, next)) return; // 変わっていなければ再描画しない
+  set(id, next);
 }
 
 function set(id: string, d: BudgetDoc) {
@@ -392,8 +413,105 @@ export async function duplicateBudget(
 }
 
 export function saveBudget(id: string, doc: BudgetDoc): void {
+  // 内容が変わっていない保存（入力欄を触っただけ・離れただけ）は書き込まない。
+  // 古い画面のまま触っただけで、他の人の新しい内容を上書きするのを防ぐ。
+  const cur = cache[id];
+  if (cur && sameContent(cur, doc)) return;
   set(id, { ...doc, updatedAt: new Date().toISOString() });
   void persist(id);
+}
+
+/**
+ * アップロード済みの資料を、予算書の資料プールに追加する。
+ * アップロードに時間がかかるあいだに入力された変更を消さないよう、
+ * 呼び出し時点の最新の内容へ足す（アップロード開始時の内容には戻さない）。
+ */
+export function attachFilesToBudget(
+  id: string,
+  files: { fileId: string; name: string }[]
+): void {
+  let doc = cache[id];
+  if (!doc || files.length === 0) return;
+  for (const f of files) {
+    const res = addOrReuseAttachment(doc, f.fileId, f.name);
+    if (res.attachment.fileId !== f.fileId) void deleteFileObj(f.fileId);
+    doc = res.doc;
+  }
+  saveBudget(id, doc);
+}
+
+// ── 保存履歴（budget_snapshots） ──
+export interface BudgetSnapshot {
+  id: string;
+  budgetId: string;
+  takenAt: string;
+  reason: string;
+  memberName: string;
+  doc: BudgetDoc;
+}
+
+const SNAPSHOT_INTERVAL_MS = 10 * 60_000;
+const lastSnapshot = new Map<string, { at: number; sig: string }>();
+let historyUnavailable = false;
+
+/** 現在の内容を、保存履歴に残す（前回と同じ内容なら残さない） */
+export async function takeBudgetSnapshot(id: string, reason: string): Promise<void> {
+  const d = cache[id];
+  if (!d || historyUnavailable) return;
+  const sig = JSON.stringify({ ...d, updatedAt: "" });
+  if (lastSnapshot.get(id)?.sig === sig) return;
+  lastSnapshot.set(id, { at: Date.now(), sig });
+  const { error } = await db()
+    .from("budget_snapshots")
+    .insert({ budget_id: id, reason, doc: d });
+  if (error) {
+    // テーブルがまだ無い環境では、以後は試さない
+    if (error.code === "42P01" || error.code === "PGRST205") historyUnavailable = true;
+    else console.warn("[budgetStore] 履歴の保存に失敗:", error.message);
+  }
+}
+
+export async function listBudgetSnapshots(id: string): Promise<BudgetSnapshot[]> {
+  const { data, error } = await db()
+    .from("budget_snapshots")
+    .select("id,budget_id,taken_at,reason,member_name,doc")
+    .eq("budget_id", id)
+    .order("taken_at", { ascending: false })
+    .limit(60);
+  if (error || !data) return [];
+  return (data as {
+    id: string;
+    budget_id: string;
+    taken_at: string;
+    reason: string;
+    member_name: string;
+    doc: BudgetDoc;
+  }[]).map((r) => ({
+    id: r.id,
+    budgetId: r.budget_id,
+    takenAt: r.taken_at,
+    reason: r.reason,
+    memberName: r.member_name,
+    doc: normalize(r.doc),
+  }));
+}
+
+/** 履歴の時点の内容に戻す。戻す直前の内容も履歴に残す。 */
+export function restoreBudgetSnapshot(id: string, snap: BudgetSnapshot): void {
+  const cur = cache[id];
+  if (!cur) return;
+  void takeBudgetSnapshot(id, "復元の直前");
+  saveBudget(
+    id,
+    normalize({
+      ...snap.doc,
+      id,
+      yearId: cur.yearId,
+      gianId: cur.gianId,
+      createdAt: cur.createdAt,
+      updatedAt: cur.updatedAt,
+    })
+  );
 }
 
 export function deleteBudget(id: string): void {

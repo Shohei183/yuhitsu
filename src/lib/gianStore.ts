@@ -21,6 +21,7 @@ import {
 } from "./yearStore";
 import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
+import { dbErrorResult, hasPendingSaves, queueSave } from "./backend/saveQueue";
 
 export const AUTOSAVE_LIMIT = 5;
 
@@ -251,34 +252,49 @@ export function isKihon(kind: GianKind): boolean {
 }
 
 // ── 永続化ヘルパー ──
-async function persistGian(id: string): Promise<void> {
-  if (deletedGianIds.has(id)) return; // 削除済みは書き戻さない
-  const e = cache[id];
-  if (!e) return;
-  const yid = yearIdOf(e.gian);
-  if (!yid) {
-    console.error("[gianStore] 年度が特定できず保存できません:", id);
-    return;
-  }
-  const { error } = await db().from("gians").upsert({
-    id,
-    fiscal_year_id: yid,
-    committee_id: e.gian.committeeId ?? null,
-    kind: e.gian.kind,
-    status: e.gian.status,
-    doc: e.gian,
-    updated_at: new Date().toISOString(),
-  });
-  if (error && !reportIfLockRejected("gian", id, error))
+// 保存は文書ごとに1件ずつ順番に行い（保存キュー）、失敗したら自動でやり直す。
+function persistGian(id: string): Promise<void> {
+  return queueSave(`gian:${id}`, async () => {
+    if (deletedGianIds.has(id)) return { kind: "ok" }; // 削除済みは書き戻さない
+    const e = cache[id];
+    if (!e) return { kind: "ok" };
+    const yid = yearIdOf(e.gian);
+    if (!yid) {
+      console.error("[gianStore] 年度が特定できず保存できません:", id);
+      return { kind: "fatal", message: "年度が特定できず保存できません" };
+    }
+    const { error } = await db().from("gians").upsert({
+      id,
+      fiscal_year_id: yid,
+      committee_id: e.gian.committeeId ?? null,
+      kind: e.gian.kind,
+      status: e.gian.status,
+      doc: e.gian,
+      updated_at: new Date().toISOString(),
+    });
+    if (!error) return { kind: "ok" };
+    if (reportIfLockRejected("gian", id, error)) return { kind: "rejected" };
     console.error("[gianStore] gian 保存失敗:", error.message);
+    return dbErrorResult(error);
+  });
 }
 
 /** 1件だけ DB から読み直す（編集開始の直前・書き込みを拒否されたとき。履歴・申請は据え置き） */
 export async function reloadGian(id: string): Promise<void> {
+  // 保存が終わっていない手元の変更は、読み直しで消さない
+  if (hasPendingSaves(`gian:${id}`)) return;
   const { data, error } = await db().from("gians").select("*").eq("id", id).maybeSingle();
   if (error || !data || deletedGianIds.has(id)) return;
+  if (hasPendingSaves(`gian:${id}`)) return;
   const gian = normalizeGian(data as GianRow);
   const entry = cache[id];
+  // 変わっていなければ再描画しない（更新日時は無視）
+  if (
+    entry &&
+    JSON.stringify({ ...entry.gian, updatedAt: "" }) ===
+      JSON.stringify({ ...gian, updatedAt: "" })
+  )
+    return;
   setEntry(id, entry ? { ...entry, gian } : { gian, snapshots: [], requests: [] });
 }
 

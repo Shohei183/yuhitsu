@@ -7,6 +7,7 @@
 
 import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
+import { dbErrorResult, hasPendingSaves, queueSave } from "./backend/saveQueue";
 
 export interface ReportMeeting {
   id: string;
@@ -124,38 +125,46 @@ export function reportForCommittee(
 }
 
 // ── 永続化 ──
-async function persist(id: string): Promise<void> {
-  const r = cache[id];
-  if (!r) return;
-  const { error } = await db().from("committee_reports").upsert({
-    id,
-    fiscal_year_id: r.yearId,
-    committee_id: r.committeeId,
-    committee_name: r.committeeName,
-    doc: r,
-    updated_at: r.updatedAt,
-  });
-  if (error && !reportIfLockRejected("report", id, error))
+// 保存は文書ごとに1件ずつ順番に行い（保存キュー）、失敗したら自動でやり直す。
+function persist(id: string): Promise<void> {
+  return queueSave(`report:${id}`, async () => {
+    const r = cache[id];
+    if (!r) return { kind: "ok" };
+    const { error } = await db().from("committee_reports").upsert({
+      id,
+      fiscal_year_id: r.yearId,
+      committee_id: r.committeeId,
+      committee_name: r.committeeName,
+      doc: r,
+      updated_at: r.updatedAt,
+    });
+    if (!error) return { kind: "ok" };
+    if (reportIfLockRejected("report", id, error)) return { kind: "rejected" };
     console.error("[committeeReportStore] 保存失敗:", error.message);
+    return dbErrorResult(error);
+  });
 }
 
 /** 1件だけ DB から読み直す */
 export async function reloadReport(id: string): Promise<void> {
+  if (hasPendingSaves(`report:${id}`)) return;
   const { data, error } = await db().from("committee_reports").select("*").eq("id", id).maybeSingle();
   if (error || !data) return;
+  if (hasPendingSaves(`report:${id}`)) return;
   const r = data as Row;
-  set(
-    id,
-    normalize({
-      ...r.doc,
-      id: r.id,
-      yearId: r.fiscal_year_id,
-      committeeId: r.committee_id,
-      committeeName: r.committee_name || r.doc.committeeName,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    })
-  );
+  const next = normalize({
+    ...r.doc,
+    id: r.id,
+    yearId: r.fiscal_year_id,
+    committeeId: r.committee_id,
+    committeeName: r.committee_name || r.doc.committeeName,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  });
+  const cur = cache[id];
+  if (cur && JSON.stringify({ ...cur, updatedAt: "" }) === JSON.stringify({ ...next, updatedAt: "" }))
+    return;
+  set(id, next);
 }
 
 function set(id: string, r: CommitteeReport) {

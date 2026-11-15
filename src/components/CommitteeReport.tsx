@@ -113,7 +113,7 @@ export default function CommitteeReport({
         </Link>
         {can.editGian &&
           (edit.editing ? (
-            <button type="button" className={styles.ghostBtn} onClick={edit.stop}>
+            <button type="button" className={styles.ghostBtn} onClick={() => void edit.finish()}>
               保存して終了
             </button>
           ) : (

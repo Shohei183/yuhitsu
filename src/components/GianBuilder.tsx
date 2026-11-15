@@ -527,10 +527,12 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     }));
   }
 
-  function saveDraft() {
+  async function saveDraft() {
     saveDraftSnapshot(gianId, "保存");
-    edit.stop();
-    flash(`保存して編集を終了しました（履歴に一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
+    // 保存が DB に届いてから編集を終了する（届かなければ編集は続いたまま）
+    if (await edit.finish()) {
+      flash(`保存して編集を終了しました（履歴に一時記録：直近${AUTOSAVE_LIMIT}件を保持）`);
+    }
   }
 
   function submitToMeeting() {

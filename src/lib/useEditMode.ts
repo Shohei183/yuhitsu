@@ -12,6 +12,7 @@ import {
   releaseEditLock,
   releaseEditLockOnUnload,
 } from "./editLockStore";
+import { flushSaves } from "./backend/saveQueue";
 import { useAuthState } from "./useOrg";
 
 export interface CollabOptions {
@@ -25,6 +26,8 @@ export interface CollabOptions {
 }
 
 const HOLDER_POLL_MS = 15_000;
+/** 編集していないあいだ、他の人の変更を取り込むために最新の内容を読み直す間隔 */
+const AUTO_REFRESH_MS = 60_000;
 /** 通信エラーが続いて、ロックが失効したとみなすまでの回数（30秒 × 3 ≒ 90秒） */
 const MAX_HEARTBEAT_ERRORS = 3;
 
@@ -43,6 +46,11 @@ export function useEditMode(
   editing: boolean;
   start: () => void;
   stop: () => void;
+  /**
+   * 保存が DB に届くのを待ってから編集を終了する（「保存して終了」用）。
+   * 保存が終わっていなければ終了せず、理由を message に出して false を返す。
+   */
+  finish: () => Promise<boolean>;
   /** 編集開始の処理中（ロック取得・読み直し） */
   busy: boolean;
   /** 他の人（または別のタブ）が編集中ならその情報 */
@@ -76,7 +84,22 @@ export function useEditMode(
   const start = useCallback(() => {
     setMessage(null);
     if (!enabled || !type) {
-      setStartedKey(key);
+      // ロックを使わない年度でも、開始の直前に最新の内容を読み直す
+      // （画面を開きっぱなしにした古い内容のまま編集して、他の人の変更を上書きしない）
+      if (!collab?.reload) {
+        setStartedKey(key);
+        return;
+      }
+      setBusy(true);
+      void (async () => {
+        try {
+          await flushSaves(undefined, 5_000);
+          await reloadSafely();
+          setStartedKey(key);
+        } finally {
+          setBusy(false);
+        }
+      })();
       return;
     }
     setBusy(true);
@@ -96,16 +119,45 @@ export function useEditMode(
           return;
         }
         // 他の人の変更を取り込んでから編集を始める（古い内容の上書きを防ぐ）
+        await flushSaves(undefined, 5_000);
         await reloadSafely();
         setStartedKey(key);
       } finally {
         setBusy(false);
       }
     })();
-  }, [enabled, type, lockId, key, reloadSafely]);
+  }, [enabled, type, lockId, key, collab?.reload, reloadSafely]);
 
   const stop = useCallback(() => setStartedKey(null), []);
+  const finish = useCallback(async (): Promise<boolean> => {
+    const queueKey = type ? `${type}:${lockId}` : undefined;
+    if (queueKey && !(await flushSaves(queueKey))) {
+      setMessage(
+        "保存がまだ完了していません。通信状況を確認して、少し待ってからもう一度「保存して終了」を押してください（編集内容は画面に残っています）。"
+      );
+      return false;
+    }
+    setStartedKey(null);
+    return true;
+  }, [type, lockId]);
   const dismissMessage = useCallback(() => setMessage(null), []);
+
+  // 編集していないあいだ：画面を開き直したとき・1分ごとに最新の内容を読み直す
+  // （他の人の保存が反映されず、古い内容が表示され続けるのを防ぐ）
+  const canRefresh = !!collab?.reload;
+  useEffect(() => {
+    if (editing || !canRefresh) return;
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      void reloadSafely();
+    };
+    const t = setInterval(refresh, AUTO_REFRESH_MS);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [editing, canRefresh, reloadSafely]);
 
   // 編集中でないあいだ、他の人が編集中かを定期的に確認する
   useEffect(() => {
@@ -178,7 +230,7 @@ export function useEditMode(
     });
   }, [enabled, type, lockId, editing, reloadSafely]);
 
-  return { editing, start, stop, busy, holder, message, dismissMessage };
+  return { editing, start, stop, finish, busy, holder, message, dismissMessage };
 }
 
 /** 「編集開始」ボタンの文言（他の人が編集中ならその旨） */

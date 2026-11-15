@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useBudget } from "@/lib/useBudgetStore";
+import { reloadBudget } from "@/lib/budgetStore";
+import { useAutoRefresh } from "@/lib/useAutoRefresh";
 import { downloadDocHtml } from "@/lib/download";
 import { useCanIn, useCommitteeOfGian } from "@/lib/useOrg";
 import BudgetDoc, { BudgetForm } from "./BudgetDoc";
@@ -20,6 +22,7 @@ export default function BudgetView({ budgetId }: { budgetId: string }) {
   const can = useCanIn(cInfo?.year.id, cInfo?.committee.id);
   const docRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<BudgetForm>("form1");
+  useAutoRefresh(() => reloadBudget(budgetId));
 
   if (!budget) {
     return (

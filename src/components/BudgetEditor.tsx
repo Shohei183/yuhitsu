@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBudget } from "@/lib/useBudgetStore";
@@ -15,8 +15,9 @@ import {
   sectionTotal,
   balance,
   attachmentOf,
-  addOrReuseAttachment,
+  attachFilesToBudget,
   reloadBudget,
+  takeBudgetSnapshot,
 } from "@/lib/budgetStore";
 import { useCanIn, useCollabEnabled, useCommitteeOfGian } from "@/lib/useOrg";
 import { editStartLabel, editStartTitle, useEditMode } from "@/lib/useEditMode";
@@ -25,6 +26,7 @@ import { jpNum } from "@/lib/format";
 import { downloadDocHtml } from "@/lib/download";
 import { uploadFile, deleteFileObj, openFileByIdAsync } from "@/lib/backend/files";
 import BudgetDocView from "./BudgetDoc";
+import BudgetHistoryDialog from "./BudgetHistoryDialog";
 import { RICH_RED } from "@/lib/richText";
 import RichText from "./RichText";
 import styles from "./BudgetEditor.module.css";
@@ -53,6 +55,12 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
     enabled: collab,
     reload: () => reloadBudget(budgetId),
   });
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  // 編集を始めた時点の内容（読み直し後）を、保存履歴に残す
+  useEffect(() => {
+    if (edit.editing) void takeBudgetSnapshot(budgetId, "編集開始時");
+  }, [edit.editing, budgetId]);
 
   if (!budget) {
     return (
@@ -74,6 +82,10 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
   const rev = sectionTotal(budget.revenue);
   const exp = sectionTotal(budget.expense);
   const bal = balance(budget);
+
+  const finishEditing = async () => {
+    if (await edit.finish()) void takeBudgetSnapshot(budgetId, "保存して終了");
+  };
 
   const onDownload = () => {
     void downloadDocHtml(
@@ -98,7 +110,7 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
         </button>
         {can.editGian &&
           (edit.editing ? (
-            <button type="button" className={styles.dlBtn} onClick={edit.stop}>
+            <button type="button" className={styles.dlBtn} onClick={finishEditing}>
               保存して終了
             </button>
           ) : (
@@ -112,6 +124,14 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
               {editStartLabel(edit)}
             </button>
           ))}
+        <button
+          type="button"
+          className={styles.dlBtn}
+          onClick={() => setHistoryOpen(true)}
+          title="保存履歴を見る（編集中は、過去の時点に戻せます）"
+        >
+          履歴
+        </button>
         {!readOnly && (
           <button
             type="button"
@@ -127,6 +147,14 @@ export default function BudgetEditor({ budgetId }: { budgetId: string }) {
           </button>
         )}
       </div>
+
+      {historyOpen && (
+        <BudgetHistoryDialog
+          budgetId={budgetId}
+          canRestore={!readOnly}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
 
       <div className={styles.pageBody}>
         <div className={styles.card}>
@@ -539,20 +567,19 @@ function AttachmentPanel({
     setBusy(true);
     setError(null);
     try {
-      let doc = budget;
+      const uploaded: { fileId: string; name: string }[] = [];
       for (const f of arr) {
         try {
           const obj = await uploadFile("budget", budget.id, f);
-          const res = addOrReuseAttachment(doc, obj.id, obj.name);
-          if (res.attachment.fileId !== obj.id) void deleteFileObj(obj.id);
-          doc = res.doc;
+          uploaded.push({ fileId: obj.id, name: obj.name });
         } catch (e) {
           setError(
             e instanceof Error ? `${f.name}: ${e.message}` : `${f.name}: 失敗`
           );
         }
       }
-      update(doc);
+      // アップロード中に入力された変更を消さないよう、そのときの最新の内容へ足す
+      attachFilesToBudget(budget.id, uploaded);
     } finally {
       setBusy(false);
     }

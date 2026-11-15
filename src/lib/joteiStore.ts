@@ -11,6 +11,7 @@
 
 import { markHydrateFailure, db, fire } from "./backend/client";
 import { reportIfLockRejected } from "./editLockStore";
+import { dbErrorResult, hasPendingSaves, queueSave } from "./backend/saveQueue";
 
 /** 上程届の1項目（区分内の1行）。 */
 export interface JoteiItem {
@@ -198,42 +199,50 @@ export function submittedMeetings(yearId: string): string[] {
 }
 
 // ── 永続化 ──
-async function persist(id: string): Promise<void> {
-  const j = cache[id];
-  if (!j) return;
-  const { error } = await db().from("jotei_todokes").upsert({
-    id,
-    fiscal_year_id: j.yearId,
-    committee_id: j.committeeId || null,
-    status: j.status,
-    meeting_name: j.meetingName,
-    doc: j,
-    submitted_at: j.submittedAt ?? null,
-    updated_at: j.updatedAt,
-  });
-  if (error && !reportIfLockRejected("jotei", id, error))
+// 保存は文書ごとに1件ずつ順番に行い（保存キュー）、失敗したら自動でやり直す。
+function persist(id: string): Promise<void> {
+  return queueSave(`jotei:${id}`, async () => {
+    const j = cache[id];
+    if (!j) return { kind: "ok" };
+    const { error } = await db().from("jotei_todokes").upsert({
+      id,
+      fiscal_year_id: j.yearId,
+      committee_id: j.committeeId || null,
+      status: j.status,
+      meeting_name: j.meetingName,
+      doc: j,
+      submitted_at: j.submittedAt ?? null,
+      updated_at: j.updatedAt,
+    });
+    if (!error) return { kind: "ok" };
+    if (reportIfLockRejected("jotei", id, error)) return { kind: "rejected" };
     console.error("[joteiStore] 保存失敗:", error.message);
+    return dbErrorResult(error);
+  });
 }
 
 /** 1件だけ DB から読み直す */
 export async function reloadJotei(id: string): Promise<void> {
+  if (hasPendingSaves(`jotei:${id}`)) return;
   const { data, error } = await db().from("jotei_todokes").select("*").eq("id", id).maybeSingle();
   if (error || !data) return;
+  if (hasPendingSaves(`jotei:${id}`)) return;
   const r = data as Row;
-  set(
-    id,
-    normalize({
-      ...r.doc,
-      id: r.id,
-      yearId: r.fiscal_year_id,
-      committeeId: r.committee_id ?? r.doc.committeeId,
-      status: r.status,
-      meetingName: r.meeting_name || r.doc.meetingName,
-      submittedAt: r.submitted_at ?? r.doc.submittedAt,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    })
-  );
+  const next = normalize({
+    ...r.doc,
+    id: r.id,
+    yearId: r.fiscal_year_id,
+    committeeId: r.committee_id ?? r.doc.committeeId,
+    status: r.status,
+    meetingName: r.meeting_name || r.doc.meetingName,
+    submittedAt: r.submitted_at ?? r.doc.submittedAt,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  });
+  const cur = cache[id];
+  if (cur && JSON.stringify({ ...cur, updatedAt: "" }) === JSON.stringify({ ...next, updatedAt: "" }))
+    return;
+  set(id, next);
 }
 
 function set(id: string, j: JoteiTodoke) {
