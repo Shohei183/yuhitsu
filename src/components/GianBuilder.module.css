@@ -1122,7 +1122,7 @@
 }
 
 .autoNote code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-base);
   font-size: 11px;
   background: #fff;
   border: 1px solid var(--border);

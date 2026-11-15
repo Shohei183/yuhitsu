@@ -1,4 +1,7 @@
 :root {
+  /* ── フォント：すべて MS ゴシック（無い端末だけ、近いゴシック体） ── */
+  --font-base: "MS Gothic", "ＭＳ ゴシック", "MS-Gothic", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, monospace;
+
   /* ── 面・境界 ── */
   --bg: #e9edf3;
   --card: #ffffff;
@@ -81,8 +84,7 @@ body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
-    "Yu Gothic", Meiryo, sans-serif;
+  font-family: var(--font-base);
   background: var(--bg);
   color: var(--text);
   font-size: 14px;

@@ -182,7 +182,7 @@
 }
 .csvArea {
   width: 100%;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-base);
   font-size: 12.5px;
   line-height: 1.6;
   padding: 8px 10px;

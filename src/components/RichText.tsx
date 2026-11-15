@@ -46,6 +46,33 @@ export default function RichText({
     onChange(sanitizeRichHtml(el.innerHTML));
   };
 
+  // 貼り付けは、元のフォント・サイズ・色・表などの書式を持ち込まず、
+  // すべてこのアプリの書式（MS ゴシック・黒）にする。
+  // 例外：このアプリの赤文字をコピーしたときだけ、赤を引き継ぐ。
+  const onPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (readOnly) return;
+    e.preventDefault();
+    const html = e.clipboardData.getData("text/html");
+    const text = e.clipboardData.getData("text/plain");
+    let insert: string;
+    if (html && /d21f1f|rgb\(\s*210\s*,\s*31\s*,\s*31\s*\)/i.test(html)) {
+      insert = sanitizeRichHtml(html);
+    } else {
+      insert = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\r\n|\r|\n/g, "<br>");
+    }
+    if (!insert) return;
+    try {
+      document.execCommand("insertHTML", false, insert);
+    } catch {
+      /* 古いブラウザは無視 */
+    }
+    emit();
+  };
+
   const applyColor = (color: string) => {
     const el = ref.current;
     if (!el || readOnly) return;
@@ -104,6 +131,7 @@ export default function RichText({
         data-empty={isRichEmpty(value) ? "true" : undefined}
         onInput={emit}
         onBlur={emit}
+        onPaste={onPaste}
       />
     </div>
   );
