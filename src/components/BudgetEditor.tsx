@@ -352,13 +352,15 @@ function CategoryGroup({
                   </tr>
                 </thead>
                 <tbody>
-                  {c.items.map((it) => (
+                  {c.items.map((it, idx) => (
                     <ItemRow
                       key={it.id}
                       budget={budget}
                       section={section}
                       catName={c.name}
                       item={it}
+                      index={idx}
+                      count={c.items.length}
                       readOnly={readOnly}
                       update={update}
                       mutateCat={mutateCat}
@@ -394,6 +396,8 @@ function ItemRow({
   section,
   catName,
   item,
+  index,
+  count,
   readOnly,
   update,
   mutateCat,
@@ -403,6 +407,9 @@ function ItemRow({
   section: "revenue" | "expense";
   catName: string;
   item: BudgetLineItem;
+  /** 科目内での位置（並び替えボタンの有効・無効に使う） */
+  index: number;
+  count: number;
   readOnly: boolean;
   update: (b: BudgetDoc) => void;
   mutateCat: (name: string, fn: (c: BudgetCategory) => BudgetCategory) => void;
@@ -415,6 +422,16 @@ function ItemRow({
       ...cat,
       items: cat.items.map((x) => (x.id === item.id ? { ...x, ...patch } : x)),
     }));
+
+  const move = (dir: "up" | "down") =>
+    mutateCat(catName, (cat) => {
+      const list = [...cat.items];
+      const i = list.findIndex((x) => x.id === item.id);
+      const j = dir === "up" ? i - 1 : i + 1;
+      if (i < 0 || j < 0 || j >= list.length) return cat;
+      [list[i], list[j]] = [list[j], list[i]];
+      return { ...cat, items: list };
+    });
 
   const setRef = (ref: string | null) => {
     update({
@@ -522,22 +539,43 @@ function ItemRow({
       )}
       <td>
         {!readOnly && (
-          <button
-            type="button"
-            className={styles.xBtn}
-            onClick={() =>
-              update({
-                ...budget,
-                [section]: budget[section].map((c) =>
-                  c.name === catName
-                    ? { ...c, items: c.items.filter((x) => x.id !== item.id) }
-                    : c
-                ),
-              })
-            }
-          >
-            ×
-          </button>
+          <div className={styles.rowCtrls}>
+            <button
+              type="button"
+              className={styles.moveBtn}
+              title="上へ"
+              disabled={index === 0}
+              onClick={() => move("up")}
+            >
+              ▲
+            </button>
+            <button
+              type="button"
+              className={styles.moveBtn}
+              title="下へ"
+              disabled={index === count - 1}
+              onClick={() => move("down")}
+            >
+              ▼
+            </button>
+            <button
+              type="button"
+              className={styles.xBtn}
+              title="この行を削除"
+              onClick={() =>
+                update({
+                  ...budget,
+                  [section]: budget[section].map((c) =>
+                    c.name === catName
+                      ? { ...c, items: c.items.filter((x) => x.id !== item.id) }
+                      : c
+                  ),
+                })
+              }
+            >
+              ×
+            </button>
+          </div>
         )}
       </td>
     </tr>

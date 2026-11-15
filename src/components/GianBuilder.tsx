@@ -438,6 +438,17 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
     }));
   }
 
+  function moveScheduleEntry(id: string, dir: "up" | "down") {
+    setGian((g) => {
+      const list = [...g.implementationSchedule];
+      const i = list.findIndex((e) => e.id === id);
+      const j = dir === "up" ? i - 1 : i + 1;
+      if (i < 0 || j < 0 || j >= list.length) return g;
+      [list[i], list[j]] = [list[j], list[i]];
+      return { ...g, implementationSchedule: list };
+    });
+  }
+
   function removeScheduleEntry(id: string) {
     setGian((g) => ({
       ...g,
@@ -758,6 +769,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
               onScheduleChange={updateScheduleEntry}
               onScheduleAdd={addScheduleEntry}
               onScheduleRemove={removeScheduleEntry}
+              onScheduleMove={moveScheduleEntry}
               budgetLink={{
                 hasBudget: !!linkedBudget,
                 total: linkedBudget
@@ -778,6 +790,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
                 onChange={updateScheduleEntry}
                 onAdd={addScheduleEntry}
                 onRemove={removeScheduleEntry}
+                onMove={moveScheduleEntry}
               />
             </section>
           )}
@@ -1789,6 +1802,7 @@ function TemplateSection({
   onScheduleChange,
   onScheduleAdd,
   onScheduleRemove,
+  onScheduleMove,
   budgetLink,
   attach,
 }: {
@@ -1801,6 +1815,7 @@ function TemplateSection({
   onScheduleChange?: (id: string, patch: Partial<ScheduleEntry>) => void;
   onScheduleAdd?: () => void;
   onScheduleRemove?: (id: string) => void;
+  onScheduleMove?: (id: string, dir: "up" | "down") => void;
   /** 「予算総額」項目に事業収支予算書へのリンクを出す */
   budgetLink?: {
     hasBudget: boolean;
@@ -1830,6 +1845,7 @@ function TemplateSection({
                 onChange={onScheduleChange}
                 onAdd={onScheduleAdd}
                 onRemove={onScheduleRemove}
+                onMove={onScheduleMove}
               />
             </div>
           ) : (
@@ -2029,12 +2045,14 @@ function ScheduleTable({
   onChange,
   onAdd,
   onRemove,
+  onMove,
 }: {
   entries: ScheduleEntry[];
   readOnly: boolean;
   onChange?: (id: string, patch: Partial<ScheduleEntry>) => void;
   onAdd?: () => void;
   onRemove?: (id: string) => void;
+  onMove?: (id: string, dir: "up" | "down") => void;
 }) {
   return (
     <div className={styles.schedBlock}>
@@ -2055,7 +2073,7 @@ function ScheduleTable({
                 </td>
               </tr>
             )}
-            {entries.map((e) => (
+            {entries.map((e, idx) => (
               <tr key={e.id}>
                 <td>
                   <input
@@ -2078,14 +2096,34 @@ function ScheduleTable({
                 </td>
                 {!readOnly && (
                   <td className={styles.schedTdAct}>
-                    <button
-                      type="button"
-                      className={styles.rowRemove}
-                      title="この行を削除"
-                      onClick={() => onRemove?.(e.id)}
-                    >
-                      ×
-                    </button>
+                    <span className={styles.rowCtrls}>
+                      <button
+                        type="button"
+                        className={styles.rowMoveBtn}
+                        title="上へ"
+                        disabled={idx === 0}
+                        onClick={() => onMove?.(e.id, "up")}
+                      >
+                        ▲
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.rowMoveBtn}
+                        title="下へ"
+                        disabled={idx === entries.length - 1}
+                        onClick={() => onMove?.(e.id, "down")}
+                      >
+                        ▼
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.rowRemove}
+                        title="この行を削除"
+                        onClick={() => onRemove?.(e.id)}
+                      >
+                        ×
+                      </button>
+                    </span>
                   </td>
                 )}
               </tr>

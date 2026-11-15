@@ -757,7 +757,31 @@
 }
 
 .schedThAct {
-  width: 34px;
+  width: 104px;
+}
+
+/* 行の「▲ ▼ ×」ボタン群（テンプレート編集の並び替えボタンと同じ見た目） */
+.rowCtrls {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.rowMoveBtn {
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 7px;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.rowMoveBtn:hover:not(:disabled) {
+  background: var(--panel);
+}
+.rowMoveBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .schedInput {

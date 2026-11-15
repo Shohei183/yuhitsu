@@ -202,7 +202,31 @@
   width: 150px;
 }
 .xCol {
-  width: 32px;
+  width: 104px;
+}
+/* 行の「▲ ▼ ×」ボタン群（テンプレート編集の並び替えボタンと同じ見た目） */
+.rowCtrls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+.moveBtn {
+  font-size: 11px;
+  line-height: 1;
+  padding: 4px 7px;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.moveBtn:hover:not(:disabled) {
+  background: var(--panel);
+}
+.moveBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 .itemTable input,
 .cellInput {
