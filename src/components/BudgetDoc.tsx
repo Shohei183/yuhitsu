@@ -30,7 +30,7 @@ function amountOf(s: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-/** 様式1：科目ごとに1行（予算額＝明細合計） */
+/** 様式1：科目ごとに1行（予算額＝明細合計。細目は同じものをひとつにまとめて並べる） */
 function Form1Section({ label, cats }: { label: string; cats: BudgetCategory[] }) {
   return (
     <>
@@ -44,10 +44,16 @@ function Form1Section({ label, cats }: { label: string; cats: BudgetCategory[] }
           </td>
           <td className={styles.amount}>{yen(categoryTotal(c))}</td>
           <td className={styles.note}>
-            {c.items
-              .map((it) => richToPlain(it.subItem) || richToPlain(it.note))
-              .filter(Boolean)
-              .join("、")}
+            {
+              // 同じ科目内で同じ細目は、ひとつにまとめる（出てきた順）
+              Array.from(
+                new Set(
+                  c.items
+                    .map((it) => richToPlain(it.subItem) || richToPlain(it.note))
+                    .filter(Boolean)
+                )
+              ).join("、")
+            }
           </td>
         </tr>
       ))}
@@ -91,7 +97,7 @@ export default function BudgetDoc({
                 <tr>
                   <th className={styles.colCat}>科目</th>
                   <th className={styles.colAmt}>予算額</th>
-                  <th>摘要</th>
+                  <th>細目</th>
                 </tr>
               </thead>
               <tbody>
