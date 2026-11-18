@@ -240,7 +240,7 @@ export default function GianView({
                 {it.no}. {it.label}
               </div>
               <Body text={it.body} />
-              <ItemLinkChips links={it.attachments} />
+              <ItemLinkChips links={it.attachments} distId={distId} />
             </li>
           ))}
         </ol>
@@ -272,7 +272,7 @@ export default function GianView({
                     <span className={styles.empty}>（なし）</span>
                   )}
                 </div>
-                <ItemLinkChips links={it.attachments} />
+                <ItemLinkChips links={it.attachments} distId={distId} />
               </li>
             ))}
           </ol>
@@ -339,7 +339,7 @@ export default function GianView({
                     {jpNum(sectionTotal(linkedBudget.expense))}） ↗
                   </a>
                 )}
-                <ItemLinkChips links={it.attachments} />
+                <ItemLinkChips links={it.attachments} distId={distId} />
               </li>
             ))}
           </ol>
@@ -629,7 +629,14 @@ function Body({ text, inline }: { text: string; inline?: boolean }) {
 }
 
 /** 項目に添付されたリンク（他の議案・資料）。次第の議案リンクのように表示する。 */
-function ItemLinkChips({ links }: { links: ItemLink[] | undefined }) {
+function ItemLinkChips({
+  links,
+  distId,
+}: {
+  links: ItemLink[] | undefined;
+  /** 配信データ経由で開いているとき、その id（リンク先でもレビューメモを付けられるよう引き継ぐ） */
+  distId?: string;
+}) {
   if (!links || links.length === 0) return null;
   return (
     <div className={styles.attachChips}>
@@ -637,7 +644,7 @@ function ItemLinkChips({ links }: { links: ItemLink[] | undefined }) {
         l.kind === "gian" ? (
           <a
             key={l.id}
-            href={`/gian/${l.gianId}/view`}
+            href={`/gian/${l.gianId}/view${distId ? `?dist=${encodeURIComponent(distId)}` : ""}`}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.attachChip}
