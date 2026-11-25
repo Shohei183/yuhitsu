@@ -4,7 +4,7 @@
 // 基本方針の Word（.docx）出力：従来様式
 //
 //  原本（サンプル/事務局基本方針vr1.docx）に合わせる：
-//   A4縦／余白 上下30mm・左右20mm／MS ゴシック 12pt／行送り 18pt（固定）
+//   A4縦／余白 上15mm（原本は30mm）・下30mm・左右20mm／MS ゴシック 12pt／行送り 18pt（固定）
 //   3列の表（見出し欄 1464・中 4170・右 4202 twip）
 // ─────────────────────────────────────────────────────────────
 
@@ -186,7 +186,7 @@ export async function buildKihonDocxBlob(d: KihonLegacy): Promise<Blob> {
           page: {
             size: { width: PAGE_W, height: PAGE_H },
             margin: {
-              top: 1701,
+              top: 851, // 15mm（原本は30mm）
               bottom: 1701,
               left: 1134,
               right: 1134,
