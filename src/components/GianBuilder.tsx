@@ -692,7 +692,7 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
       </header>
 
       {/* ── 3カラム ── */}
-      <div className={styles.columns}>
+      <div className={`${styles.columns} ${kihon ? styles.columnsNoRight : ""}`}>
         {/* 左：ページ移動用ナビ */}
         <aside className={`${styles.col} ${styles.colLeft}`}>
           <div className={styles.paneTitle}>ナビゲーション</div>
@@ -833,30 +833,32 @@ export default function GianBuilder({ initialGian }: { initialGian: Gian }) {
           />
         </main>
 
-        {/* 右：資料（アップロード） */}
-        <aside className={`${styles.col} ${styles.colRight}`}>
-          <div className={styles.paneTitle}>資料</div>
-          <p className={styles.autoNote}>
-            ファイルをドラッグ＆ドロップ、または「ファイルを選択」で追加します
-            （このブラウザ内に保存）。
-          </p>
-          {!report && (
+        {/* 基本方針には「資料」の項目はない */}
+        {!kihon && (
+          <aside className={`${styles.col} ${styles.colRight}`}>
+            <div className={styles.paneTitle}>資料</div>
+            <p className={styles.autoNote}>
+              ファイルをドラッグ＆ドロップ、または「ファイルを選択」で追加します
+              （このブラウザ内に保存）。
+            </p>
+            {!report && (
+              <GianResourcePanel
+                gianId={gianId}
+                category="review"
+                editable={!readOnly}
+                red={gian.fileRed}
+                onToggleRed={toggleFileRed}
+              />
+            )}
             <GianResourcePanel
               gianId={gianId}
-              category="review"
+              category="reference"
               editable={!readOnly}
               red={gian.fileRed}
               onToggleRed={toggleFileRed}
             />
-          )}
-          <GianResourcePanel
-            gianId={gianId}
-            category="reference"
-            editable={!readOnly}
-            red={gian.fileRed}
-            onToggleRed={toggleFileRed}
-          />
-        </aside>
+          </aside>
+        )}
       </div>
 
       {toast && <div className={styles.toast}>{toast}</div>}

@@ -403,39 +403,44 @@ export default function GianView({
           </div>
         )}
 
-        <h2 className={styles.h2}>資料</h2>
-        {frozenFiles ? (
+        {/* 基本方針には「資料」の項目はない */}
+        {!kihon && (
           <>
-            {gian.kind !== "報告" && (
+          <h2 className={styles.h2}>資料</h2>
+          {frozenFiles ? (
+            <>
+              {gian.kind !== "報告" && (
+                <FrozenResourceList
+                  category="review"
+                  files={frozenFiles.review}
+                  red={gian.fileRed}
+                />
+              )}
               <FrozenResourceList
-                category="review"
-                files={frozenFiles.review}
+                category="reference"
+                files={frozenFiles.reference}
                 red={gian.fileRed}
               />
-            )}
-            <FrozenResourceList
-              category="reference"
-              files={frozenFiles.reference}
-              red={gian.fileRed}
-            />
-          </>
-        ) : gianId ? (
-          <>
-            {gian.kind !== "報告" && (
+            </>
+          ) : gianId ? (
+            <>
+              {gian.kind !== "報告" && (
+                <LiveResourceList
+                  gianId={gianId}
+                  category="review"
+                  red={gian.fileRed}
+                />
+              )}
               <LiveResourceList
                 gianId={gianId}
-                category="review"
+                category="reference"
                 red={gian.fileRed}
               />
-            )}
-            <LiveResourceList
-              gianId={gianId}
-              category="reference"
-              red={gian.fileRed}
-            />
+            </>
+          ) : (
+            <p className={styles.empty}>（なし）</p>
+          )}
           </>
-        ) : (
-          <p className={styles.empty}>（なし）</p>
         )}
 
         {showPriorFeedback && (

@@ -147,6 +147,13 @@
     clamp(320px, 29vw, 480px);
 }
 
+/* 基本方針：右の「資料」パネルがない（左ナビ＋中央の2カラム） */
+.columnsNoRight {
+  grid-template-columns:
+    clamp(216px, 19vw, 300px)
+    minmax(0, 1fr);
+}
+
 .col {
   height: 100%;
   overflow-y: auto;
@@ -1619,6 +1626,11 @@
       clamp(196px, 17vw, 260px)
       minmax(0, 1fr)
       clamp(300px, 26vw, 400px);
+  }
+  .columnsNoRight {
+    grid-template-columns:
+      clamp(196px, 17vw, 260px)
+      minmax(0, 1fr);
   }
 
   .thNo {

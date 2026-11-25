@@ -87,6 +87,12 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.65;
+  /* 日本語の折り返し：文節の途中では折らず（auto-phrase。対応ブラウザ）、
+     行頭に「ゃ」「ー」「、」などが来ないようにする（禁則）。
+     折らないと収まらない長い英数字・URLのときだけ、途中で折る。 */
+  word-break: auto-phrase;
+  line-break: strict;
+  overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

@@ -45,7 +45,7 @@
   border-radius: 7px;
   background: #fff;
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   outline: none;
 }
 .editor:focus {
@@ -63,7 +63,7 @@
   font-size: inherit;
   line-height: 1.7;
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .emptyView {
   color: var(--muted);
