@@ -2,7 +2,9 @@
    A4縦・余白（上下30mm／左右20mm）・MSゴシック12pt・行送り18pt */
 .sheet {
   box-sizing: border-box;
-  padding: 30mm 20mm;
+  /* 下の余白（30mm）は付けない：内容がちょうど1ページに収まるとき、
+     下の余白の分だけはみ出して、空白の2ページ目ができるのを防ぐ */
+  padding: 30mm 20mm 0;
   font-family: "MS Gothic", "ＭＳ ゴシック", "MS-Gothic", "Osaka-Mono",
     "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, monospace;
   font-size: 12pt;
