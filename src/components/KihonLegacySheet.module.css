@@ -59,6 +59,11 @@
   text-align: center;
 }
 
+/* 収入の部と支出の部の間の縦線（細い線がPDFで消えないよう、少し太くする） */
+.table td.divider {
+  border-left: 1.5pt solid #000;
+}
+
 .items {
   /* 原本の、科目欄の余白（空行）に合わせた最低の高さ */
   height: 6em;

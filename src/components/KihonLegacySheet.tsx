@@ -109,17 +109,19 @@ export default function KihonLegacySheet({ data }: { data: KihonLegacy }) {
               委員会予算
             </td>
             <td className={styles.center}>収　入　の　部</td>
-            <td className={styles.center}>支　出　の　部</td>
+            <td className={`${styles.center} ${styles.divider}`}>支　出　の　部</td>
           </tr>
           <tr>
             <td className={styles.items}>{col(data.income)}</td>
-            <td className={styles.items}>{col(data.expense)}</td>
+            <td className={`${styles.items} ${styles.divider}`}>
+              {col(data.expense)}
+            </td>
           </tr>
           <tr>
             <td className={`${styles.line} ${styles.total}`}>
               合計　{data.incomeTotal}
             </td>
-            <td className={`${styles.line} ${styles.total}`}>
+            <td className={`${styles.line} ${styles.total} ${styles.divider}`}>
               合計　{data.expenseTotal}
             </td>
           </tr>

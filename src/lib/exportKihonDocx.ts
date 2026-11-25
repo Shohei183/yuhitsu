@@ -59,6 +59,8 @@ export async function buildKihonDocxBlob(d: KihonLegacy): Promise<Blob> {
   const single = { style: D.BorderStyle.SINGLE, size: 4, color: "000000" };
   const borders = { top: single, bottom: single, left: single, right: single };
 
+  const thick = { style: D.BorderStyle.SINGLE, size: 12, color: "000000" };
+
   const cell = (
     children: InstanceType<D["Paragraph"]>[],
     width: number,
@@ -66,6 +68,8 @@ export async function buildKihonDocxBlob(d: KihonLegacy): Promise<Blob> {
       columnSpan?: number;
       rowSpan?: number;
       middle?: boolean;
+      /** 収入の部と支出の部の間の縦線（支出の部の左の線）を太くする */
+      divider?: boolean;
     } = {}
   ) =>
     new D.TableCell({
@@ -74,7 +78,7 @@ export async function buildKihonDocxBlob(d: KihonLegacy): Promise<Blob> {
       columnSpan: extra.columnSpan,
       rowSpan: extra.rowSpan,
       verticalAlign: extra.middle ? D.VerticalAlign.CENTER : D.VerticalAlign.TOP,
-      borders,
+      borders: extra.divider ? { ...borders, left: thick } : borders,
     });
 
   // ── 表の各行 ──
@@ -135,21 +139,23 @@ export async function buildKihonDocxBlob(d: KihonLegacy): Promise<Blob> {
       children: [
         cell([para("委員会予算")], COLS[0], { rowSpan: 3, middle: true }),
         cell([para("収　入　の　部", { align: "center" })], COLS[1]),
-        cell([para("支　出　の　部", { align: "center" })], COLS[2]),
+        cell([para("支　出　の　部", { align: "center" })], COLS[2], { divider: true }),
       ],
       cantSplit: true,
     }),
     new D.TableRow({
       children: [
         cell(moneyParas(d.income, COLS[1] - 220), COLS[1]),
-        cell(moneyParas(d.expense, COLS[2] - 220), COLS[2]),
+        cell(moneyParas(d.expense, COLS[2] - 220), COLS[2], { divider: true }),
       ],
       cantSplit: true,
     }),
     new D.TableRow({
       children: [
         cell([para(`合計　${d.incomeTotal}`, { align: "right" })], COLS[1]),
-        cell([para(`合計　${d.expenseTotal}`, { align: "right" })], COLS[2]),
+        cell([para(`合計　${d.expenseTotal}`, { align: "right" })], COLS[2], {
+          divider: true,
+        }),
       ],
       cantSplit: true,
     }),
