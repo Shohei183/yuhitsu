@@ -63,7 +63,7 @@ export default function KihonLegacySheet({ data }: { data: KihonLegacy }) {
             <td className={styles.label} />
             <td colSpan={2}>
               {data.policy.map((para, i) => (
-                <div key={i} className={`${styles.line} ${styles.indent}`}>
+                <div key={i} className={styles.line}>
                   {para.length === 0
                     ? " "
                     : para.map((r, j) => (

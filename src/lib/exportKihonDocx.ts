@@ -87,8 +87,8 @@ export async function buildKihonDocxBlob(d: KihonLegacy): Promise<Blob> {
 
   const policyParas = d.policy.map((pr) =>
     para(
-      pr.length ? pr.map((r) => run(r.text, r.red)) : [run("")],
-      { firstLine: 240 }
+      // 字下げは、入力したスペースをそのまま出す（自動では付けない）
+      pr.length ? pr.map((r) => run(r.text, r.red)) : [run("")]
     )
   );
 

@@ -34,6 +34,8 @@
   padding: 0 1.9mm;
   vertical-align: top;
   overflow-wrap: break-word;
+  /* 入力したスペース・字下げは、そのまま出す（画面の表示と同じ） */
+  white-space: pre-wrap;
 }
 
 .table tr {
@@ -42,11 +44,6 @@
 
 .line {
   min-height: 18pt;
-}
-
-/* 本文の各段落は、1字下げて始める */
-.indent {
-  text-indent: 1em;
 }
 
 .label {
