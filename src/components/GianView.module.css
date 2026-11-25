@@ -429,15 +429,25 @@
     font-size: 12pt;
   }
 
-  /* 表・資料グループ・前回までの流れの各回はページ跨ぎを避ける */
-  .tableWrap,
-  .resGroup,
-  .fbRound {
+  /* 資料グループ（短いまとまり）はページ跨ぎを避ける */
+  .resGroup {
     break-inside: avoid;
   }
 
-  .itemList > li {
+  /* 表・前回までの流れ・項目の本文は、1ページより長くなることがある。
+     「まとまりごと次のページへ送る」と、前のページが大きく空いてしまうので、
+     途中で分けてよい。ただし、表の1行（意見／対応など）の途中では分けず、
+     見出し・項目名は、すぐ下の内容と離さない。 */
+  .table tr {
     break-inside: avoid;
+  }
+  .table thead {
+    display: table-header-group;
+  }
+  .fbHead,
+  .itemLabel,
+  .subLabel {
+    break-after: avoid;
   }
 
   .doc a,
