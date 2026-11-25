@@ -56,19 +56,28 @@ export interface KihonLegacy {
  * 議案の委員会に「委員長」として登録されている人の、右上の1行。
  * 事務局は委員長の役職が「事務局長」なので、その場合は「事務局長」と出す。
  */
-export function kihonChairLine(gian: Gian): string {
-  if (!gian.yearId || !gian.committeeId) return "";
+export function kihonChair(gian: Gian): { role: string; name: string } | null {
+  if (!gian.yearId || !gian.committeeId) return null;
   const year = getYear(gian.yearId);
-  if (!year) return "";
+  if (!year) return null;
   const here = year.assignments.filter((a) => a.committeeId === gian.committeeId);
   const hit =
     here.find((a) => a.role === "committee_chair") ??
     here.find((a) => a.role === "secretary_general");
-  if (!hit) return "";
+  if (!hit) return null;
   const name = getMember(hit.memberId)?.name?.trim();
-  if (!name) return "";
-  const role = hit.role === "secretary_general" ? "事務局長" : "委員長";
-  return `${role}　${name}`;
+  if (!name) return null;
+  return { role: hit.role === "secretary_general" ? "事務局長" : "委員長", name };
+}
+
+export function kihonChairLine(gian: Gian): string {
+  const c = kihonChair(gian);
+  return c ? `${c.role}　${c.name}` : "";
+}
+
+/** 氏名の比較用：空白（全角・半角）を除く */
+function nameKey(s: string): string {
+  return s.replace(/[\s　]+/g, "");
 }
 
 // ── リッチテキスト → 段落 ──
@@ -120,16 +129,19 @@ function lineOf(l: BudgetLine): LegacyBudgetLine {
 
 /** 画面の基本方針のデータから、従来様式のデータを作る */
 export function buildKihonLegacy(gian: Gian): KihonLegacy {
+  const chair = kihonChair(gian);
   const income = gian.committeeBudget?.income ?? [];
   const expense = gian.committeeBudget?.expense ?? [];
   return {
     title: (gian.topic ?? "").replace(/について\s*$/, "").trim(),
-    chair: kihonChairLine(gian),
+    chair: chair ? `${chair.role}　${chair.name}` : "",
     leads: (gian.assignedLeads ?? [])
       .filter((p) => p.role.trim() || p.name.trim())
       .map((p) => ({ role: p.role.trim(), name: p.name.trim() })),
+    // 委員長は右上に出すので、配属メンバーの欄には、同じ人を重ねて出さない
     members: (gian.assignedMembers ?? [])
       .filter((p) => p.role.trim() || p.name.trim())
+      .filter((p) => !chair || nameKey(p.name) !== nameKey(chair.name))
       .map((p) => ({ role: p.role.trim(), name: p.name.trim() })),
     policy: gian.outline.flatMap((it) => parasFromRich(it.body)),
     plans: gian.overview.map((it) => `${it.no}．${(it.label ?? "").trim()}`),
