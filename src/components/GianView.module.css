@@ -439,6 +439,11 @@
     width: 160px;
   }
 
+  /* 印刷（PDF）には出さない部分（前回までの流れ） */
+  .noPrint {
+    display: none;
+  }
+
   /* 資料グループ（短いまとまり）はページ跨ぎを避ける */
   .resGroup {
     break-inside: avoid;

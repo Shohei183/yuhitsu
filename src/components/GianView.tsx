@@ -443,8 +443,9 @@ export default function GianView({
           </>
         )}
 
+        {/* 前回までの流れは、画面・ダウンロードでは出すが、印刷（PDF）には出さない */}
         {showPriorFeedback && (
-          <>
+          <div className={styles.noPrint}>
             <h2 className={styles.h2}>前回までの流れ（意見と対応）</h2>
             {gian.priorFeedback.map((round) => (
               <div
@@ -480,7 +481,7 @@ export default function GianView({
                 </div>
               </div>
             ))}
-          </>
+          </div>
         )}
 
         {/* ダウンロード時のみ出力：リンクされた予算書（見積書つき）を議案の後ろへ同梱。
