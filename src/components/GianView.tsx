@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, ReactNode, useRef } from "react";
+import { Fragment, ReactNode, useEffect, useRef } from "react";
 import {
   AssignedMember,
   BudgetLine,
@@ -30,7 +30,10 @@ import { useGianEntry, useGianSnapshots } from "@/lib/useGianStore";
 import { useBudgetStore } from "@/lib/useBudgetStore";
 import { budgetForGian, sectionTotal } from "@/lib/budgetStore";
 import BudgetDoc from "./BudgetDoc";
-import { useCommitteeOfGian } from "@/lib/useOrg";
+import { useCommitteeOfGian, useMemberStore, useYearStore } from "@/lib/useOrg";
+import { buildKihonLegacy } from "@/lib/kihonLegacy";
+import { downloadKihonDocx } from "@/lib/exportKihonDocx";
+import KihonLegacySheet from "./KihonLegacySheet";
 import styles from "./GianView.module.css";
 
 const SCHEDULE_LABEL = "実施までのスケジュール";
@@ -73,6 +76,19 @@ export default function GianView({
   distId?: string;
 }) {
   const entry = useGianEntry(gianId ?? "");
+  // 委員長（従来様式の右上）の表示のため、年度の役割割当・メンバー名の変更に追従する
+  useYearStore();
+  useMemberStore();
+  // ブラウザの「PDFに保存」の既定のファイル名は、ページのタイトルになる。議案名にそろえる
+  const pageTitle = (gianProp ?? entry?.gian)?.topic;
+  useEffect(() => {
+    if (embedded || !pageTitle) return;
+    const prev = document.title;
+    document.title = pageTitle;
+    return () => {
+      document.title = prev;
+    };
+  }, [embedded, pageTitle]);
   // 過去版（?snap=）を開くときだけ、その議案の履歴を取得する
   const { loaded: snapsLoaded } = useGianSnapshots(
     gianId ?? "",
@@ -130,7 +146,17 @@ export default function GianView({
     ).catch((e) => console.error("[議案] ダウンロード失敗:", e));
   };
 
+  // 基本方針は、従来の Word 様式（原本どおりの1枚の表）で、印刷（PDF）と Word 出力をする
+  const legacy = kihon && !embedded ? buildKihonLegacy(gian) : null;
+
   const onDownloadWord = () => {
+    if (legacy) {
+      void downloadKihonDocx(legacy, gian.topic).catch((e) => {
+        console.error("[基本方針] Word出力失敗:", e);
+        alert("Word出力に失敗しました。もう一度お試しください。");
+      });
+      return;
+    }
     void downloadDocDocx(
       docRef.current,
       `${kindLabel}_${gian.topic}`,
@@ -145,16 +171,24 @@ export default function GianView({
     <article
       ref={docRef}
       id={anchorId}
-      className={`${styles.doc} ${embedded ? styles.docEmbedded : ""}`}
+      className={`${styles.doc} ${embedded ? styles.docEmbedded : ""} ${legacy ? styles.kihonDoc : ""}`}
     >
-        <header className={styles.docHead}>
-          <div className={styles.lom}>{gian.lomName || lom}</div>
-          {!kihon && (
+        {/* 基本方針には、団体名の見出しは出さない */}
+        {!kihon && (
+          <header className={styles.docHead}>
+            <div className={styles.lom}>{gian.lomName || lom}</div>
             <div className={styles.meeting}>
               {gian.submissionMeeting}提案議題
             </div>
-          )}
-        </header>
+          </header>
+        )}
+
+        {/* 印刷（PDF）では、基本方針は従来様式の表だけを出す（画面には出さない） */}
+        {legacy && (
+          <div className={styles.legacyWrap}>
+            <KihonLegacySheet data={legacy} />
+          </div>
+        )}
 
         <h1 className={styles.topic}>{gian.topic}</h1>
 

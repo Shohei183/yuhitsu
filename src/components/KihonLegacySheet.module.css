@@ -1,0 +1,80 @@
+/* 基本方針の従来様式（原本：サンプル/事務局基本方針vr1.docx）
+   A4縦・余白（上下30mm／左右20mm）・MSゴシック12pt・行送り18pt */
+.sheet {
+  box-sizing: border-box;
+  padding: 30mm 20mm;
+  font-family: "MS Gothic", "ＭＳ ゴシック", "MS-Gothic", "Osaka-Mono",
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, monospace;
+  font-size: 12pt;
+  line-height: 18pt;
+  color: #000;
+  background: #fff;
+}
+
+.title {
+  text-align: center;
+}
+
+.chair {
+  text-align: right;
+  padding-right: 17mm;
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 2mm;
+}
+
+.table td {
+  border: 0.75pt solid #000;
+  padding: 0 1.9mm;
+  vertical-align: top;
+  overflow-wrap: break-word;
+}
+
+.table tr {
+  break-inside: avoid;
+}
+
+.line {
+  min-height: 18pt;
+}
+
+/* 本文の各段落は、1字下げて始める */
+.indent {
+  text-indent: 1em;
+}
+
+.label {
+  /* 左の見出し欄（原本では、ほとんどが空欄） */
+  vertical-align: top;
+}
+
+.budgetLabel {
+  vertical-align: middle;
+}
+
+.center {
+  text-align: center;
+}
+
+.items {
+  /* 原本の、科目欄の余白（空行）に合わせた最低の高さ */
+  height: 6em;
+}
+
+/* 科目名を左、金額（円）を右に寄せる */
+.moneyLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 4mm;
+}
+.amount {
+  white-space: nowrap;
+}
+
+.total {
+  text-align: right;
+}

@@ -515,3 +515,23 @@
     background: transparent;
   }
 }
+
+/* ── 基本方針：従来様式（原本の Word 様式）で印刷する ──
+   画面には従来どおりの表示を出し、印刷（PDF）のときだけ、
+   画面の内容をすべて隠して、従来様式の表（.legacyWrap）だけを出す。 */
+.legacyWrap {
+  display: none;
+}
+@media print {
+  .kihonDoc {
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  .kihonDoc > :not(.legacyWrap) {
+    display: none !important;
+  }
+  .kihonDoc > .legacyWrap {
+    display: block;
+  }
+}
