@@ -76,7 +76,8 @@
   text-align: left;
   vertical-align: top;
   white-space: pre-wrap;
-  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .table thead th {
   background: var(--panel);

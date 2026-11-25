@@ -92,7 +92,7 @@
   font-size: 13.5px;
   line-height: 1.75;
   white-space: pre-wrap;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 .rValueAtt {
   flex: 1;
