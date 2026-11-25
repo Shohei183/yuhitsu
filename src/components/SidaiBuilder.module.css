@@ -804,6 +804,38 @@
   padding: 1px 8px;
 }
 
+/* 議案の区分ごとの色（委員会フォルダの議案一覧と同じ配色） */
+.palKind.kindKyogi {
+  background: var(--role-officer-bg);
+  color: var(--role-officer-fg);
+  border-color: transparent;
+}
+.palKind.kindShingi {
+  background: var(--role-chair-bg);
+  color: var(--role-chair-fg);
+  border-color: transparent;
+}
+.palKind.kindKessanKyogi {
+  background: var(--role-board-bg);
+  color: var(--role-board-fg);
+  border-color: transparent;
+}
+.palKind.kindKessanShingi {
+  background: var(--role-member-bg);
+  color: var(--role-member-fg);
+  border-color: transparent;
+}
+.palKind.kindHoukoku {
+  background: var(--badge-submitted-bg);
+  color: var(--badge-submitted-fg);
+  border-color: transparent;
+}
+.palKind.kindKihon {
+  background: var(--role-master-bg);
+  color: var(--role-master-fg);
+  border-color: transparent;
+}
+
 .palTopic {
   font-size: 13px;
   font-weight: 600;

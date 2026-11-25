@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { STATUS_LABEL } from "@/lib/mockData";
+import { GianKind, STATUS_LABEL } from "@/lib/mockData";
 import { useLomName } from "@/lib/useSettingsStore";
 import {
   DeadlineEntry,
@@ -35,6 +35,16 @@ import { useRouter } from "next/navigation";
 import styles from "./SidaiBuilder.module.css";
 
 const DND_TYPE = "application/x-gian-id";
+
+// 議案の区分ごとの色（委員会フォルダの議案一覧と同じ配色）
+const KIND_CLASS: Record<GianKind, string> = {
+  協議: styles.kindKyogi,
+  審議: styles.kindShingi,
+  決算協議: styles.kindKessanKyogi,
+  決算審議: styles.kindKessanShingi,
+  報告: styles.kindHoukoku,
+  基本方針: styles.kindKihon,
+};
 
 const ROW_TYPE_LABEL: Record<SidaiRowType, string> = {
   heading: "区分",
@@ -694,7 +704,7 @@ export default function SidaiBuilder({ sidaiId }: { sidaiId: string }) {
                     onClick={() => attachToSelected(g.id)}
                     title="ドラッグして次第の行へ、またはクリックで選択中の行に紐づけ"
                   >
-                    <span className={styles.palKind}>
+                    <span className={`${styles.palKind} ${KIND_CLASS[g.kind]}`}>
                       {g.kind === "基本方針" ? "基本方針" : `${g.kind}議案`}
                     </span>
                     <span className={styles.palTopic}>{g.topic}</span>
